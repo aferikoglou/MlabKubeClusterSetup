@@ -63,7 +63,7 @@ sudo apt-mark hold kubelet kubeadm kubectl
 ```
 
 
-**Step 3: Configure the cgroup driver**
+## Step 3: Configure the cgroup driver
 
 Add the following line in /etc/systemd/system/kubelet.service.d/10-kubeadm.conf among the rest environment variables:
 ```bash
@@ -72,7 +72,7 @@ Environment="KUBELET_EXTRA_ARGS=--cgroup-driver=cgroupfs"
 cgroupfs is the appropriate cgroup-driver for docker which we will be using as our container runtime for the sake of simplicity. If you want to use a more sophisticated container runtime for further sandboxing you might have to change this configuration.
 
 
-**Step 4: Initialize the kube cluster:**
+## Step 4: Initialize the kube cluster:
 
 
 ```bash
@@ -96,15 +96,15 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 # Alternatively if you are the root user: $ echo "export KUBECONFIG=/etc/kubernetes/admin.conf" | tee -a ~/.bashrc && source ~/.bashrc
 # save the "kubeadm join" command printed in the last line of "kubeadm init" output in a file because you will need it to add workers in the cluster. 
 ```
-**Step5: Apply the CNI**
-## Calico:
+## Step5: Apply the CNI 
+**Calico:**
 ```bash
 kubectl create -f https://projectcalico.docs.tigera.io/manifests/tigera-operator.yaml
 kubectl create -f https://projectcalico.docs.tigera.io/manifests/custom-resources.yaml
 # Alternatively for flannel:
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 ```
-**Step 6: Create monitoring namespace and add prometheus operator/adapter, grafana, alert manager and exporters in the cluster:**
+## Step 6: Create monitoring namespace and add prometheus operator/adapter, grafana, alert manager and exporters in the cluster:
 ```bash 
 git clone https://github.com/prometheus-operator/kube-prometheus.git
 cd kube-prometheus
