@@ -58,11 +58,13 @@ sudo apt-mark hold kubelet kubeadm kubectl
 Add the following line in /etc/systemd/system/kubelet.service.d/10-kubeadm.conf among the rest environment variables:
 ```bash
 Environment="KUBELET_EXTRA_ARGS=--cgroup-driver=cgroupfs"
-# you can also use the following command which will do it for you but I highly recommend that you do it on your own since there will probably be issues if the format of the file is changed:
-start=$(sudo head -n 2 /etc/systemd/system/kubelet.service.d/10-kubeadm.conf) && end=$(sudo tail -n $(expr $(sudo wc -l /etc/systemd/system/kubelet.service.d/10-kubeadm.conf | cut -c 1-2) - 2) /etc/systemd/system/kubelet.service.d/10-kubeadm.conf) && sudo truncate -s 0 /etc/systemd/system/kubelet.service.d/10-kubeadm.conf && sudo cat <<EOF | sudo tee -a /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-$start
+# you can also use the following commands which will do it for you but I highly recommend that you do it on your own since there will probably be issues if the format of the file is changed:
+START=$(sudo head -n 2 /etc/systemd/system/kubelet.service.d/10-kubeadm.conf) 
+END=$(sudo tail -n $(expr $(sudo wc -l /etc/systemd/system/kubelet.service.d/10-kubeadm.conf | cut -c 1-2) - 2) /etc/systemd/system/kubelet.service.d/10-kubeadm.conf) 
+sudo truncate -s 0 /etc/systemd/system/kubelet.service.d/10-kubeadm.conf && sudo cat <<EOF | sudo tee -a /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+$START
 Environment="KUBELET_EXTRA_ARGS=--cgroup-driver=cgroupfs"
-$end
+$END
 EOF
 
 # verify that extra args environment variable has been added in the third line of your conf file:
@@ -118,8 +120,8 @@ alias kgd="kubectl get deploy"
 cat <<EOF | tee -a ~/.bashrc && source ~/.bashrc
 
 alias kgp="kubectl get pods --all-namespaces"
-alias kgn="kubectl get nodes"
-alias kgd="kubectl get deploy"
+alias kgn="kubectl get nodes --all-namespaces"
+alias kgd="kubectl get deploy --all-namespaces"
 EOF
 
 # In case you are using zsh as the default shell for your user you could use the same command as above by replacing "bashrc" either with "zshrc" or "profile"
