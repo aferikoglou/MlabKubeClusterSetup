@@ -65,7 +65,7 @@ Environment="KUBELET_EXTRA_ARGS=--cgroup-driver=cgroupfs"
 $end
 EOF
 
-# verify that extra args environment variable has been in the third line of your conf file:
+# verify that extra args environment variable has been added in the third line of your conf file:
 sudo cat /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 ```
 cgroupfs is the appropriate cgroup-driver for docker which we will be using as our container runtime for the sake of simplicity. If you want to use a more sophisticated container runtime for further sandboxing you might have to change this configuration.
