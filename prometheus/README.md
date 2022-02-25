@@ -7,7 +7,6 @@ cd kube-prometheus
 kubectl apply --server-side -f manifests/setup
 until kubectl get servicemonitors --all-namespaces ; do date; sleep 1; echo ""; done
 kubectl apply -f manifests
-
 # Port forward grafana:
 kubectl --namespace monitoring port-forward svc/grafana 3000
 # Port forward prometheus:
@@ -32,4 +31,10 @@ alias prom="kubectl --namespace monitoring port-forward svc/prometheus-k8s 9090"
 EOF
 
 # In case you are using zsh as the default shell for your user you could use the same command as above by replacing "bashrc" either with "zshrc" or "profile"
+
+# Once you have port forwarded you can extract metrics using curl, e.g.:
+# Prometheus
+curl -X GET localhost:9090/metrics > prom_metrics.txt
+# Grafana
+curl -X GET localhost:3000/metrics > graf_metrics.txt
 ```

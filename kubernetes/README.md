@@ -83,9 +83,9 @@ sudo kubeadm reset
 # remove previous configurations:
 sudo rm -r ~/.kube
 # initialize new control plane:
-sudo kubeadm init --pod-network-cidr=192.168.0.0/16
+sudo kubeadm init --pod-network-cidr=--pod-network-cidr=10.244.0.0/16
 # A couple of notes:
-# 1.  --pod-network-cidr=192.168.0.0/16 is the appropriate network for calico cni which we will be using, --pod-network-cidr=10.244.0.0/16 is for flannel
+# 1. --pod-network-cidr=10.244.0.0/16 is the appropriate network for flannel cni which we will be using, --pod-network-cidr=192.168.0.0/16 is for calico
 # 2. We could have also used --apiserver-advertise-address=<my_addr> to specify which ip we want the control plane to advertise to others, but since we didn't, kubelet will find the default network inteface and use its ip.
 # 3. We could have also specified --cri-socket and use another cri socket (e.g. containerd.sock) in order to make kubernetes play with other container runtimes (such as gVisor) too but for now we will just keep things simple.  
 
@@ -97,12 +97,12 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 # save the "kubeadm join" command printed in the last line of "kubeadm init" output in a file because you will need it to add workers in the cluster. 
 ```
 ## Step5: Apply the CNI 
-**Calico:**
+**Flannel:**
 ```bash
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+# Alternatively for calico:
 kubectl create -f https://projectcalico.docs.tigera.io/manifests/tigera-operator.yaml
 kubectl create -f https://projectcalico.docs.tigera.io/manifests/custom-resources.yaml
-# Alternatively for flannel:
-kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 ```
 
 ## Adding new nodes in your cluster:
