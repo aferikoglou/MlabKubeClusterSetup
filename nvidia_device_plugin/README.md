@@ -45,9 +45,9 @@ ${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 
 The NVIDIA Persistence Daemon should be automatically started for POWER9 installations. Check that it is running with the following command:
 ``` bash
-$ systemctl status nvidia-persistenced
+systemctl status nvidia-persistenced
 # If it is not active, run the following command:
-$ sudo systemctl enable nvidia-persistenced
+sudo systemctl enable nvidia-persistenced
 ```
 Disable a udev rule installed by default in some Linux distributions that cause hot-pluggable memory to be automatically onlined when it is physically probed. This behavior prevents NVIDIA software from bringing NVIDIA device memory online with non-default settings. This udev rule must be disabled in order for the NVIDIA CUDA driver to function properly on POWER9 systems.
 On Ubuntu 18.04, this rule can be found in:
@@ -119,7 +119,7 @@ helm repo add nvdp https://nvidia.github.io/k8s-device-plugin
 helm repo update
 ```
 
-Once this repo is updated, you can begin installing packages from it to depoloy the nvidia-device-plugin daemonset. Below are some examples of deploying the plugin with the various flags from above (This is the command I used for installation in order to keep as simple as possible with no extra args)
+Once this repo is updated, you can begin installing packages from it to depoloy the nvidia-device-plugin daemonset. Below are some examples of deploying the plugin with the various flags from above (This is the command I used for the installation in order to keep it as simple as possible with no extra args):
 ``` bash
 helm install \
     --version=0.10.0 \
@@ -127,7 +127,7 @@ helm install \
     nvdp/nvidia-device-plugin
 ```
 
-Enabling compatibility with the CPUManager and running with a request for 100ms of CPU time and a limit of 512MB of memory.
+Enabling compatibility with the CPUManager and running with a request for 100ms of CPU time and a limit of 512MB of memory -- I didn't use that.
 ``` bash
 helm install \
     --version=0.10.0 \
@@ -138,7 +138,7 @@ helm install \
     nvdp/nvidia-device-plugin
 ```
 
-Use the legacy Daemonset API (only available on Kubernetes < v1.16) -- I didn't use that:
+Use the legacy Daemonset API (only available on Kubernetes < v1.16) -- I didn't use that either.
 ``` bash
 helm install \
     --version=0.10.0 \
@@ -147,7 +147,7 @@ helm install \
     nvdp/nvidia-device-plugin
 ```
 
-Enabling compatibility with the CPUManager and the mixed migStrategy
+Enabling compatibility with the CPUManager and the mixed migStrategy -- I didn't use that either.
 ``` bash
 helm install \
     --version=0.10.0 \
