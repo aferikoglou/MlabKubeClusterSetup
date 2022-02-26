@@ -205,6 +205,7 @@ kubectl get svc -A
 You can assure that the service has started. Then you can run:
 ``` bash
 kubectl port-forward svc/<dcgm_exporter_svc_name> 9400
+# where <dcgm_exporter_svc_name> is the service you got from the last command
 # and export metrics just like in prometheus:
 curl -X GET localhost:9400/metrics > gpu_metrics.txt
 ```

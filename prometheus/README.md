@@ -38,3 +38,20 @@ curl -X GET localhost:9090/metrics > prom_metrics.txt
 # Grafana
 curl -X GET localhost:3000/metrics > graf_metrics.txt
 ```
+
+You could also use Prometheus' and Grafana's dashboards by visiting:
+```
+http://localhost:9090/
+```
+and
+``` 
+http://localhost:3000/
+```
+respectively.
+
+**Note:** Grafana will redirect you to a login page. The default credentials are:
+```
+Username: admin
+Password: admin
+```
+and afterwards you will be prompt to change the password.
