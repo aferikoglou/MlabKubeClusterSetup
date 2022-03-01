@@ -106,7 +106,7 @@ kubectl create -f https://projectcalico.docs.tigera.io/manifests/custom-resource
 ```
 
 ## Adding new nodes in your cluster:
-In order to join more nodes in the cluster just run the join command you saved before as a root user in the new node
+In order to join more nodes in the cluster you have to repeat the first 3 steps on the new node and then run the join command you saved before as a root user in the new node
 
 ## A couple useful aliases I like to use for kubectl:
 ```bash
