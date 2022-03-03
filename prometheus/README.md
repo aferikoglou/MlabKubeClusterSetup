@@ -1,4 +1,4 @@
-## Let's first install nvidia cuda driver nvidia device plugin since we will be requiring prometheus to record gpu-metrics too
+## Let's first install nvidia cuda driver and nvidia device plugin since we will be requiring prometheus to record gpu-metrics too
 ---
 
 ## Step 1: Installing the nvidia cuda driver
