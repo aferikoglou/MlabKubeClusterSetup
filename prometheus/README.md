@@ -100,6 +100,10 @@ sudo chmod 777 /etc/docker/daemon.json && cat <<EOF > /etc/docker/daemon.json
 }
 EOF
 ```
+Now, if you want you can put permissions back to 644
+``` bash 
+sudo chmod 644 /etc/docker/daemon.json
+```
 
 Once you have configured the options above on all the GPU nodes in your cluster, you can enable GPU support by deploying the following Daemonset:
 ``` bash
