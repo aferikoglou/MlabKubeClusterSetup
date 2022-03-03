@@ -87,8 +87,8 @@ sudo docker run --rm --gpus all nvidia/cuda:11.0-base nvidia-smi
 
 You will need to enable the nvidia runtime as your default runtime on your node. We will be editing the docker daemon config file which is usually present at */etc/docker/daemon.json*:
 
-```
-sudo cat <<EOF > /etc/docker/daemon.json
+``` bash
+sudo chmod 777 /etc/docker/daemon.json && cat <<EOF > /etc/docker/daemon.json
 {
     "default-runtime": "nvidia",
     "runtimes": {
