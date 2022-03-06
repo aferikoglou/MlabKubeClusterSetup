@@ -68,7 +68,6 @@ $START
 Environment="KUBELET_EXTRA_ARGS=--cgroup-driver=cgroupfs"
 $END
 EOF
-```
 
 # verify that extra args environment variable has been added in the third line of your conf file:
 sudo cat /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
