@@ -56,9 +56,11 @@ sudo apt-mark hold kubelet kubeadm kubectl
 ## Step 3: Configure the cgroup driver
 
 Add the following line in /etc/systemd/system/kubelet.service.d/10-kubeadm.conf among the rest environment variables:
-```bash
+```
 Environment="KUBELET_EXTRA_ARGS=--cgroup-driver=cgroupfs"
-# you can also use the following commands which will do it for you but I highly recommend that you do it on your own since there will probably be issues if the format of the file is changed:
+```
+you can also use the following commands which will do it for you but I highly recommend that you do it on your own since there will probably be issues if the format of the file is changed:
+``` bash
 START=$(sudo head -n 2 /etc/systemd/system/kubelet.service.d/10-kubeadm.conf) 
 END=$(sudo tail -n $(expr $(sudo wc -l /etc/systemd/system/kubelet.service.d/10-kubeadm.conf | cut -c 1-2) - 2) /etc/systemd/system/kubelet.service.d/10-kubeadm.conf) 
 sudo truncate -s 0 /etc/systemd/system/kubelet.service.d/10-kubeadm.conf && sudo cat <<EOF | sudo tee -a /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
@@ -66,6 +68,7 @@ $START
 Environment="KUBELET_EXTRA_ARGS=--cgroup-driver=cgroupfs"
 $END
 EOF
+```
 
 # verify that extra args environment variable has been added in the third line of your conf file:
 sudo cat /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
@@ -83,7 +86,7 @@ sudo kubeadm reset
 # remove previous configurations:
 sudo rm -r ~/.kube
 # initialize new control plane:
-sudo kubeadm init --pod-network-cidr=--pod-network-cidr=10.244.0.0/16
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16
 # A couple of notes:
 # 1. --pod-network-cidr=10.244.0.0/16 is the appropriate network for flannel cni which we will be using, --pod-network-cidr=192.168.0.0/16 is for calico
 # 2. We could have also used --apiserver-advertise-address=<my_addr> to specify which ip we want the control plane to advertise to others, but since we didn't, kubelet will find the default network inteface and use its ip.
