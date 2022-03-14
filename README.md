@@ -17,4 +17,4 @@
 ---
 ### For a full tutorial on how to setup grafana and prometheus monitoring system click [here](https://github.com/aferikoglou/mlab-k8s-cluster-setup/tree/main/prometheus/README.md) (kubernetes required).
 ---
-### For a full tutorial on how to setup nvidia device plugin and dcgm exporter click [here](https://github.com/aferikoglou/mlab-k8s-cluster-setup/tree/main/nvidia_device_plugin/README.md) (kubernetes + Prometheus required).
+### For a full tutorial on how to setup  dcgm exporter click [here](https://github.com/aferikoglou/mlab-k8s-cluster-setup/tree/main/dcgm_exporter/README.md) (kubernetes + Prometheus required).
