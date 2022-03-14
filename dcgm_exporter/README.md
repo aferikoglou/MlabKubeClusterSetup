@@ -1,4 +1,4 @@
-## Install DCGM Exporter (nvidia cuda driver and nvidia device plugin required if you don't know how to install them watch [this](https://github.com/aferikoglou/mlab-k8s-cluster-setup/tree/main/prometheus/README.md))
+## Install DCGM Exporter (nvidia cuda driver and nvidia device plugin are required, if you don't know how to install them watch [this](https://github.com/aferikoglou/mlab-k8s-cluster-setup/tree/main/prometheus/README.md))
 
 See this for more:
 https://developer.nvidia.com/blog/monitoring-gpus-in-kubernetes-with-dcgm/
