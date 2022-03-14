@@ -1,7 +1,29 @@
-## Let's first install nvidia cuda driver(same way on each gpu node) and nvidia device plugin(using kubectl i.e. on master node) since we will be requiring prometheus to record gpu-metrics too
+## Let's first install nvidia graphics card drivers(same way on each gpu node), nvidia cuda driver(same way on each gpu node) and nvidia device plugin(using kubectl i.e. on master node) since we will be requiring prometheus to record gpu-metrics too
 ---
+## Step 1: Install the nvidia graphics card driver
+Visit this site: https://www.nvidia.com/en-us/drivers/unix/ in order to realise which is the newest nvidia driver, let's call it XXXX.
+```` bash
+# clear existing driver
+sudo apt-get purge nvidia*
+# let us go ahead and add the graphics-driver PPA -
+sudo add-apt-repository ppa:graphics-drivers
+# update apt
+sudo apt-get update
+# go ahead and install driver which in my case is 510
+sudo apt-get install nvidia-driver-510                         
+````
+*Note: In order to install nvidia driver on your pc or VM you first need to make sure it is supported by your gpu.
 
-## Step 1: Installing the nvidia cuda driver
+Reboot and make sure everything was installed fine:
+``` bash
+lsmod | grep nvidia
+nvidia-smi
+```
+and before going on install cuda toolkit:
+```bash
+sudo apt install nvidia-cuda-toolkit
+```
+## Step 2: Install the nvidia cuda driver
 See this for more:
 https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
 
@@ -64,7 +86,7 @@ See this for more recommended actions:
 https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#recommended-post
 
 
-## Step 2: Installing nvidia container toolkit(docker has to be installed):
+## Step 3: Installing nvidia container toolkit(docker has to be installed):
 See this for more: 
 https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker
 
@@ -170,7 +192,7 @@ docker tag nvcr.io/nvidia/k8s-device-plugin:v0.10.0 nvcr.io/nvidia/k8s-device-pl
 ```
 
 
-# Step 3: Installing Prometheus:
+# Step 4: Installing Prometheus:
 
 ###  First add helm repo:
 ``` bash
@@ -284,7 +306,7 @@ helm install prometheus-community/kube-prometheus-stack \
    --values /tmp/kube-prometheus-stack.values
 ```
 
-### Step 4: Patching the Grafana Service
+### Step 5: Patching the Grafana Service
 
 By default, Grafana uses a ClusterIP to expose the ports on which the service is accessible. This can be changed to a NodePort instead, so the page is accessible from the browser, similar to the Prometheus dashboard.
 
