@@ -33,7 +33,7 @@ helm install \
 
 ### All the chart installation in one command:
 ```bash
-cat <<EOF > values.yaml && helm install   --generate-name gpu-helm-charts dcgm-exporter -f values.yaml
+cat <<EOF > values.yaml && helm install   --generate-name gpu-helm-charts/dcgm-exporter -f values.yaml
 # extra args that will be used during dcgm exporter installation
 extraConfigMapVolumes:
 - name: exporter-metrics-volume

@@ -336,9 +336,7 @@ kubectl patch svc kube-prometheus-stack-1603211794-grafana \
 
 ### You could do something like that:
 ``` bash
-cat <<EOF | export GRAFANA_SERVICE=$(cut -c 15-54)
-$(kubectl get svc -A | grep grafana)
-EOF
+GRAFANA_SERVICE=$(kubectl get svc -A -l "app.kubernetes.io/name=grafana" -o jsonpath="{.items[*].metadata.name}")
 
 # and:
 kubectl patch svc $GRAFANA_SERVICE \
@@ -359,14 +357,14 @@ kubectl get svc -A | grep grafana
 # After running the above command, take a note of the service's port 
 ```
 
-### Open your browser to http://<machine-ip-address>:<grafana_port> and view the Grafana login page. 
-### Access Grafana home using the admin username. 
-### The password credentials for the login are available in the prometheus.values file we edited in the earlier section of the doc for prometheus.
-### Usually it is "prom-operator".
+Open your browser to http://<machine-ip-address>:<grafana_port> and view the Grafana login page. 
+Access Grafana home using the admin username. 
+The password credentials for the login are available in the prometheus.values file we edited in the earlier section of the doc for prometheus.
+Usually it is "prom-operator".
 ___
-### Finally, you can always extract metrics using curl commands like that:
+Finally, you can always extract metrics using curl commands like that:
 curl -X GET <machines-ip>:<prom-or-graf-port>/metrics > metrics.txt
 
-### Note: Since we use NodePorts there is no need for port forwards and Prometheus and Grafana dashboards are always available to the respective ports of their services (you can find them using "$ kubectl get svc -A") and at your machine's IP.
+*Note* : Since we use NodePorts there is no need for port forwards and Prometheus and Grafana dashboards are always available to the respective ports of their services (you can find them using "$ kubectl get svc -A") and at your machine's IP.
 ---
 ### See more here: https://docs.nvidia.com/datacenter/cloud-native/gpu-telemetry/dcgm-exporter.html.
