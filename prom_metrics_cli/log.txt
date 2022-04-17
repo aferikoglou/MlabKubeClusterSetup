@@ -22,3 +22,24 @@
 2022/04/08 14:55:03 {"status":"success","data":{"resultType":"matrix","result":[{"metric":{"Hostname":"dcgm-exporter-1649414899-x59tl","UUID":"GPU-ae76674e-a8e1-63c6-0b52-bc04a80cb290","__name__":"DCGM_FI_DEV_SM_CLOCK","container":"exporter","device":"nvidia0","endpoint":"metrics","gpu":"0","instance":"10.42.0.186:9400","job":"dcgm-exporter-1649414899","modelName":"NVIDIA GeForce GTX 960M","namespace":"default","pod":"dcgm-exporter-1649414899-x59tl","service":"dcgm-exporter-1649414899"},"values":[[1649418873,"1097"],[1649418874,"1097"],[1649418875,"1097"],[1649418876,"1097"],[1649418877,"1097"],[1649418878,"1097"],[1649418879,"1097"],[1649418880,"1097"],[1649418881,"1097"],[1649418882,"1097"],[1649418883,"1097"],[1649418884,"1097"],[1649418885,"1097"],[1649418886,"1097"],[1649418887,"1097"],[1649418888,"1097"],[1649418889,"1097"],[1649418890,"234"],[1649418891,"234"],[1649418892,"234"],[1649418893,"234"],[1649418894,"234"],[1649418895,"234"],[1649418896,"234"],[1649418897,"234"],[1649418898,"234"],[1649418899,"234"],[1649418900,"234"],[1649418901,"234"],[1649418902,"234"],[1649418903,"234"]]}]}}
 2022/04/08 14:55:05 http://localhost:9090/api/v1/query_range?step=1s&query=DCGM_FI_DEV_XID_ERRORS&start=1649418875&end=1649418905
 2022/04/08 14:55:05 {"status":"success","data":{"resultType":"matrix","result":[{"metric":{"Hostname":"dcgm-exporter-1649414899-x59tl","UUID":"GPU-ae76674e-a8e1-63c6-0b52-bc04a80cb290","__name__":"DCGM_FI_DEV_XID_ERRORS","container":"exporter","device":"nvidia0","endpoint":"metrics","gpu":"0","instance":"10.42.0.186:9400","job":"dcgm-exporter-1649414899","modelName":"NVIDIA GeForce GTX 960M","namespace":"default","pod":"dcgm-exporter-1649414899-x59tl","service":"dcgm-exporter-1649414899"},"values":[[1649418875,"0"],[1649418876,"0"],[1649418877,"0"],[1649418878,"0"],[1649418879,"0"],[1649418880,"0"],[1649418881,"0"],[1649418882,"0"],[1649418883,"0"],[1649418884,"0"],[1649418885,"0"],[1649418886,"0"],[1649418887,"0"],[1649418888,"0"],[1649418889,"0"],[1649418890,"0"],[1649418891,"0"],[1649418892,"0"],[1649418893,"0"],[1649418894,"0"],[1649418895,"0"],[1649418896,"0"],[1649418897,"0"],[1649418898,"0"],[1649418899,"0"],[1649418900,"0"],[1649418901,"0"],[1649418902,"0"],[1649418903,"0"],[1649418904,"0"],[1649418905,"0"]]}]}}
+2022/04/17 20:35:21 http://localhost:9090/api/v1/query_range?end=1650216921&step=0.5s&query=DCGM_FI_DEV_DEC_UTIL&start=1650216891
+2022/04/17 20:35:21 Get "http://localhost:9090/api/v1/query_range?end=1650216921&step=0.5s&query=DCGM_FI_DEV_DEC_UTIL&start=1650216891": dial tcp 127.0.0.1:9090: connect: connection refused
+exit status 1
+2022/04/17 20:35:22 http://localhost:9090/api/v1/query_range?step=1s&query=DCGM_FI_DEV_ENC_UTIL&start=1650216892&end=1650216922
+2022/04/17 20:35:22 Get "http://localhost:9090/api/v1/query_range?step=1s&query=DCGM_FI_DEV_ENC_UTIL&start=1650216892&end=1650216922": dial tcp 127.0.0.1:9090: connect: connection refused
+exit status 1
+2022/04/17 20:35:22 http://localhost:9090/api/v1/query_range?step=1s&query=DCGM_FI_DEV_FB_FREE&start=1650216892&end=1650216922
+2022/04/17 20:35:22 Get "http://localhost:9090/api/v1/query_range?step=1s&query=DCGM_FI_DEV_FB_FREE&start=1650216892&end=1650216922": dial tcp 127.0.0.1:9090: connect: connection refused
+exit status 1
+2022/04/17 20:35:23 http://localhost:9090/api/v1/query_range?step=1s&query=DCGM_FI_DEV_FB_USED&start=1650216893&end=1650216923
+2022/04/17 20:35:23 Get "http://localhost:9090/api/v1/query_range?step=1s&query=DCGM_FI_DEV_FB_USED&start=1650216893&end=1650216923": dial tcp 127.0.0.1:9090: connect: connection refused
+exit status 1
+2022/04/17 20:35:24 http://localhost:9090/api/v1/query_range?step=1s&query=DCGM_FI_DEV_GPU_TEMP&start=1650216894&end=1650216924
+2022/04/17 20:35:24 Get "http://localhost:9090/api/v1/query_range?step=1s&query=DCGM_FI_DEV_GPU_TEMP&start=1650216894&end=1650216924": dial tcp 127.0.0.1:9090: connect: connection refused
+exit status 1
+2022/04/17 20:35:36 http://localhost:9090/api/v1/query_range?step=1s&query=DCGM_FI_DEV_DEC_UTIL&start=1650216906&end=1650216936
+2022/04/17 20:35:36 Get "http://localhost:9090/api/v1/query_range?step=1s&query=DCGM_FI_DEV_DEC_UTIL&start=1650216906&end=1650216936": dial tcp 127.0.0.1:9090: connect: connection refused
+exit status 1
+2022/04/17 20:35:36 http://localhost:9090/api/v1/query_range?query=DCGM_FI_DEV_ENC_UTIL&start=1650216906&end=1650216936&step=1s
+2022/04/17 20:35:36 Get "http://localhost:9090/api/v1/query_range?query=DCGM_FI_DEV_ENC_UTIL&start=1650216906&end=1650216936&step=1s": dial tcp 127.0.0.1:9090: connect: connection refused
+exit status 1
