@@ -48,5 +48,5 @@ func main() {
 		log.Fatal(err)
 		panic(err)
 	}
-	log.Println("Metrics save at prom_metrics_cli/plot/figures")
+	log.Println("Metrics saved at prom_metrics_cli/plot/figures")
 }
