@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"promMetrics/requests"
 	"strconv"
 	"time"
+
+	"github.com/aferikoglou/mlab-k8s-cluster-setup/promMetrics/requests"
 )
 
 type list []string

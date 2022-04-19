@@ -21,6 +21,12 @@ then
   STEP="1"
 fi
 
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+
+echo $parent_path
+
+cd "$parent_path"
+
 go run main.go -p 'api/v1/query_range' -i $INTERVAL -params `{"step": "1s", "query": "DCGM_FI_DEV_DEC_UTIL"}` &>> log.txt
 tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)"
 

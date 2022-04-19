@@ -1,0 +1,14 @@
+flag provided but not defined: -p
+Usage of /tmp/go-build1558331245/b001/exe/main:
+  -c string
+    	Kube config path (default "/root/.kube/config")
+  -y string
+    	Path to the yaml file to be applied
+exit status 2
+flag provided but not defined: -p
+Usage of /tmp/go-build3817634860/b001/exe/main:
+  -c string
+    	Kube config path (default "/root/.kube/config")
+  -y string
+    	Path to the yaml file to be applied
+exit status 2
