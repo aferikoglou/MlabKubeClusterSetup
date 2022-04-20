@@ -36,41 +36,38 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 cd "$parent_path"
 
-# go run main.go -p 'api/v1/query_range' -i $INTERVAL -params `{"step": "1s", "query": "DCGM_FI_DEV_DEC_UTIL"}` &>> log.txt
-# tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
+go run main.go -p 'api/v1/query_range' -i $INTERVAL -params `{"step": "1s", "query": "DCGM_FI_DEV_DEC_UTIL"}` &>> log.txt
+tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
 
-# go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_ENC_UTIL"}' &>> log.txt
-# tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
+go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_ENC_UTIL"}' &>> log.txt
+tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
 
-# go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_FB_FREE"}' &>> log.txt
-# tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
+go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_FB_FREE"}' &>> log.txt
+tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
 
-# go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_FB_USED"}' &>> log.txt
-# tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
+go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_FB_USED"}' &>> log.txt
+tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
 
-# go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_GPU_TEMP"}' &>> log.txt
-# tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
+go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_GPU_TEMP"}' &>> log.txt
+tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
 
-# go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_VGPU_LICENSE_STATUS"}' &>> log.txt
-# tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
+go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_VGPU_LICENSE_STATUS"}' &>> log.txt
+tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
 
-# go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_MEM_CLOCK"}' &>> log.txt
-# tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
+go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_MEM_CLOCK"}' &>> log.txt
+tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
 
-# go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_MEM_COPY_UTIL"}' &>> log.txt
-# tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
+go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_MEM_COPY_UTIL"}' &>> log.txt
+tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
 
-# go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL"}' &>> log.txt
-# tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
+go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL"}' &>> log.txt
+tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
 
-# go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_PCIE_REPLAY_COUNTER"}' &>> log.txt
-# tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
+go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_PCIE_REPLAY_COUNTER"}' &>> log.txt
+tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
 
-# go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_SM_CLOCK"}' &>> log.txt
-# tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
+go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_SM_CLOCK"}' &>> log.txt
+tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
 
-# go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_XID_ERRORS"}' &>> log.txt
-# tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
-
-go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": ":node_memory_MemAvailable_bytes:sum"}' &>> log.txt
+go run main.go -p 'api/v1/query_range' -i $INTERVAL -params '{"step": "1s", "query": "DCGM_FI_DEV_XID_ERRORS"}' &>> log.txt
 tail -1 log.txt | python plot/plot.py -f "__name__" -x "Time(s)" -o $OUT
