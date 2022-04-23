@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
 
 	"github.com/aferikoglou/mlab-k8s-cluster-setup/benchmarks/benchmark"
@@ -35,8 +34,8 @@ func main() {
 	tmp := strings.Split(yamlPath, "/")
 	filename := strings.Split(tmp[len(tmp)-1], ".")[0]
 
-	duration := strconv.Itoa(int(benchmark.Benchmark(configPath, yamlPath) + 1))
-	fmt.Println(duration)
+	start, end, duration := benchmark.Benchmark(configPath, yamlPath)
+	fmt.Printf("Started at: %s\nEnded at: %s\nTime elapsed: %f\n", start, end, duration)
 
 	// Now let's execute the dcgm script to compute the cli metrics
 
@@ -45,12 +44,12 @@ func main() {
 	// and does not expand any glob patterns or handle other expansions, pipelines,
 	// or redirections typically done by shells
 	// Note: args should be provided in variadic form as a slice of strings
-	cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-i", duration, "-o", filename}...)
+	cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start, "-e", end, "-o", filename}...)
 
 	err := cmd.Run()
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
-	log.Println("Metrics saved at prom_metrics_cli/plot/figures")
+	log.Println("Figures saved at prom_metrics_cli/plot/figures/" + filename)
 }

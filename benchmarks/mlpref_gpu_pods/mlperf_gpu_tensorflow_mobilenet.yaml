@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mlperfgpu
+spec:
+  volumes:
+    - name: task-pv-storage
+      hostPath:
+        path: "/mnt/data"
+  restartPolicy: Never
+  containers:
+    - name: mlperf-infer-imgclassify-gpu
+      image: tzourhs/mlperf-infer-imgclassify-gpu:1.2
+      env:
+      - name: DATA_DIR
+        value: "/tmp/data/fake_imagenet"
+      - name: MODEL_DIR
+        value: "/tmp/data/models/mobilenet_tf"
+      volumeMounts:
+        - mountPath: "/tmp/data"
+          name: task-pv-storage
+      workingDir: "/tmp/inference/vision/classification_and_detection/"
+      command: ["/bin/bash", "-c", "./run_local.sh tf mobilenet gpu --accuracy"]
+      resources:
+        limits:
+          nvidia.com/gpu: 1

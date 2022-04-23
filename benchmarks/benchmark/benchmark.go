@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math"
+	"strconv"
 	"sync"
 
 	pods "github.com/aferikoglou/mlab-k8s-cluster-setup/benchmarks/pods"
@@ -31,7 +32,53 @@ type Specification struct {
 	}
 }
 
-func Benchmark(configPath string, yamlPath string) (duration float64) {
+func fixDate(year int, month time.Month, day int) (y, m, d string) {
+	if year < 10 {
+		y = "0" + strconv.Itoa(year)
+	} else {
+		y = strconv.Itoa(year)
+	}
+
+	if month < 10 {
+		m = "0" + strconv.Itoa(int(month))
+	} else {
+		m = strconv.Itoa(int(month))
+	}
+
+	if day < 10 {
+		d = "0" + strconv.Itoa(day)
+	} else {
+		d = strconv.Itoa(day)
+	}
+
+	return y, m, d
+}
+
+func fixTime(hours, minutes, seconds int) (h, m, s string) {
+	if hours >= 3 && hours < 13 {
+		h = "0" + strconv.Itoa(hours-3)
+	} else if hours >= 13 {
+		h = strconv.Itoa(hours - 3)
+	} else if hours < 3 {
+		h = strconv.Itoa(23 - (3 - (hours + 1)))
+	}
+
+	if minutes < 10 {
+		m = "0" + strconv.Itoa(minutes)
+	} else {
+		m = strconv.Itoa(minutes)
+	}
+
+	if seconds < 10 {
+		s = "0" + strconv.Itoa(seconds)
+	} else {
+		s = strconv.Itoa(seconds)
+	}
+
+	return h, m, s
+}
+
+func Benchmark(configPath string, yamlPath string) (begin string, end string, durationSecs float64) {
 
 	var wg sync.WaitGroup
 	var start time.Time
@@ -110,8 +157,17 @@ func Benchmark(configPath string, yamlPath string) (duration float64) {
 	wg.Wait()
 
 	t := time.Now()
+	duration := t.Sub(start)
 	// Converting time.Duration to seconds since t.Sub() return value is in nanoseconds
-	elapsed := float64(t.Sub(start)) / math.Pow(10, 9)
-	fmt.Printf("Time elapsed: %f", elapsed)
-	return elapsed
+	durationSecs = float64(duration) / math.Pow(10, 9)
+
+	startYear, startMonth, startDay := fixDate(start.Date())
+	startHour, startMinutes, startSeconds := fixTime(start.Clock())
+	begin = fmt.Sprintf("%s-%s-%sT%s:%s:%sZ", startYear, startMonth, startDay, startHour, startMinutes, startSeconds)
+
+	endYear, endMonth, endDay := fixDate(start.Add(duration).Date())
+	endHour, endMinutes, endSeconds := fixTime(start.Add(duration).Clock())
+	end = fmt.Sprintf("%s-%s-%sT%s:%s:%sZ", endYear, endMonth, endDay, endHour, endMinutes, endSeconds)
+
+	return begin, end, durationSecs
 }
