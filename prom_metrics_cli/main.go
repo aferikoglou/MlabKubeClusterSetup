@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/aferikoglou/mlab-k8s-cluster-setup/promMetrics/requests"
@@ -76,6 +77,7 @@ func ParseCommandLineArgs() map[string]interface{} {
 
 	params := make([]map[string]string, len(stringParams))
 	for i, p := range stringParams {
+		p = strings.ReplaceAll(p, "'", "\"")
 		json.Unmarshal([]byte(p), &params[i])
 		if i < len(convertedInterval) {
 			if convertedInterval[i] > 0 {

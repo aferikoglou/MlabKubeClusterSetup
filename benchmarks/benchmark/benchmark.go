@@ -1,7 +1,6 @@
 package benchmark
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -14,7 +13,6 @@ import (
 
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -26,6 +24,7 @@ type Image struct {
 type Specification struct {
 	Metadata struct {
 		Namespace string `yaml:"namespace"`
+		Name      string `yaml:"name"`
 	}
 	Spec struct {
 		Container []Image `yaml:"containers,flow"`
@@ -48,30 +47,42 @@ func Benchmark(configPath string, yamlPath string) (duration float64) {
 		panic(err)
 	}
 
+	// If no namespace is provided in the file then the pod will be automatically created in the default namespace
+	if pod.Metadata.Namespace == "" {
+		pod.Metadata.Namespace = "default"
+	}
+
+	fmt.Println(pod)
+
 	// Create the config struct
 	config, err := clientcmd.BuildConfigFromFlags("", configPath)
 	if err != nil {
 		panic(err)
 	}
 
-	// create the clientset
+	// Create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err)
+	}
+
+	FieldSelector := "metadata.name=" + pod.Metadata.Name
+
+	// If pod already exists we have to delete it first
+	list, err := pods.ListPods(clientset, pod.Metadata.Namespace, FieldSelector)
+	if err != nil {
+		panic(err)
+	}
+
+	if len(list.Items) > 0 {
+		pods.DeletePod(configPath, pod.Metadata.Namespace, pod.Metadata.Name)
 	}
 
 	// Apply the pod yaml file
 	pods.ApplyPod(configPath, yamlPath)
 
 	// Watch the pod until its status becomes "Succeeded"
-	watch, err := clientset.CoreV1().Pods(pod.Metadata.Namespace).Watch(
-		context.TODO(),
-		metav1.ListOptions{
-			FieldSelector: "metadata.name=" + pod.Spec.Container[0].Name,
-		})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
+	watch, err := pods.WatchPods(clientset, pod.Metadata.Namespace, FieldSelector)
 
 	wg.Add(1)
 	go func() {
@@ -88,7 +99,7 @@ func Benchmark(configPath string, yamlPath string) (duration float64) {
 			fmt.Println(p.Status.Phase)
 			if p.Status.Phase == corev1.PodSucceeded {
 				// When pod's state becomes Succeeded delete the pod and break out of the loop
-				pods.DeletePod(configPath, pod.Metadata.Namespace, pod.Spec.Container[0].Name)
+				pods.DeletePod(configPath, pod.Metadata.Namespace, pod.Metadata.Name)
 				break
 			}
 		}

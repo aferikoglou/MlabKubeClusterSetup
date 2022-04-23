@@ -7,12 +7,14 @@ import (
 	"io/ioutil"
 	"log"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	yamlutil "k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/restmapper"
@@ -109,4 +111,30 @@ func DeletePod(configPath string, namespace string, podName string) {
 		panic(err)
 	}
 
+}
+
+func WatchPods(clientset *kubernetes.Clientset, Namespace string, FieldSelector string) (watch.Interface, error) {
+	watch, err := clientset.CoreV1().Pods(Namespace).Watch(
+		context.TODO(),
+		metav1.ListOptions{
+			FieldSelector: FieldSelector,
+		})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	return watch, err
+}
+
+func ListPods(clientset *kubernetes.Clientset, Namespace string, FieldSelector string) (*corev1.PodList, error) {
+	list, err := clientset.CoreV1().Pods(Namespace).List(
+		context.TODO(),
+		metav1.ListOptions{
+			FieldSelector: FieldSelector,
+		})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	return list, err
 }

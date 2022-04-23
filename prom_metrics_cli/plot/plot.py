@@ -44,6 +44,8 @@ if not validate_filename(args.o):
     parser.print_help()
     sys.exit(1)
 
+print(args)
+
 dirname, _ = os.path.split(os.path.abspath(__file__))
 
 data = input()

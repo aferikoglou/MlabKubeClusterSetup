@@ -44,8 +44,8 @@ func main() {
 	// the os/exec package intentionally does not invoke the system shell
 	// and does not expand any glob patterns or handle other expansions, pipelines,
 	// or redirections typically done by shells
-	// Note: args should be provided in variadic for as a slice of strings
-	cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-i", "6", "-o", filename}...)
+	// Note: args should be provided in variadic form as a slice of strings
+	cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-i", duration, "-o", filename}...)
 
 	err := cmd.Run()
 	if err != nil {
