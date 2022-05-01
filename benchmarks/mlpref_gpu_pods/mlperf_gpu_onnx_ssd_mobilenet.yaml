@@ -15,12 +15,12 @@ spec:
       - name: DATA_DIR
         value: "/tmp/data/coco-300"
       - name: MODEL_DIR
-        value: "/tmp/data/models/pytorch_ssd_mobilenet"
+        value: "/tmp/data/models/onnx_ssd_mobilenet"
       volumeMounts:
         - mountPath: "/tmp/data"
           name: task-pv-storage
       workingDir: "/tmp/inference/vision/classification_and_detection/"
-      command: ["/bin/bash", "-c", "./run_local.sh pytorch ssd-mobilenet gpu --accuracy"]
+      command: ["/bin/bash", "-c", "./run_local.sh onnxruntime ssd-mobilenet gpu --accuracy"]
       resources:
         limits:
           nvidia.com/gpu: 1

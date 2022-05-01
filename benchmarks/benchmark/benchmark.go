@@ -14,6 +14,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -123,6 +124,19 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 
 	if len(list.Items) > 0 {
 		pods.DeletePod(configPath, pod.Metadata.Namespace, pod.Metadata.Name)
+		watchDelete, err := pods.WatchPods(clientset, pod.Metadata.Namespace, FieldSelector)
+		if err != nil {
+			log.Fatal(err.Error())
+			panic(err)
+		}
+
+		// Block untill the pod gets deleted
+		for event := range watchDelete.ResultChan() {
+			t := event.Type
+			if t == watch.Deleted {
+				break
+			}
+		}
 	}
 
 	// Apply the pod yaml file

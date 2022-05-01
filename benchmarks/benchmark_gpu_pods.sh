@@ -24,6 +24,9 @@ then
     CONFIG="/root/.kube/config"
 fi
 
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+cd "$parent_path"
+
 for YAML in mlpref_gpu_pods/*;
 do
     echo "File: $YAML"
