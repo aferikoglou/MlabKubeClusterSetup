@@ -1,6 +1,7 @@
 package benchmark
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -79,7 +80,7 @@ func fixTime(hours, minutes, seconds int) (h, m, s string) {
 	return h, m, s
 }
 
-func Benchmark(configPath string, yamlPath string) (begin string, end string, durationSecs float64) {
+func Benchmark(configPath string, yamlPath string) (begin string, end string, durationSecs float64, err error) {
 
 	var wg sync.WaitGroup
 	var start time.Time
@@ -145,6 +146,7 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 	// Watch the pod until its status becomes "Succeeded"
 	watch, err := pods.WatchPods(clientset, pod.Metadata.Namespace, FieldSelector)
 
+	failed := false
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -162,6 +164,11 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 				// When pod's state becomes Succeeded delete the pod and break out of the loop
 				pods.DeletePod(configPath, pod.Metadata.Namespace, pod.Metadata.Name)
 				break
+			} else if p.Status.Phase == corev1.PodFailed || p.Status.Phase == corev1.PodUnknown {
+				// If pod's state becomes Failed or Unknown, mark as failed and break
+				// don't delete pod so that logs are accessible
+				failed = true
+				break
 			}
 		}
 
@@ -169,6 +176,10 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 
 	// Wait for the goroutine to finish
 	wg.Wait()
+
+	if failed {
+		return "", "", -1, errors.New(fmt.Sprintf("Pod %s failed", pod.Metadata.Name))
+	}
 
 	t := time.Now()
 	duration := t.Sub(start)
@@ -183,5 +194,5 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 	endHour, endMinutes, endSeconds := fixTime(start.Add(duration).Clock())
 	end = fmt.Sprintf("%s-%s-%sT%s:%s:%sZ", endYear, endMonth, endDay, endHour, endMinutes, endSeconds)
 
-	return begin, end, durationSecs
+	return begin, end, durationSecs, nil
 }

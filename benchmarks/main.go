@@ -34,7 +34,11 @@ func main() {
 	tmp := strings.Split(yamlPath, "/")
 	filename := strings.Split(tmp[len(tmp)-1], ".")[0]
 
-	start, end, duration := benchmark.Benchmark(configPath, yamlPath)
+	start, end, duration, err := benchmark.Benchmark(configPath, yamlPath)
+	if err != nil {
+		log.Fatalf("Error occured while running benchmarks: %s", err)
+	}
+
 	fmt.Printf("Started at: %s\nEnded at: %s\nTime elapsed: %f\n", start, end, duration)
 
 	// Now let's execute the dcgm script to compute the cli metrics
@@ -46,7 +50,7 @@ func main() {
 	// Note: args should be provided in variadic form as a slice of strings
 	cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start, "-e", end, "-o", filename}...)
 
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
