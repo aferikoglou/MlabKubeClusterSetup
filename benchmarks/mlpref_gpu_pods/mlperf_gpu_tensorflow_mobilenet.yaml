@@ -13,7 +13,7 @@ spec:
       image: tzourhs/mlperf-infer-imgclassify-gpu:1.2
       env:
       - name: DATA_DIR
-        value: "/tmp/data/fake_imagenet"
+        value: "/tmp/data/imagenet2012"
       - name: MODEL_DIR
         value: "/tmp/data/models/mobilenet_tf"
       volumeMounts:
