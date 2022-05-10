@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: mlperfgpu
+  name: mlperf_gpu_tensorflow_mobilenet
 spec:
   volumes:
     - name: task-pv-storage

@@ -178,7 +178,7 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 	wg.Wait()
 
 	if failed {
-		return "", "", -1, "", errors.New(fmt.Sprintf("Pod %s failed", pod.Metadata.Name))
+		return "", "", -1, logs, errors.New(fmt.Sprintf("Pod %s failed", pod.Metadata.Name))
 	}
 
 	t := time.Now()

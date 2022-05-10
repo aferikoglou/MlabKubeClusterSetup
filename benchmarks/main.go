@@ -83,15 +83,18 @@ func main() {
 
 	start, end, duration, logs, err := benchmark.Benchmark(configPath, yamlPath)
 	if err != nil {
+		_, err = writeFile(fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), filename), "logs.txt", logs)
+		if err != nil {
+			log.Printf("%s, exiting", err)
+		}
 		log.Fatalf("Error occured while running benchmarks: %s", err)
 	}
 
 	_, err = writeFile(fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), filename), "logs.txt", logs)
 	if err != nil {
-		log.Printf("%s,exiting", err)
-		os.Exit(1)
+		log.Fatalf("%s, exiting", err)
 	}
-	fmt.Printf("Started at: %s\nEnded at: %s\nTime elapsed: %f\n", start, end, duration)
+	log.Printf("Started at: %s\nEnded at: %s\nTime elapsed: %f\n", start, end, duration)
 
 	// Now let's execute the dcgm script to compute the cli metrics
 	// Unlike the "system" library call from C and other languages,
