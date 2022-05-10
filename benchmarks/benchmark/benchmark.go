@@ -122,20 +122,27 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 	}
 
 	if len(list.Items) > 0 {
-		pods.DeletePod(configPath, pod.Metadata.Namespace, pod.Metadata.Name)
-		watchDelete, err := pods.WatchPods(clientset, pod.Metadata.Namespace, FieldSelector)
-		if err != nil {
-			log.Fatal(err.Error())
-			panic(err)
-		}
-
-		// Block untill the pod gets deleted
-		for event := range watchDelete.ResultChan() {
-			t := event.Type
-			if t == watch.Deleted {
-				break
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			watchDelete, err := pods.WatchPods(clientset, pod.Metadata.Namespace, FieldSelector)
+			if err != nil {
+				log.Fatal(err.Error())
+				panic(err)
 			}
-		}
+
+			// Block untill the pod gets deleted
+			for event := range watchDelete.ResultChan() {
+				t := event.Type
+				if t == watch.Deleted {
+					break
+				}
+			}
+		} ()
+
+		pods.DeletePod(configPath, pod.Metadata.Namespace, pod.Metadata.Name)
+		// Wait for go routine to return meaning that pod has been deleted
+		wg.Wait()
 	}
 
 	// Apply the pod yaml file
@@ -160,18 +167,17 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 			fmt.Println(p.Status.Phase)
 			if p.Status.Phase == corev1.PodSucceeded {
 				// When pod's state becomes Succeeded delete the pod and break out of the loop
-				logs = pods.GetLogs(*p)
+				logs = pods.GetLogs(clientset, *p)
 				pods.DeletePod(configPath, pod.Metadata.Namespace, pod.Metadata.Name)
 				break
 			} else if p.Status.Phase == corev1.PodFailed || p.Status.Phase == corev1.PodUnknown {
 				// If pod's state becomes Failed or Unknown, mark as failed and break
 				// don't delete pod so that logs are accessible
 				failed = true
-				logs = pods.GetLogs(*p)
+				logs = pods.GetLogs(clientset, *p)
 				break
 			}
 		}
-
 	}()
 
 	// Wait for the goroutine to finish

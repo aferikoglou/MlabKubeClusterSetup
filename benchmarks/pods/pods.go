@@ -17,7 +17,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -140,16 +139,8 @@ func ListPods(clientset *kubernetes.Clientset, Namespace string, FieldSelector s
 	return list, err
 }
 
-func GetLogs(pod corev1.Pod) string {
+func GetLogs(clientset *kubernetes.Clientset, pod corev1.Pod) string {
 	podLogOpts := corev1.PodLogOptions{}
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return "error while fetching config for logs"
-	}
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return "error while creating clientset for logs"
-	}
 	logs := clientset.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &podLogOpts)
 	podLogs, err := logs.Stream(context.TODO())
 	if err != nil {
