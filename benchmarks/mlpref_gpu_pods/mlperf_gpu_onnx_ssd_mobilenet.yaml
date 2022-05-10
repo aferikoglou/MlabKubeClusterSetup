@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: mlperf_gpu_onnx_ssd_mobilenet
+  name: mlperf-gpu-onnx-ssd-mobilenet
 spec:
   volumes:
     - name: task-pv-storage

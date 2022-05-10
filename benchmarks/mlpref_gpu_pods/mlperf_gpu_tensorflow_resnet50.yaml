@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: mlperf_gpu_tensorflow_resnet50
+  name: mlperf-gpu-tensorflow-resnet50
 spec:
   volumes:
     - name: task-pv-storage
