@@ -30,6 +30,6 @@ cd "$parent_path"
 for YAML in mlpref_gpu_pods/*;
 do
     echo "File: $YAML"
-    go run main.go -c $CONFIG -y $PWD/$YAML
+    ./bin/main -c $CONFIG -y $PWD/$YAML
     echo -e "\n"
 done

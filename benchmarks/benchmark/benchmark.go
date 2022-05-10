@@ -80,7 +80,7 @@ func fixTime(hours, minutes, seconds int) (h, m, s string) {
 	return h, m, s
 }
 
-func Benchmark(configPath string, yamlPath string) (begin string, end string, durationSecs float64, err error) {
+func Benchmark(configPath string, yamlPath string) (begin string, end string, durationSecs float64, logs string, err error) {
 
 	var wg sync.WaitGroup
 	var start time.Time
@@ -100,8 +100,6 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 	if pod.Metadata.Namespace == "" {
 		pod.Metadata.Namespace = "default"
 	}
-
-	fmt.Println(pod)
 
 	// Create the config struct
 	config, err := clientcmd.BuildConfigFromFlags("", configPath)
@@ -162,12 +160,14 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 			fmt.Println(p.Status.Phase)
 			if p.Status.Phase == corev1.PodSucceeded {
 				// When pod's state becomes Succeeded delete the pod and break out of the loop
+				logs = pods.GetLogs(*p)
 				pods.DeletePod(configPath, pod.Metadata.Namespace, pod.Metadata.Name)
 				break
 			} else if p.Status.Phase == corev1.PodFailed || p.Status.Phase == corev1.PodUnknown {
 				// If pod's state becomes Failed or Unknown, mark as failed and break
 				// don't delete pod so that logs are accessible
 				failed = true
+				logs = pods.GetLogs(*p)
 				break
 			}
 		}
@@ -178,7 +178,7 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 	wg.Wait()
 
 	if failed {
-		return "", "", -1, errors.New(fmt.Sprintf("Pod %s failed", pod.Metadata.Name))
+		return "", "", -1, "", errors.New(fmt.Sprintf("Pod %s failed", pod.Metadata.Name))
 	}
 
 	t := time.Now()
@@ -194,5 +194,5 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 	endHour, endMinutes, endSeconds := fixTime(start.Add(duration).Clock())
 	end = fmt.Sprintf("%s-%s-%sT%s:%s:%sZ", endYear, endMonth, endDay, endHour, endMinutes, endSeconds)
 
-	return begin, end, durationSecs, nil
+	return begin, end, durationSecs, logs, nil
 }
