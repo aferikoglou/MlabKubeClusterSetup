@@ -25,7 +25,7 @@ func getDirname() string {
 
 func writeFile(path string, filename string, s string) (string, error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		err = os.Mkdir(path, 755)
+		err = os.Mkdir(path, 002)
 		if err != nil {
 			log.Println(err)
 			return "", err
@@ -35,8 +35,8 @@ func writeFile(path string, filename string, s string) (string, error) {
 	fullPath := fmt.Sprintf("%s/%s", path, filename)
 
 	if _, err := os.Stat(fullPath); !os.IsNotExist(err) {
-		log.Println(fmt.Sprintf("File with name: %s, already exists", fullPath))
-		return "", errors.New("File already exists")
+		log.Printf("File with name: %s, already exists", fullPath)
+		return "", errors.New("file already exists")
 	}
 
 	f, err := os.Create(fullPath)
