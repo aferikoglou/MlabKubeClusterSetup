@@ -5,9 +5,7 @@ Matplotlib figures are saved in "./plot/figures" as png files with ascending id.
 
 ## Install:
 ```bash
-chmod +x install.sh
-./install.sh
-go run main.go --help
+make
 ```
 
 You can find an example query in "instant_query_up_test.sh" which makes an instant query to 'api/v1/query' (default value for -p argument) path to check if the system is up:

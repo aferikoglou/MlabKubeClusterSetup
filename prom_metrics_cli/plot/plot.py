@@ -122,4 +122,5 @@ if len(args.legend_list) > 0:
 elif args.f is not None:
     plt.legend(legend)
 
+plt.tight_layout()
 plt.savefig(filepath + "/" + args.o + "_" + str(max_id) + '.png')
