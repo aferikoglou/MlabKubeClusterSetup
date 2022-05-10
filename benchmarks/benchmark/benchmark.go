@@ -1,7 +1,6 @@
 package benchmark
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -138,7 +137,7 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 					break
 				}
 			}
-		} ()
+		}()
 
 		pods.DeletePod(configPath, pod.Metadata.Namespace, pod.Metadata.Name)
 		// Wait for go routine to return meaning that pod has been deleted
@@ -150,6 +149,9 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 
 	// Watch the pod until its status becomes "Succeeded"
 	watch, err := pods.WatchPods(clientset, pod.Metadata.Namespace, FieldSelector)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	failed := false
 	wg.Add(1)
@@ -168,23 +170,22 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 			if p.Status.Phase == corev1.PodSucceeded {
 				// When pod's state becomes Succeeded delete the pod and break out of the loop
 				logs = pods.GetLogs(clientset, *p)
-				pods.DeletePod(configPath, pod.Metadata.Namespace, pod.Metadata.Name)
 				break
 			} else if p.Status.Phase == corev1.PodFailed || p.Status.Phase == corev1.PodUnknown {
 				// If pod's state becomes Failed or Unknown, mark as failed and break
-				// don't delete pod so that logs are accessible
 				failed = true
 				logs = pods.GetLogs(clientset, *p)
 				break
 			}
 		}
+		pods.DeletePod(configPath, pod.Metadata.Namespace, pod.Metadata.Name)
 	}()
 
 	// Wait for the goroutine to finish
 	wg.Wait()
 
 	if failed {
-		return "", "", -1, logs, errors.New(fmt.Sprintf("Pod %s failed", pod.Metadata.Name))
+		return "", "", -1, logs, fmt.Errorf(fmt.Sprintf("Pod %s failed", pod.Metadata.Name))
 	}
 
 	t := time.Now()
