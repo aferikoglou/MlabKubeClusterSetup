@@ -1,6 +1,0 @@
-make --dry-run --always-make --keep-going --print-directory
-make: Entering directory '/home/dimgatz/Desktop/diplwmatikh/mlab-k8s-cluster-setup'
-make: Leaving directory '/home/dimgatz/Desktop/diplwmatikh/mlab-k8s-cluster-setup'
- 
-make: *** No targets specified and no makefile found.  Stop.
-

@@ -1,6 +1,0 @@
-{
-    "makefile.extensionOutputFolder": "./.vscode",
-    "gopls": {
-        "build.experimentalWorkspaceModule": true,
-    }
-}
