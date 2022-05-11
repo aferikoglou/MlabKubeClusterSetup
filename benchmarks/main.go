@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -23,15 +24,57 @@ func getDirname() string {
 	return dirname
 }
 
-func writeFile(path string, filename string, s string) (string, error) {
+func filesExist(path string, logFilename string) (bool, error) {
+	// Make directory if not exists
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		err = os.Mkdir(path, 002)
 		if err != nil {
 			log.Println(err)
-			return "", err
+			return false, err
 		}
 	}
 
+	// List files in path
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Println(err)
+		return false, err
+	}
+
+	// Parse filename's prefix from path
+	tmp := strings.Split(path, "/")
+	filenamePrefix := tmp[len(tmp)-1]
+
+	// Check for figures
+	found := false
+	for i := 0; i < 12; i++ {
+		found = false
+		for _, f := range files {
+			if f.Name() == fmt.Sprintf("%s_%s", filenamePrefix, strconv.Itoa(i+1)) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false, nil
+		}
+	}
+
+	// Check for logs.txt
+	found = false
+	for _, f := range files {
+		if f.Name() == logFilename {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return false, nil
+	}
+	return true, nil
+}
+
+func writeFile(path string, filename string, s string) (string, error) {
 	fullPath := fmt.Sprintf("%s/%s", path, filename)
 
 	if _, err := os.Stat(fullPath); !os.IsNotExist(err) {
@@ -68,9 +111,11 @@ func parsingError() {
 func main() {
 	var configPath string
 	var yamlPath string
+	var logsFile string
 
 	flag.StringVar(&configPath, "c", "/root/.kube/config", "Kube config path")
 	flag.StringVar(&yamlPath, "y", "", "Path to the yaml file to be applied")
+	flag.StringVar(&logsFile, "l", "logs.txt", "Filename to save output logs")
 
 	flag.Parse()
 
@@ -80,17 +125,26 @@ func main() {
 
 	tmp := strings.Split(yamlPath, "/")
 	filename := strings.Split(tmp[len(tmp)-1], ".")[0]
+	path := fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), filename)
+
+	exist, err := filesExist(path, logsFile)
+	if err != nil {
+		log.Fatalf("Error occured in filesExist(): %s", err)
+	}
+	if exist {
+		log.Fatalf("Figures for pod [%s] already exist, exitting", filename)
+	}
 
 	start, end, duration, logs, err := benchmark.Benchmark(configPath, yamlPath)
 	if err != nil {
-		_, err = writeFile(fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), filename), "logs.txt", logs)
+		_, err = writeFile(path, logsFile, logs)
 		if err != nil {
 			log.Printf("%s, exiting", err)
 		}
 		log.Fatalf("Error occured while running benchmarks: %s", err)
 	}
 
-	_, err = writeFile(fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), filename), "logs.txt", logs)
+	_, err = writeFile(path, logsFile, logs)
 	if err != nil {
 		log.Fatalf("%s, exiting", err)
 	}
