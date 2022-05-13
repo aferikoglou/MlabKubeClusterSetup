@@ -126,8 +126,7 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 			defer wg.Done()
 			watchDelete, err := pods.WatchPods(clientset, pod.Metadata.Namespace, FieldSelector)
 			if err != nil {
-				log.Fatal(err.Error())
-				panic(err)
+				log.Fatal(err)
 			}
 
 			// Block untill the pod gets deleted
@@ -160,18 +159,18 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 		for event := range watch.ResultChan() {
 			p, ok := event.Object.(*corev1.Pod)
 			if !ok {
-				log.Fatal("unexpected type")
+				log.Fatal("got unexpected type while running pod")
 			}
 			if p.Status.Phase == corev1.PodRunning {
 				// When pod gets ready start counting
 				start = time.Now()
 			}
-			fmt.Println(p.Status.Phase)
+			log.Printf("Pod's status: %s\n", p.Status.Phase)
 			if p.Status.Phase == corev1.PodSucceeded {
 				// When pod's state becomes Succeeded delete the pod and break out of the loop
 				logs = pods.GetLogs(clientset, *p)
 				break
-			} else if p.Status.Phase == corev1.PodFailed || p.Status.Phase == corev1.PodUnknown {
+			} else if p.Status.Phase == corev1.PodFailed {
 				// If pod's state becomes Failed or Unknown, mark as failed and break
 				failed = true
 				logs = pods.GetLogs(clientset, *p)

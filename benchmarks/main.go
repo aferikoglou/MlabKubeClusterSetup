@@ -27,10 +27,10 @@ func getDirname() string {
 func filesExist(path string, logFilename string) (bool, error) {
 	// Make directory if not exists
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		err = os.Mkdir(path, 002)
+		err = os.MkdirAll(path, os.ModePerm)
 		if err != nil {
 			log.Println(err)
-			return false, err
+			return false, fmt.Errorf("error in os.MkdirAll(): %s", err)
 		}
 	}
 
@@ -38,7 +38,7 @@ func filesExist(path string, logFilename string) (bool, error) {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		log.Println(err)
-		return false, err
+		return false, fmt.Errorf("error in ioutil.ReadDir(): %s", err)
 	}
 
 	// Parse filename's prefix from path
@@ -129,7 +129,7 @@ func main() {
 
 	exist, err := filesExist(path, logsFile)
 	if err != nil {
-		log.Fatalf("Error occured in filesExist(): %s", err)
+		log.Fatalf("Error occured in filesExist(): %+v", err)
 	}
 	if exist {
 		log.Fatalf("Figures for pod [%s] already exist, exitting", filename)
@@ -137,16 +137,16 @@ func main() {
 
 	start, end, duration, logs, err := benchmark.Benchmark(configPath, yamlPath)
 	if err != nil {
-		_, err = writeFile(path, logsFile, logs)
+		_, writeErr := writeFile(path, logsFile, logs)
 		if err != nil {
-			log.Printf("%s, exiting", err)
+			log.Printf("%+v, exiting", writeErr)
 		}
-		log.Fatalf("Error occured while running benchmarks: %s", err)
+		log.Fatalf("Error occured while running benchmarks: %+v", err)
 	}
 
 	_, err = writeFile(path, logsFile, logs)
 	if err != nil {
-		log.Fatalf("%s, exiting", err)
+		log.Fatalf("%+v, exiting", err)
 	}
 	log.Printf("Started at: %s\nEnded at: %s\nTime elapsed: %f\n", start, end, duration)
 
@@ -158,10 +158,11 @@ func main() {
 	// Note: args should be provided in variadic form as a slice of strings
 	cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start, "-e", end, "-o", filename}...)
 
-	err = cmd.Run()
+	out, err := cmd.Output()
 	if err != nil {
+		output := string(out[:])
+    	log.Printf("Output: %s\n", output)
 		log.Fatal(err)
-		panic(err)
 	}
-	log.Println("Figures saved at prom_metrics_cli/plot/figures/" + filename)
+	log.Printf("Figures saved at prom_metrics_cli/plot/figures/%s\n", filename)
 }

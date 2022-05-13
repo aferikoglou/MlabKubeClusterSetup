@@ -37,7 +37,7 @@ parser.add_argument('-yf', action='store', type=str,
                     help='ylabel extracted from json field. Overrides -y argument')
 parser.add_argument('-l', '--legend-list', nargs='+', default=[], help="Manually import a list of legends for matplotlib")
 parser.add_argument('-f', action='store', help="Json field from which to extract legends")
-parser.add_argument('-o', action='store', required = True,  help="Name of the output png. Name can only contain - _ \
+parser.add_argument('-o', action='store',  required = True ,  help="Name of the output png. Name can only contain - _ \
     or alphanumerics and can't start or end with - or _")
 parser.add_argument('-filter', action='store', required = False,  help="Json string where keys correspond to json fields \
     and the values correspond to the values you want to keep.")
@@ -45,6 +45,7 @@ parser.add_argument('-filter', action='store', required = False,  help="Json str
 args = parser.parse_args()
 
 if not validate_filename(args.o):
+    print("Filename validation failed, exiting")
     parser.print_help()
     sys.exit(1)
 
@@ -62,11 +63,10 @@ data = input()
 if not data.startswith("{"):
     data = "".join(data.split(" ")[2:])
 try:
-    print(data)
     data = json.loads(data)
 except:
     logging.warning("Input data not json serializable")
-    sys.exit(-1)
+    sys.exit(1)
 
 # If a key does not belong in data dict remove it from the filter dict
 filter_copy = filter.copy()
@@ -84,7 +84,7 @@ legend = []
 for i, result in enumerate(data["data"]["result"]):
     skip = False
     for k, v in filter.items():
-        if k not in result["metric"].keys() or result["metric"][k] != v:
+        if result["metric"][k] != v:
             logging.warning(v + " not found in data's keys, skipping result No." + str(i))
             skip = True
             break
