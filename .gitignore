@@ -1,1 +1,7 @@
 .vscode
+vendor
+figures
+bin
+prom_metrics_cli/log.txt
+vendor
+bin
