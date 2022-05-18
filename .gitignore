@@ -2,6 +2,6 @@
 vendor
 figures
 bin
-prom_metrics_cli/log.txt
+log.txt
 vendor
 bin
