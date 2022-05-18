@@ -11,7 +11,7 @@ $ go run main.go --help
 
 ## Example usage
 ``` bash
-$ go run main.go -c "/path/to/config" -y "/path/to/yaml"
+$ go run main.go -c "/path/to/config" -yaml "/path/to/yaml"
 ```
 
 ## Build and run binary:
@@ -20,7 +20,7 @@ $ go build -o bin/main main.go
 # or
 $ make build
 
-$ ./bin/main -c "/path/to/config" -y "/path/to/yaml"
+$ ./bin/main -c "/path/to/config" -yaml "/path/to/yaml"
 ```
 
 ## Or install using makefile:
@@ -40,11 +40,11 @@ The models and datasets needed for each benchmark are illustrated in the followi
 ---
 Finally, you can run all the benchmarks with:
 ``` bash
-./benchmark_gpu_pods.sh -c ~/.kube/config
+./benchmark_gpu_pods.sh -c ~/.kube/config -n
 ```
 or just
 ``` bash
-./benchmark_gpu_pods.sh
+./benchmark_gpu_pods.sh -n
 ```
 if you are using the /root/.kube/config.
 

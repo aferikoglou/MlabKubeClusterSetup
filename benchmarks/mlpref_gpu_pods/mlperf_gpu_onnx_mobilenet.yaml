@@ -10,7 +10,7 @@ spec:
   restartPolicy: Never
   containers:
     - name: mlperf-infer-imgclassify-gpu
-      image: tzourhs/mlperf-infer-imgclassify-gpu:1.2
+      image: tzourhs/mlperf-infer-imgclassify-gpu:1.4
       env:
       - name: DATA_DIR
         value: "/tmp/mlperf/data/imagenet2012"

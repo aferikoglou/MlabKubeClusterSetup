@@ -27,6 +27,17 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
+    -h|--help)
+      echo "usage: Extract all dcgm metrics from prometheus api 
+  options:
+    -i Time interval within which the metrics will belong, default = 30s
+    -s Starting time for the interval, not required
+    -e Ending time for the interval, not required
+    -o Output name (./plot/figures/<output_name>), required
+    -f Name of the pod, not required
+    NOTE: if bot -s and -e are defined they override -i"
+      exit 0
+      ;;
     *)
       shift
       shift
@@ -37,7 +48,6 @@ done
 if [ -z "$FILENAME" ]
 then
   FILENAME=$(echo $OUT | tr _ -)
-  echo $FILENAME
 fi
 
 if [ -z "$INTERVAL" ]

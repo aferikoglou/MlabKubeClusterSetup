@@ -46,7 +46,7 @@ func filesExist(path string, logFilename string) (bool, error) {
 	filenamePrefix := tmp[len(tmp)-1]
 
 	// Check for figures
-	found := false
+	var found bool
 	for i := 0; i < 12; i++ {
 		found = false
 		for _, f := range files {
@@ -55,8 +55,8 @@ func filesExist(path string, logFilename string) (bool, error) {
 				break
 			}
 		}
-		if !found {
-			return false, nil
+		if found {
+			return true, nil
 		}
 	}
 
@@ -68,10 +68,38 @@ func filesExist(path string, logFilename string) (bool, error) {
 			break
 		}
 	}
-	if !found {
-		return false, nil
+
+	return found, nil
+}
+
+func deleteFiles(path string, logFilename string) error {
+	// Parse filename's prefix from path
+	tmp := strings.Split(path, "/")
+	filenamePrefix := tmp[len(tmp)-1]
+
+	// List files in path
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Println(err)
+		return fmt.Errorf("error in ioutil.ReadDir(): %s", err)
 	}
-	return true, nil
+
+	for i := 0; i < 12; i++ {
+		for _, f := range files {
+			if f.Name() == fmt.Sprintf("%s_%s", filenamePrefix, strconv.Itoa(i+1)) {
+				os.Remove(fmt.Sprintf("%s/%s", path, f.Name()))
+			}
+		}
+	}
+
+	// Check for logs.txt
+	for _, f := range files {
+		if f.Name() == logFilename {
+			os.Remove(fmt.Sprintf("%s/%s", path, f.Name()))
+		}
+	}
+
+	return nil
 }
 
 func writeFile(path string, filename string, s string) (string, error) {
@@ -104,7 +132,6 @@ func writeFile(path string, filename string, s string) (string, error) {
 func parsingError() {
 	fmt.Println("Usage: main.go")
 	flag.PrintDefaults()
-	fmt.Println("\nNote: Yaml path cant be empty")
 	os.Exit(1)
 }
 
@@ -112,14 +139,24 @@ func main() {
 	var configPath string
 	var yamlPath string
 	var logsFile string
+	var autoskip bool
+	var autodelete bool
 
 	flag.StringVar(&configPath, "c", "/root/.kube/config", "Kube config path")
-	flag.StringVar(&yamlPath, "y", "", "Path to the yaml file to be applied")
+	flag.StringVar(&yamlPath, "yaml", "", "Path to the yaml file to be applied")
 	flag.StringVar(&logsFile, "l", "logs.txt", "Filename to save output logs")
+	flag.BoolVar(&autoskip, "n", false, "If this flag is set then if files exist the program will exit")
+	flag.BoolVar(&autodelete, "y", false, "If this flag is set then all existing files will be automatically deleted")
 
 	flag.Parse()
 
 	if yamlPath == "" {
+		fmt.Println("Note: Yaml path cant be empty")
+		parsingError()
+	}
+
+	if autoskip == true && autodelete == true {
+		fmt.Println("Note: -n and -y can't be se simultaneously")
 		parsingError()
 	}
 
@@ -132,13 +169,38 @@ func main() {
 		log.Fatalf("Error occured in filesExist(): %+v", err)
 	}
 	if exist {
-		log.Fatalf("Figures for pod [%s] already exist, exitting", filename)
+		log.Printf("Files for pod [%s] already exist", filename)
+		if autoskip {
+			log.Fatalf("Exiting")
+		} else if autodelete {
+			// Delete files
+			log.Println("Deleting it")
+			err := deleteFiles(path, logsFile)
+			if err != nil {
+				log.Fatalf("Could not delete files")		
+			}
+		} else {
+			fmt.Printf("Would you like to delete them?[Y/N]\n>>")
+			var ans string
+			fmt.Scanln(&ans)
+			if ans == string('Y') || ans == string('y') {
+				// Delete files
+				err := deleteFiles(path, logsFile)
+				if err != nil {
+					log.Fatalf("Could not delete files")		
+				}
+			} else {
+				log.Fatalf("Exiting")
+			}
+		}
 	}
+	
+	
 
 	start, end, duration, logs, err := benchmark.Benchmark(configPath, yamlPath)
 	if err != nil {
 		_, writeErr := writeFile(path, logsFile, logs)
-		if err != nil {
+		if writeErr != nil {
 			log.Printf("%+v, exiting", writeErr)
 		}
 		log.Fatalf("Error occured while running benchmarks: %+v", err)
@@ -161,8 +223,10 @@ func main() {
 	out, err := cmd.Output()
 	if err != nil {
 		output := string(out[:])
-    	log.Printf("Output: %s\n", output)
-		log.Fatal(err)
+		if output != "" {
+			log.Printf("Output: %s\n", output)
+		}
+    	log.Fatal(err)
 	}
 	log.Printf("Figures saved at prom_metrics_cli/plot/figures/%s\n", filename)
 }
