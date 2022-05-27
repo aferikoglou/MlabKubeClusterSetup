@@ -7,22 +7,28 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
-    -n)
+    -n|--no)
       NO="$1"
       shift
       shift
       ;;
-    -y)
+    -y|--yes)
       YES="$1"
+      shift
+      shift
+      ;;
+    -s|--sleep)
+      SLEEP="$2"
       shift
       shift
       ;;
     -h|--help)
       echo "usage: Loop through all mlperf_gpu_pods and run the benchmarks
   options:
-    -c  /path/to/kube_config
-    -n skip loop if files exist
-    -y delete files if exist"
+    -c|--config /path/to/kube_config
+    -n|--no boolean argument to skip loop if files exist
+    -y|--yes boolean argument to delete files if exist
+    -s|--sleep seconds to sleep between each loop. Default=60 secs"
       exit 0
       ;;
     *)
@@ -39,6 +45,11 @@ then
     CONFIG="/root/.kube/config"
 fi
 
+if [ -z "$SLEEP" ]
+then
+    SLEEP="60"
+fi
+
 if [ ! -z "$NO" ] && [ ! -z "$YES" ]
 then
     echo "-n and -y can't be set simultaneously"
@@ -51,6 +62,7 @@ cd "$parent_path"
 for YAML in mlpref_gpu_pods/*;
 do
     echo "File: $YAML"
-    ./bin/main -c $CONFIG -yaml $PWD/$YAML $NO $YES
+    ./bin/main -c $CONFIG -yaml $PWD/$YAML $NO $YE
     echo -e "\n"
+    sleep $SLEEP
 done

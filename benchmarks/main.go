@@ -73,8 +73,6 @@ func filesExist(path string, logFilename string) (bool, error) {
 }
 
 func deleteFiles(path string, logFilename string) error {
-	fmt.Println("Hello world")
-
 	// Parse filename's prefix from path
 	tmp := strings.Split(path, "/")
 	filenamePrefix := tmp[len(tmp)-1]
@@ -158,7 +156,7 @@ func main() {
 	}
 
 	if autoskip == true && autodelete == true {
-		fmt.Println("Note: -n and -y can't be se simultaneously")
+		fmt.Println("Note: -n and -y can't be set simultaneously")
 		parsingError()
 	}
 
