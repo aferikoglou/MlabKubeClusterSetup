@@ -16,7 +16,7 @@ extraEnv:
 - name: DCGM_EXPORTER_CONFIGMAP_DATA
   value: "default:exporter-metrics-volume"
 - name: "DCGM_EXPORTER_INTERVAL"
-  value: "5000"
+  value: "1000"
 ```
 
 ### We will use the Helm chart for setting up dcgm-exporter and values.yaml for setting its extra arguments. First, add the Helm repo:
@@ -45,12 +45,12 @@ extraEnv:
 - name: DCGM_EXPORTER_CONFIGMAP_DATA
   value: "default:exporter-metrics-volume"
 - name: "DCGM_EXPORTER_INTERVAL"
-  value: "5000"
+  value: "1000"
 EOF
 ```
 
 By running:
-``` bash 
+``` bash
 kubectl get svc -A
 ```
 You can assure that the service has started. You can try port forwarding the service and using curl to extract metrics or you can always find the metrics on the dashboard of prometheus.
@@ -69,7 +69,7 @@ spec:
       command: ["nvidia-smi"]
       resources:
         limits:
-          nvidia.com/gpu: 1 # requesting 1 GPU 
+          nvidia.com/gpu: 1 # requesting 1 GPU
 ```
 and run:
 ```bash
@@ -77,7 +77,7 @@ kubectl apply -f test-gpu.yaml
 ```
 or simply all in one command:
 ```bash
-cat <<EOF > test_gpu.yaml  && kubectl apply -f test_gpu.yaml  
+cat <<EOF > test_gpu.yaml  && kubectl apply -f test_gpu.yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -90,7 +90,7 @@ spec:
       command: ["nvidia-smi"]
       resources:
         limits:
-          nvidia.com/gpu: 1 # requesting 1 GPU 
+          nvidia.com/gpu: 1 # requesting 1 GPU
 EOF
 ```
 and then check the output of the nvidia-smi command using:

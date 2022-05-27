@@ -10,7 +10,7 @@ sudo add-apt-repository ppa:graphics-drivers
 # update apt
 sudo apt-get update
 # go ahead and install driver which in my case is 510
-sudo apt-get install nvidia-driver-510                         
+sudo apt-get install nvidia-driver-510
 ````
 *Note: In order to install nvidia driver on your pc or VM you first need to make sure it is supported by your gpu.
 
@@ -58,7 +58,7 @@ The PATH variable needs to include
 To add this path to the PATH variable:
 ``` bash
 export PATH=/usr/local/cuda-11.6/bin${PATH:+:${PATH}}
-``` 
+```
 In addition, when using the runfile installation method, the LD_LIBRARY_PATH variable needs to contain /usr/local/cuda-11.6/lib64 on a 64-bit system, or /usr/local/cuda-11.6/lib on a 32-bit system
 ``` bash
 export LD_LIBRARY_PATH=/usr/local/cuda-11.6/lib64\
@@ -87,7 +87,7 @@ https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#recommende
 
 
 ## Step 3: Installing nvidia container toolkit(docker has to be installed):
-See this for more: 
+See this for more:
 https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker
 
 ``` bash
@@ -123,7 +123,7 @@ sudo chmod 777 /etc/docker/daemon.json && cat <<EOF > /etc/docker/daemon.json
 EOF
 ```
 Now, if you want you can put permissions back to 644
-``` bash 
+``` bash
 sudo chmod 644 /etc/docker/daemon.json
 ```
 and now you have to restart docker:
@@ -142,7 +142,7 @@ Install helm:
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 chmod 700 get_helm.sh
 ./get_helm.sh
-``` 
+```
 
 Installing via helm install from the nvidia-device-plugin helm repository
 ``` bash
@@ -150,7 +150,7 @@ helm repo add nvdp https://nvidia.github.io/k8s-device-plugin
 helm repo update
 ```
 
-Once this repo is updated, you can begin installing packages from it to depoloy the nvidia-device-plugin daemonset. 
+Once this repo is updated, you can begin installing packages from it to depoloy the nvidia-device-plugin daemonset.
 Install nvidia device plugin with no extra arguments for the sake of simplicity:
 ``` bash
 helm install \
@@ -208,7 +208,7 @@ helm repo add prometheus-community \
 ### Now search for the available prometheus charts:
 ``` bash
 helm search repo kube-prometheus
-``` 
+```
 
 ### Once you’ve located which version of the chart to use, you have to modify the settings:
 
@@ -237,7 +237,7 @@ helm install prometheus-community/kube-prometheus-stack \
    --generate-name \
    --set prometheus.service.type=NodePort \
    --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \
-   --set prometheus.PrometheusSpec.additionalScrapeConfigs="$(cat additionalScrapeConfigs)" 
+   --set prometheus.PrometheusSpec.additionalScrapeConfigs="$(cat additionalScrapeConfigs)"
 ```
 
 ### Or you can modify the values manually:
@@ -245,9 +245,9 @@ helm install prometheus-community/kube-prometheus-stack \
 helm inspect values prometheus-community/kube-prometheus-stack > /tmp/kube-prometheus-stack.values
 
 vim /tmp/kube-prometheus-stack.values
-``` 
+```
 
-## And change the lines: 
+## And change the lines:
 From:
 ```
 # Port to expose on each node
@@ -263,7 +263,7 @@ From:
  type: ClusterIP
 ```
 
-To: 
+To:
 ```
 # Port to expose on each node
 # Only used if service.type is 'NodePort'
@@ -351,20 +351,46 @@ kubectl patch svc $GRAFANA_SERVICE \
 service/kube-prometheus-stack-1603211794-grafana patched
 ```
 
-### Make sure that the Grafana svc is running: 
+### Make sure that the Grafana svc is running:
 ``` bash
 kubectl get svc -A | grep grafana
-# After running the above command, take a note of the service's port 
+# After running the above command, take a note of the service's port
 ```
 
-Open your browser to http://<machine-ip-address>:<grafana_port> and view the Grafana login page. 
-Access Grafana home using the admin username. 
+### There is one last configuration step to go: configure dcgm-exporter's service monitor in order for prometheus to scrape its metrics every 1 second.
+To do this we have to edit the service monitor's yaml file which can be done in 2 ways:
+
+**First way:**
+```bash
+$ kubectl edit $(kubectl get servicemonitor -l "app.kubernetes.io/name=dcgm-exporter" -o name)
+```
+The above command will open a yaml file using the vi editor. Within this file you have to locate the field {.items[0].spec.endpoints[0].interval} and change it to 1s instead of 15s which is the default. In other words you have to find the first field under the spec.endpoints section and change the interval definied in this field. Then you just same and once out of the editor, press enter.
+
+**Second way:**
+```bash
+$ kubectl get servicemonitor -l "app.kubernetes.io/name=dcgm-exporter" -o yaml > dcgm_monitor.yml
+```
+This command will export the yaml file related to dcgm service monitor. What you have to do next is open the dcgm_monitor.yaml with an editor, change the same field as before and then just apply this new configuration like that:
+```bash
+$ kubectl apply -f dcgm_monitor.yml
+```
+
+Finally in order to let prometheus know about these new change you have to signal him in one of the two ways that follow:
+```bash
+# send SIGHUP to the prom process
+kill -HUP $(cat /var/run/prometheus.pid)
+# or post to the /-/reload/ endpoint
+curl -X POST http://localhost:30090/-/reload
+```
+---
+Now, you can open your browser to http://<machine_ip_address>:<grafana_port> and view the Grafana login page.
+Access Grafana home using the admin username.
 The password credentials for the login are available in the prometheus.values file we edited in the earlier section of the doc for prometheus.
 Usually it is "prom-operator".
 ___
 Finally, you can always extract metrics using curl commands like that:
-curl -X GET <machines-ip>:<prom-or-graf-port>/metrics > metrics.txt
+curl -X GET <machines_ip>:<prom_or_graf_port>/metrics > metrics.txt
 
-*Note* : Since we use NodePorts there is no need for port forwards and Prometheus and Grafana dashboards are always available to the respective ports of their services (you can find them using "$ kubectl get svc -A") and at your machine's IP.
+>**Note** : Since we use NodePorts there is no need for port forwards and Prometheus and Grafana dashboards are always available to the respective ports of their services (you can find them using "$ kubectl get svc -A") and at your master's IP.
 ---
 ### See more here: https://docs.nvidia.com/datacenter/cloud-native/gpu-telemetry/dcgm-exporter.html.
