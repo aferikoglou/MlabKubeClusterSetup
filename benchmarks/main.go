@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/aferikoglou/mlab-k8s-cluster-setup/benchmarks/benchmark"
 )
@@ -129,6 +131,51 @@ func writeFile(path string, filename string, s string) (string, error) {
 	return fmt.Sprintf("%s %s %s", strconv.Itoa(bytesCount), "bytes written successfully to:", fullPath), nil
 }
 
+func inArray(val int, arr []int) bool {
+	for _, x := range arr {
+		if x == val {
+			return true
+		}
+	}
+	return false
+}
+
+func findMax(arr []int) int {
+	if len(arr) == 0 {
+		return -1
+	}
+
+	max := 0
+	for i, x := range arr {
+		if x > arr[max] {
+			max = i
+		}
+	}
+	return max
+}
+
+func findMin(arr []int) int {
+	if len(arr) == 0 {
+		return -1
+	}
+
+	min := 0
+	for i, x := range arr {
+		if x < arr[min] {
+			min = i
+		}
+	}
+	return min
+}
+
+func convertDateStringToInt(date string) int {
+	timestamp, _ := time.Parse("2006-01-02T15:04:05Z", date)
+
+	hr, min, sec := timestamp.Clock()
+
+	return hr*10000 + min*100 + sec
+}
+
 func parsingError() {
 	fmt.Println("Usage: main.go")
 	flag.PrintDefaults()
@@ -136,17 +183,18 @@ func parsingError() {
 }
 
 func main() {
-	var configPath string
-	var yamlPath string
-	var logsFile string
-	var autoskip bool
-	var autodelete bool
+	var configPath, yamlPath, logsFile, totalFiles string
+	var autoskip, autodelete bool
+	var batch int
+	var wg sync.WaitGroup
 
 	flag.StringVar(&configPath, "c", "/root/.kube/config", "Kube config path")
-	flag.StringVar(&yamlPath, "yaml", "", "Path to the yaml file to be applied")
+	flag.StringVar(&yamlPath, "yaml", "", "Path to the yaml file or to a directory containing the yaml file(s) to be applied.")
 	flag.StringVar(&logsFile, "l", "logs.txt", "Filename to save output logs")
+	flag.StringVar(&totalFiles, "t", "total", "Name for the figures for the total duration")
 	flag.BoolVar(&autoskip, "n", false, "If this flag is set then if files exist the program will exit")
 	flag.BoolVar(&autodelete, "y", false, "If this flag is set then all existing files will be automatically deleted")
+	flag.IntVar(&batch, "b", 1, "Number of pods to be ran concurrently")
 
 	flag.Parse()
 
@@ -160,71 +208,151 @@ func main() {
 		parsingError()
 	}
 
-	tmp := strings.Split(yamlPath, "/")
-	filename := strings.Split(tmp[len(tmp)-1], ".")[0]
-	path := fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), filename)
-
-	exist, err := filesExist(path, logsFile)
-	if err != nil {
-		log.Fatalf("Error occured in filesExist(): %+v", err)
+	// If yamlPath ends with '/' remove it for consistency
+	if yamlPath[len(yamlPath)-1:] == "/" {
+		yamlPath = yamlPath[:len(yamlPath)-1]
 	}
-	if exist {
-		log.Printf("Files for pod [%s] already exist", filename)
-		if autoskip {
-			log.Fatalf("Exiting")
-		} else if autodelete {
-			// Delete files
-			log.Println("Deleting it")
-			err := deleteFiles(path, logsFile)
-			if err != nil {
-				log.Fatalf("Could not delete files")
+
+	var files []string
+	tmp := strings.Split(yamlPath, ".")
+	// If yamlPath is path to a file then add this file to the files to be ran
+	if tmp[len(tmp)-1] == "yaml" {
+		files = append(files, yamlPath)
+	} else {
+		// Else add all the yaml files from this directory
+		yamlFiles, err := ioutil.ReadDir(yamlPath)
+		if err != nil {
+			log.Fatal(fmt.Sprintf("Unable to open directory %s", yamlPath))
+		}
+		for _, file := range yamlFiles {
+			tmp = strings.Split(file.Name(), ".")
+			if tmp[len(tmp)-1] == "yaml" {
+				files = append(files, fmt.Sprintf("%s/%s", yamlPath, file.Name()))
 			}
-		} else {
-			fmt.Printf("Would you like to delete them?[Y/N]\n>>")
-			var ans string
-			fmt.Scanln(&ans)
-			if ans == string('Y') || ans == string('y') {
+		}
+	}
+
+	var skip []int
+	for i, file := range files {
+		tmp = strings.Split(file, "/")
+		filename := strings.Split(tmp[len(tmp)-1], ".")[0]
+		path := fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), filename)
+
+		exist, err := filesExist(path, logsFile)
+		if err != nil {
+			log.Fatalf("Error occured in filesExist(): %+v", err)
+		}
+		if exist {
+			log.Printf("Files for pod [%s] already exist", filename)
+			if autoskip {
+				log.Printf("Skipping file %s", file)
+				skip = append(skip, i)
+			} else if autodelete {
 				// Delete files
+				log.Println("Deleting it")
 				err := deleteFiles(path, logsFile)
 				if err != nil {
 					log.Fatalf("Could not delete files")
 				}
 			} else {
-				log.Fatalf("Exiting")
+				fmt.Printf("Would you like to delete them?[Y/N]\n>>")
+				var ans string
+				fmt.Scanln(&ans)
+				if ans == string('Y') || ans == string('y') {
+					// Delete files
+					err := deleteFiles(path, logsFile)
+					if err != nil {
+						log.Fatalf("Could not delete files")
+					}
+				} else {
+					log.Printf("Skipping file %s", file)
+					skip = append(skip, i)
+				}
 			}
 		}
 	}
 
-	start, end, duration, logs, err := benchmark.Benchmark(configPath, yamlPath)
-	if err != nil {
-		_, writeErr := writeFile(path, logsFile, logs)
-		if writeErr != nil {
-			log.Printf("%+v, exiting", writeErr)
+	var start []string = make([]string, batch)
+	var end []string = make([]string, batch)
+	var logs []string = make([]string, batch)
+	var duration []float64 = make([]float64, batch)
+	count := 0
+	for i, file := range files {
+		if inArray(i, skip) {
+			continue
 		}
-		log.Fatalf("Error occured while running benchmarks: %+v", err)
+
+		if count == batch {
+			count = 0
+			wg.Wait()
+		}
+		count++
+
+		tmp = strings.Split(file, "/")
+		filename := strings.Split(tmp[len(tmp)-1], ".")[0]
+		p := fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), filename)
+
+		wg.Add(1)
+		go func(batchInd int, path string) {
+			var newErr error
+			start[batchInd], end[batchInd], duration[batchInd], logs[batchInd], newErr = benchmark.Benchmark(configPath, yamlPath)
+			if newErr != nil {
+				_, writeErr := writeFile(path, logsFile, logs[batchInd])
+				if writeErr != nil {
+					log.Printf("%+v, exiting", writeErr)
+				}
+				log.Fatalf("Error occured while running benchmarks: %+v", newErr)
+			}
+
+			_, newErr = writeFile(path, logsFile, logs[batchInd])
+			if newErr != nil {
+				log.Fatalf("%+v, exiting", newErr)
+			}
+			log.Printf("Started at: %s\nEnded at: %s\nTime elapsed: %f\n", start, end, duration)
+
+			// Now let's execute the dcgm script to compute the cli metrics
+			// Unlike the "system" library call from C and other languages,
+			// the os/exec package intentionally does not invoke the system shell
+			// and does not expand any glob patterns or handle other expansions, pipelines,
+			// or redirections typically done by shells
+			// Note: args should be provided in variadic form as a slice of strings
+			cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start[batchInd], "-e", end[batchInd], "-o", filename}...)
+
+			out, newErr := cmd.Output()
+			if newErr != nil {
+				output := string(out[:])
+				if output != "" {
+					log.Printf("Output: %s\n", output)
+				}
+				log.Fatal(newErr)
+			}
+			log.Printf("Figures saved at prom_metrics_cli/plot/figures/%s\n", filename)
+		}(i, p)
 	}
 
-	_, err = writeFile(path, logsFile, logs)
-	if err != nil {
-		log.Fatalf("%+v, exiting", err)
+	wg.Wait()
+
+	// Find the min and max indices for start and end arrays respectively
+	// and then run the metrics' queries again for the total duration
+	var tmpStart []int
+	var tmpEnd []int
+	for i := 0; i < len(start); i++ {
+		tmpStart = append(tmpStart, convertDateStringToInt(start[i]))
+		tmpEnd = append(tmpEnd, convertDateStringToInt(end[i]))
 	}
-	log.Printf("Started at: %s\nEnded at: %s\nTime elapsed: %f\n", start, end, duration)
 
-	// Now let's execute the dcgm script to compute the cli metrics
-	// Unlike the "system" library call from C and other languages,
-	// the os/exec package intentionally does not invoke the system shell
-	// and does not expand any glob patterns or handle other expansions, pipelines,
-	// or redirections typically done by shells
-	// Note: args should be provided in variadic form as a slice of strings
-	cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start, "-e", end, "-o", filename}...)
+	minInd := findMin(tmpStart)
+	maxInd := findMax(tmpEnd)
 
-	out, err := cmd.Output()
-	if err != nil {
+	cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start[minInd], "-e", end[maxInd], "-o", totalFiles}...)
+
+	out, newErr := cmd.Output()
+	if newErr != nil {
 		output := string(out[:])
 		if output != "" {
 			log.Printf("Output: %s\n", output)
 		}
-		log.Fatal(err)
+		log.Fatal(newErr)
 	}
-	log.Printf("Figures saved at prom_metrics_cli/plot/figures/%s\n", filename)
+	log.Printf("Total figures saved at prom_metrics_cli/plot/figures/total/%s\n", totalFiles)
 }
