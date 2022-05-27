@@ -50,7 +50,7 @@ func filesExist(path string, logFilename string) (bool, error) {
 	for i := 0; i < 12; i++ {
 		found = false
 		for _, f := range files {
-			if f.Name() == fmt.Sprintf("%s_%s", filenamePrefix, strconv.Itoa(i+1)) {
+			if f.Name() == fmt.Sprintf("%s_%s.png", filenamePrefix, strconv.Itoa(i+1)) {
 				found = true
 				break
 			}
@@ -73,6 +73,8 @@ func filesExist(path string, logFilename string) (bool, error) {
 }
 
 func deleteFiles(path string, logFilename string) error {
+	fmt.Println("Hello world")
+
 	// Parse filename's prefix from path
 	tmp := strings.Split(path, "/")
 	filenamePrefix := tmp[len(tmp)-1]
@@ -86,7 +88,7 @@ func deleteFiles(path string, logFilename string) error {
 
 	for i := 0; i < 12; i++ {
 		for _, f := range files {
-			if f.Name() == fmt.Sprintf("%s_%s", filenamePrefix, strconv.Itoa(i+1)) {
+			if f.Name() == fmt.Sprintf("%s_%s.png", filenamePrefix, strconv.Itoa(i+1)) {
 				os.Remove(fmt.Sprintf("%s/%s", path, f.Name()))
 			}
 		}
@@ -177,7 +179,7 @@ func main() {
 			log.Println("Deleting it")
 			err := deleteFiles(path, logsFile)
 			if err != nil {
-				log.Fatalf("Could not delete files")		
+				log.Fatalf("Could not delete files")
 			}
 		} else {
 			fmt.Printf("Would you like to delete them?[Y/N]\n>>")
@@ -187,15 +189,13 @@ func main() {
 				// Delete files
 				err := deleteFiles(path, logsFile)
 				if err != nil {
-					log.Fatalf("Could not delete files")		
+					log.Fatalf("Could not delete files")
 				}
 			} else {
 				log.Fatalf("Exiting")
 			}
 		}
 	}
-	
-	
 
 	start, end, duration, logs, err := benchmark.Benchmark(configPath, yamlPath)
 	if err != nil {
@@ -226,7 +226,7 @@ func main() {
 		if output != "" {
 			log.Printf("Output: %s\n", output)
 		}
-    	log.Fatal(err)
+		log.Fatal(err)
 	}
 	log.Printf("Figures saved at prom_metrics_cli/plot/figures/%s\n", filename)
 }

@@ -30,10 +30,6 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
-    *)
-      shift
-      shift
-      ;;
     esac
 done
 

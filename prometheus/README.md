@@ -378,9 +378,9 @@ $ kubectl apply -f dcgm_monitor.yml
 Finally in order to let prometheus know about these new change you have to signal him in one of the two ways that follow:
 ```bash
 # send SIGHUP to the prom process
-kill -HUP $(cat /var/run/prometheus.pid)
+$ kill -HUP $(cat /var/run/prometheus.pid)
 # or post to the /-/reload/ endpoint
-curl -X POST http://localhost:30090/-/reload
+$ curl -X POST http://localhost:30090/-/reload
 ```
 ---
 Now, you can open your browser to http://<machine_ip_address>:<grafana_port> and view the Grafana login page.
