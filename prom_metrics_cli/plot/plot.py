@@ -40,7 +40,7 @@ parser.add_argument('-f', action='store', help="Json field from which to extract
 parser.add_argument('-o', action='store',  required = True ,  help="Name of the output png. Name can only contain - _ \
     or alphanumerics and can't start or end with - or _")
 parser.add_argument('-filter', action='store', required = False,  help="Json string where keys correspond to json fields \
-    and the values correspond to the values you want to keep.")
+    and values correspond to the values you want to keep.")
 
 args = parser.parse_args()
 
@@ -68,23 +68,11 @@ except:
     logging.warning("Input data not json serializable")
     sys.exit(1)
 
-# If a key does not belong in data dict remove it from the filter dict
-filter_copy = filter.copy()
-for key in filter_copy.keys():
-    found = False
-    for result in data["data"]["result"]:
-        if key in result["metric"].keys():
-            found = True
-            break
-    if not found:
-        logging.warning(key, "not found in any Json field, deleting.")
-        del filter[key]
-
 legend = []
 for i, result in enumerate(data["data"]["result"]):
     skip = False
     for k, v in filter.items():
-        if result["metric"][k] != v:
+        if k not in result["metric"] or result["metric"][k] != v:
             logging.warning(v + " not found in data's keys, skipping result No." + str(i))
             skip = True
             break
@@ -109,18 +97,19 @@ for i, result in enumerate(data["data"]["result"]):
     if args.f is not None:
         legend.append(result["metric"][args.f])
 
-if not os.path.exists(filepath):
-    os.makedirs(filepath)
+    if not os.path.exists(filepath):
+        os.makedirs(filepath)
 
-max_id = find_max_id(filepath, args.o)
+    max_id = find_max_id(filepath, args.o)
 
-if len(args.legend_list) > 0:
-    legend = []
-    for l in args.legend_list:
-        legend.append(l)
-    plt.legend(legend)
-elif args.f is not None:
-    plt.legend(legend)
+    if len(args.legend_list) > 0:
+        legend = []
+        for l in args.legend_list:
+            legend.append(l)
+        plt.legend(legend)
+    elif args.f is not None:
+        plt.legend(legend)
 
-plt.tight_layout()
-plt.savefig(filepath + "/" + args.o + "_" + str(max_id) + '.png')
+    plt.tight_layout()
+    plt.savefig(filepath + "/" + args.o + "_" + str(max_id) + '.png')
+    plt.figure().clear()
