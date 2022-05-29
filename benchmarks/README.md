@@ -38,9 +38,12 @@ You can learn how to resize the datasets [here](https://github.com/mlcommons/inf
 The models and datasets needed for each benchmark are illustrated in the following table: https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection
 
 ---
-Finally, you can run all the benchmarks with:
+Finally, you can run all the benchmarks from the top-level directory with:
 ``` bash
-./benchmark_gpu_pods.sh -c ~/.kube/config -n
+    # -n option means if a benchmark is already ran skip it, -s defines the number of seconds to sleep between 2
+    # consecutive batch executions and -b defines the batch size i.e the number of pods to deploy and benchmark
+    # in one go.
+    ./benchmarks/benchmark_gpu_pods.sh -c /home/dimitris/.kube/config -n -s 3 -b 2
 ```
 or just
 ``` bash
