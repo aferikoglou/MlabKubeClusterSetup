@@ -298,7 +298,7 @@ func main() {
 			log.Printf("Waiting for the first %d pods to finish", batch)
 			wg.Wait()
 			log.Printf("Sleeping for %d seconds before starting next batch", sleep)
-			time.Sleep(time.Duration(sleep))
+			time.Sleep(time.Duration(sleep) * time.Second)
 		}
 		count++
 

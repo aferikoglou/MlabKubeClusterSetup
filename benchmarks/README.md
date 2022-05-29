@@ -47,9 +47,14 @@ Finally, you can run all the benchmarks from the top-level directory with:
 ```
 or just
 ``` bash
-./benchmark_gpu_pods.sh -n
+./benchmarks/benchmark_gpu_pods.sh -n
 ```
 if you are using the /root/.kube/config.
+
+for more information abou the benchmark shell script:
+```bash
+./benchmarks/benchmark_gpu_pods.sh -h
+```
 
 > **Note1:** In order for the above to run you have to have installed the [Metrics cli](https://github.com/aferikoglou/mlab-k8s-cluster-setup/tree/main/prom_metrics_cli) first.
 
