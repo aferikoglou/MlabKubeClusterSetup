@@ -87,12 +87,12 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 
 	yamlFile, err := ioutil.ReadFile(yamlPath)
 	if err != nil {
-		panic(err)
+		return "", "", -1, "", err
 	}
 
 	err = yaml.Unmarshal(yamlFile, &pod)
 	if err != nil {
-		panic(err)
+		return "", "", -1, "", err
 	}
 
 	// If no namespace is provided in the file then the pod will be automatically created in the default namespace
@@ -103,13 +103,13 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 	// Create the config struct
 	config, err := clientcmd.BuildConfigFromFlags("", configPath)
 	if err != nil {
-		panic(err)
+		return "", "", -1, "", err
 	}
 
 	// Create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err)
+		return "", "", -1, "", err
 	}
 
 	FieldSelector := "metadata.name=" + pod.Metadata.Name
@@ -117,7 +117,7 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 	// If pod already exists we have to delete it first
 	list, err := pods.ListPods(clientset, pod.Metadata.Namespace, FieldSelector)
 	if err != nil {
-		panic(err)
+		return "", "", -1, "", err
 	}
 
 	if len(list.Items) > 0 {

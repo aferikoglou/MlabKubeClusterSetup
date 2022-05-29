@@ -185,7 +185,7 @@ func parsingError() {
 func main() {
 	var configPath, yamlPath, logsFile, totalFiles string
 	var autoskip, autodelete bool
-	var batch int
+	var batch, sleep int
 	var wg sync.WaitGroup
 
 	flag.StringVar(&configPath, "c", "/root/.kube/config", "Kube config path")
@@ -195,6 +195,7 @@ func main() {
 	flag.BoolVar(&autoskip, "n", false, "If this flag is set then if files exist the program will exit")
 	flag.BoolVar(&autodelete, "y", false, "If this flag is set then all existing files will be automatically deleted")
 	flag.IntVar(&batch, "b", 1, "Number of pods to be ran concurrently")
+	flag.IntVar(&sleep, "s", 60, "Number of seconds to sleep between consecutive batch executions")
 
 	flag.Parse()
 
@@ -208,6 +209,16 @@ func main() {
 		parsingError()
 	}
 
+	if batch < 1 {
+		fmt.Println("Note: -b can't be less than one")
+		parsingError()
+	}
+
+	if sleep < 0 {
+		fmt.Println("Note: -s can't be less than zero")
+		parsingError()
+	}
+
 	// If yamlPath ends with '/' remove it for consistency
 	if yamlPath[len(yamlPath)-1:] == "/" {
 		yamlPath = yamlPath[:len(yamlPath)-1]
@@ -216,7 +227,7 @@ func main() {
 	var files []string
 	tmp := strings.Split(yamlPath, ".")
 	// If yamlPath is path to a file then add this file to the files to be ran
-	if tmp[len(tmp)-1] == "yaml" {
+	if tmp[len(tmp)-1] == "yaml" || tmp[len(tmp)-1] == "yml" {
 		files = append(files, yamlPath)
 	} else {
 		// Else add all the yaml files from this directory
@@ -284,31 +295,38 @@ func main() {
 
 		if count == batch {
 			count = 0
+			log.Printf("Waiting for the first %d pods to finish", batch)
 			wg.Wait()
+			log.Printf("Sleeping for %d seconds before starting next batch", sleep)
+			time.Sleep(time.Duration(sleep))
 		}
 		count++
 
-		tmp = strings.Split(file, "/")
-		filename := strings.Split(tmp[len(tmp)-1], ".")[0]
-		p := fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), filename)
-
 		wg.Add(1)
-		go func(batchInd int, path string) {
+		go func(batchInd int, filePath string) {
+			defer wg.Done()
+
 			var newErr error
-			start[batchInd], end[batchInd], duration[batchInd], logs[batchInd], newErr = benchmark.Benchmark(configPath, yamlPath)
+			tmp := strings.Split(filePath, "/")
+			filename := strings.Split(tmp[len(tmp)-1], ".")[0]
+			outPath := fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), filename)
+
+			start[batchInd], end[batchInd], duration[batchInd], logs[batchInd], newErr = benchmark.Benchmark(configPath, filePath)
 			if newErr != nil {
-				_, writeErr := writeFile(path, logsFile, logs[batchInd])
-				if writeErr != nil {
-					log.Printf("%+v, exiting", writeErr)
+				if logs[batchInd] != "" {
+					_, writeErr := writeFile(outPath, logsFile, logs[batchInd])
+					if writeErr != nil {
+						log.Printf("%+v", writeErr)
+					}
 				}
-				log.Fatalf("Error occured while running benchmarks: %+v", newErr)
+				log.Fatalf("Error occured while running benchmarks for file %s: %+v", filename, newErr)
 			}
 
-			_, newErr = writeFile(path, logsFile, logs[batchInd])
+			_, newErr = writeFile(outPath, logsFile, logs[batchInd])
 			if newErr != nil {
 				log.Fatalf("%+v, exiting", newErr)
 			}
-			log.Printf("Started at: %s\nEnded at: %s\nTime elapsed: %f\n", start, end, duration)
+			log.Printf("Started at: %s\nEnded at: %s\nTime elapsed: %f\n", start[batchInd], end[batchInd], duration[batchInd])
 
 			// Now let's execute the dcgm script to compute the cli metrics
 			// Unlike the "system" library call from C and other languages,
@@ -327,16 +345,21 @@ func main() {
 				log.Fatal(newErr)
 			}
 			log.Printf("Figures saved at prom_metrics_cli/plot/figures/%s\n", filename)
-		}(i, p)
+		}(i, file)
 	}
 
-	wg.Wait()
+	if len(files)%batch > 0 {
+		wg.Wait()
+	}
 
 	// Find the min and max indices for start and end arrays respectively
 	// and then run the metrics' queries again for the total duration
 	var tmpStart []int
 	var tmpEnd []int
 	for i := 0; i < len(start); i++ {
+		if start[i] == "" || end[i] == "" {
+			continue
+		}
 		tmpStart = append(tmpStart, convertDateStringToInt(start[i]))
 		tmpEnd = append(tmpEnd, convertDateStringToInt(end[i]))
 	}

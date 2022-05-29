@@ -7,13 +7,23 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
-    -n|--no)
-      NO="$1"
+    -y|--YAML)
+      YAML="$2"
       shift
       shift
       ;;
-    -y|--yes)
-      YES="$1"
+    -b|--batch)
+      BATCH="$2"
+      shift
+      shift
+      ;;
+    --no)
+      NO="-n"
+      shift
+      shift
+      ;;
+    --yes)
+      YES="-y"
       shift
       shift
       ;;
@@ -26,9 +36,11 @@ while [[ $# -gt 0 ]]; do
       echo "usage: Loop through all mlperf_gpu_pods and run the benchmarks
   options:
     -c|--config /path/to/kube_config
-    -n|--no boolean argument to skip loop if files exist
-    -y|--yes boolean argument to delete files if exist
-    -s|--sleep seconds to sleep between each loop. Default=60 secs"
+    -y|--yaml Path to the yaml file(s)
+    -b|--batch Number of pods to be deployed and benchmarked simultanouesly
+    --no Boolean argument to skip loop if files exist
+    --yes Boolean argument to delete files if they exist
+    -s|--sleep Number of seconds to sleep between each loop. Default=60 secs"
       exit 0
       ;;
     *)
@@ -45,6 +57,11 @@ then
     CONFIG="/root/.kube/config"
 fi
 
+if [ -z "$BATCH" ]
+then
+    BATCH="1"
+fi
+
 if [ -z "$SLEEP" ]
 then
     SLEEP="60"
@@ -55,14 +72,12 @@ then
     echo "-n and -y can't be set simultaneously"
 fi
 
+if [ -z $YAML ]
+then
+  YAML="mlpref_gpu_pods"
+fi
+
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "$parent_path"
 
-# kubectl port-forward -n prometheus svc/prometheus-operated 9090
-for YAML in mlpref_gpu_pods/*;
-do
-    echo "File: $YAML"
-    ./bin/main -c $CONFIG -yaml $PWD/$YAML $NO $YE
-    echo -e "\n"
-    sleep $SLEEP
-done
+./bin/main -c $CONFIG -b $BATCH -yaml $PWD/$YAML $NO $YES -s $SLEEP
