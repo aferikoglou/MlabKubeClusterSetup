@@ -50,17 +50,16 @@ func filesExist(path string, logFilename string) (bool, error) {
 	// Check for figures
 	for _, f := range files {
 		tmp = strings.Split(f.Name(), "_")
-		tmp := strings.Join(tmp[:len(tmp) - 1], "_")
+		tmp := strings.Join(tmp[:len(tmp)-1], "_")
 		if tmp == filenamePrefix {
 			return true, nil
 		}
 	}
-	
+
 	// Check for logs.txt
 	for _, f := range files {
 		if f.Name() == logFilename {
 			return true, nil
-			break
 		}
 	}
 
@@ -81,12 +80,12 @@ func deleteFiles(path string, logFilename string) error {
 
 	for _, f := range files {
 		tmp = strings.Split(f.Name(), "_")
-		tmp := strings.Join(tmp[:len(tmp) - 1], "_")
+		tmp := strings.Join(tmp[:len(tmp)-1], "_")
 		if tmp == filenamePrefix {
 			os.Remove(fmt.Sprintf("%s/%s", path, f.Name()))
 		}
 	}
-	
+
 	// Check for logs.txt
 	for _, f := range files {
 		if f.Name() == logFilename {
