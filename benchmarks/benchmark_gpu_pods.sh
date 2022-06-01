@@ -80,5 +80,6 @@ cd "$parent_path"
 
 kubectl port-forward -n prometheus svc/prometheus-operated 9090:9090 >/dev/null 2>&1 & disown
 PORT_FORWARD=$!
+echo $PWD/$YAML
 ./bin/main -c $CONFIG -b $BATCH -yaml $PWD/$YAML $NO $YES -s $SLEEP
 kill $PORT_FORWARD

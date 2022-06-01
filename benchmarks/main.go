@@ -153,6 +153,10 @@ func findMin(arr []int) int {
 
 	min := 0
 	for i, x := range arr {
+		if x < 0 {
+			continue
+		}
+
 		if x < arr[min] {
 			min = i
 		}
@@ -343,10 +347,8 @@ func main() {
 		}(i, file)
 	}
 
-	if len(files)%batch > 0 {
-		wg.Wait()
-	}
-
+	wg.Wait()
+	
 	// Find the min and max indices for start and end arrays respectively
 	// and then run the metrics' queries again for the total duration
 	var tmpStart []int
@@ -361,6 +363,9 @@ func main() {
 
 	minInd := findMin(tmpStart)
 	maxInd := findMax(tmpEnd)
+	if minInd == -1 || maxInd == -1 {
+		log.Fatal("Couldn't save total benchmarks")
+	}
 
 	cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start[minInd], "-e", end[maxInd], "-o", totalFiles}...)
 
