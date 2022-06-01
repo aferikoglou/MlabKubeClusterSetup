@@ -48,30 +48,23 @@ func filesExist(path string, logFilename string) (bool, error) {
 	filenamePrefix := tmp[len(tmp)-1]
 
 	// Check for figures
-	var found bool
-	for i := 0; i < 12; i++ {
-		found = false
-		for _, f := range files {
-			if f.Name() == fmt.Sprintf("%s_%s.png", filenamePrefix, strconv.Itoa(i+1)) {
-				found = true
-				break
-			}
-		}
-		if found {
+	for _, f := range files {
+		tmp = strings.Split(f.Name(), "_")
+		tmp := strings.Join(tmp[:len(tmp) - 1], "_")
+		if tmp == filenamePrefix {
 			return true, nil
 		}
 	}
-
+	
 	// Check for logs.txt
-	found = false
 	for _, f := range files {
 		if f.Name() == logFilename {
-			found = true
+			return true, nil
 			break
 		}
 	}
 
-	return found, nil
+	return false, nil
 }
 
 func deleteFiles(path string, logFilename string) error {
@@ -86,14 +79,14 @@ func deleteFiles(path string, logFilename string) error {
 		return fmt.Errorf("error in ioutil.ReadDir(): %s", err)
 	}
 
-	for i := 0; i < 12; i++ {
-		for _, f := range files {
-			if f.Name() == fmt.Sprintf("%s_%s.png", filenamePrefix, strconv.Itoa(i+1)) {
-				os.Remove(fmt.Sprintf("%s/%s", path, f.Name()))
-			}
+	for _, f := range files {
+		tmp = strings.Split(f.Name(), "_")
+		tmp := strings.Join(tmp[:len(tmp) - 1], "_")
+		if tmp == filenamePrefix {
+			os.Remove(fmt.Sprintf("%s/%s", path, f.Name()))
 		}
 	}
-
+	
 	// Check for logs.txt
 	for _, f := range files {
 		if f.Name() == logFilename {
@@ -260,7 +253,7 @@ func main() {
 				skip = append(skip, i)
 			} else if autodelete {
 				// Delete files
-				log.Println("Deleting it")
+				log.Println("Deleting")
 				err := deleteFiles(path, logsFile)
 				if err != nil {
 					log.Fatalf("Could not delete files")
@@ -283,10 +276,10 @@ func main() {
 		}
 	}
 
-	var start []string = make([]string, batch)
-	var end []string = make([]string, batch)
-	var logs []string = make([]string, batch)
-	var duration []float64 = make([]float64, batch)
+	var start []string = make([]string, len(files))
+	var end []string = make([]string, len(files))
+	var logs []string = make([]string, len(files))
+	var duration []float64 = make([]float64, len(files))
 	count := 0
 	for i, file := range files {
 		if inArray(i, skip) {
@@ -303,7 +296,7 @@ func main() {
 		count++
 
 		wg.Add(1)
-		go func(batchInd int, filePath string) {
+		go func(ind int, filePath string) {
 			defer wg.Done()
 
 			var newErr error
@@ -311,22 +304,24 @@ func main() {
 			filename := strings.Split(tmp[len(tmp)-1], ".")[0]
 			outPath := fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), filename)
 
-			start[batchInd], end[batchInd], duration[batchInd], logs[batchInd], newErr = benchmark.Benchmark(configPath, filePath)
+			start[ind], end[ind], duration[ind], logs[ind], newErr = benchmark.Benchmark(configPath, filePath)
 			if newErr != nil {
-				if logs[batchInd] != "" {
-					_, writeErr := writeFile(outPath, logsFile, logs[batchInd])
+				if logs[ind] != "" {
+					_, writeErr := writeFile(outPath, logsFile, logs[ind])
 					if writeErr != nil {
 						log.Printf("%+v", writeErr)
 					}
 				}
-				log.Fatalf("Error occured while running benchmarks for file %s: %+v", filename, newErr)
+				log.Printf("Error occured while running benchmarks for file %s: %+v", filename, newErr)
+				return
 			}
 
-			_, newErr = writeFile(outPath, logsFile, logs[batchInd])
+			_, newErr = writeFile(outPath, logsFile, logs[ind])
 			if newErr != nil {
-				log.Fatalf("%+v, exiting", newErr)
+				log.Printf("%+v, exiting", newErr)
+				return
 			}
-			log.Printf("Started at: %s\nEnded at: %s\nTime elapsed: %f\n", start[batchInd], end[batchInd], duration[batchInd])
+			log.Printf("Started at: %s\nEnded at: %s\nTime elapsed: %f\n", start[ind], end[ind], duration[ind])
 
 			// Now let's execute the dcgm script to compute the cli metrics
 			// Unlike the "system" library call from C and other languages,
@@ -334,7 +329,7 @@ func main() {
 			// and does not expand any glob patterns or handle other expansions, pipelines,
 			// or redirections typically done by shells
 			// Note: args should be provided in variadic form as a slice of strings
-			cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start[batchInd], "-e", end[batchInd], "-o", filename}...)
+			cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start[ind], "-e", end[ind], "-o", filename}...)
 
 			out, newErr := cmd.Output()
 			if newErr != nil {
@@ -342,7 +337,8 @@ func main() {
 				if output != "" {
 					log.Printf("Output: %s\n", output)
 				}
-				log.Fatal(newErr)
+				log.Print(newErr)
+				return
 			}
 			log.Printf("Figures saved at prom_metrics_cli/plot/figures/%s\n", filename)
 		}(i, file)

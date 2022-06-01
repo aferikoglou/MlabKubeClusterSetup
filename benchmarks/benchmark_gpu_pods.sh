@@ -20,11 +20,9 @@ while [[ $# -gt 0 ]]; do
     --no)
       NO="-n"
       shift
-      shift
       ;;
     --yes)
       YES="-y"
-      shift
       shift
       ;;
     -s|--sleep)
@@ -83,4 +81,4 @@ cd "$parent_path"
 kubectl port-forward -n prometheus svc/prometheus-operated 9090:9090 >/dev/null 2>&1 & disown
 PORT_FORWARD=$!
 ./bin/main -c $CONFIG -b $BATCH -yaml $PWD/$YAML $NO $YES -s $SLEEP
-kill PORT_FORWARD
+kill $PORT_FORWARD
