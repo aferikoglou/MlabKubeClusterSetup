@@ -49,6 +49,32 @@ extraEnv:
 EOF
 ```
 
+### There is one last configuration step to go: configure dcgm-exporter's service monitor in order for prometheus to scrape its metrics every 1 second.
+To do this we have to edit the service monitor's yaml file which can be done in 2 ways:
+
+**First way:**
+```bash
+kubectl edit $(kubectl get servicemonitor -l "app.kubernetes.io/name=dcgm-exporter" -o name)
+```
+The above command will open a yaml file using the vi editor. Within this file you have to locate the field {.items[0].spec.endpoints[0].interval} and change it to 1s instead of 15s which is the default. In other words you have to find the first field under the spec.endpoints section and change the interval definied in this field. Then you just same and once out of the editor, press enter.
+
+**Second way:**
+```bash
+kubectl get servicemonitor -l "app.kubernetes.io/name=dcgm-exporter" -o yaml > dcgm_monitor.yml
+```
+This command will export the yaml file related to dcgm service monitor. What you have to do next is open the dcgm_monitor.yaml with an editor, change the same field as before and then just apply this new configuration like that:
+```bash
+kubectl apply -f dcgm_monitor.yml
+```
+
+Finally in order to let prometheus know about these new change you have to signal him in one of the two ways that follow:
+```bash
+# send SIGHUP to the prom process
+kill -HUP $(cat /var/run/prometheus.pid)
+# or post to the /-/reload/ endpoint
+curl -X POST http://localhost:30090/-/reload
+```
+
 By running:
 ``` bash
 kubectl get svc -A

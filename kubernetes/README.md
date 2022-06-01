@@ -21,10 +21,10 @@ See [container runtimes](https://kubernetes.io/docs/setup/production-environment
 Let's now continue with the installation:
 ```bash 
 # remove older versions
-sudo apt-get remove docker docker-engine docker.io containerd runc
+sudo apt-get remove -y docker docker-engine docker.io containerd runc
 # set up the repository
-sudo apt-get update
-sudo apt-get install \
+sudo apt-get -y update
+sudo apt-get -y install \
     ca-certificates \
     curl \
     gnupg \
@@ -36,9 +36,8 @@ echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 # install docker engine
-sudo apt-get update
-sudo apt-get install docker-ce docker-ce-cli containerd.io
-
+sudo apt-get -y update
+sudo apt-get -y install docker-ce docker-ce-cli containerd.io
 ```
 
 ## Step 2: Install kubectl, kubeadm and kubelet
@@ -103,8 +102,13 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 # Alternatively for calico:
-kubectl create -f https://projectcalico.docs.tigera.io/manifests/tigera-operator.yaml
-kubectl create -f https://projectcalico.docs.tigera.io/manifests/custom-resources.yaml
+# kubectl create -f https://projectcalico.docs.tigera.io/manifests/tigera-operator.yaml
+# kubectl create -f https://projectcalico.docs.tigera.io/manifests/custom-resources.yaml
+```
+
+## Step6: Untaint master node:
+```bash
+kubectl taint nodes $(kubectl get nodes -l node-role.kubernetes.io/control-plane= -o name) node-role.kubernetes.io/master-
 ```
 
 ## Adding new nodes in your cluster:
