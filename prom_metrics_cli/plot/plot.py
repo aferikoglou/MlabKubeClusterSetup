@@ -6,10 +6,12 @@ import re
 import sys
 import logging
 
+
 def validate_filename(filename):
-    pattern  = r'^[a-z0-9][a-z0-9_-]+[a-z0-9]$'
+    pattern  = r'^[a-zA-Z0-9][:a-zA-Z0-9_-]+[a-zA-Z0-9]$'
     pat = re.compile(pattern)
     return re.fullmatch(pat, filename)
+
 
 def find_max_id(dirname: str, outfile: str)-> int:
     max_id = 0
@@ -37,10 +39,11 @@ parser.add_argument('-yf', action='store', type=str,
                     help='ylabel extracted from json field. Overrides -y argument')
 parser.add_argument('-l', '--legend-list', nargs='+', default=[], help="Manually import a list of legends for matplotlib")
 parser.add_argument('-f', action='store', help="Json field from which to extract legends")
-parser.add_argument('-o', action='store',  required = True ,  help="Name of the output png. Name can only contain - _ \
+parser.add_argument('-o', action='store',  required = True ,  help="Name of the output png. Name can only contain - _ :\
     or alphanumerics and can't start or end with - or _")
 parser.add_argument('-filter', action='store', required = False,  help="Json string where keys correspond to json fields \
-    and values correspond to the values you want to keep.")
+    and values correspond to the values you want to keep. Values can also be regex.")
+parser.add_argument('--total', action='store_true', default = False,  help="Add all the metrics from the json object in a single diagram")
 
 args = parser.parse_args()
 
@@ -60,27 +63,35 @@ if args.filter is not None:
 
 data = input()
 
-if not data.startswith("{"):
-    data = "".join(data.split(" ")[2:])
 try:
     data = json.loads(data)
 except:
-    logging.warning("Input data not json serializable")
-    sys.exit(1)
+    data = "".join(data.split(" ")[2:])
+    try:
+        data = json.loads(data)
+    except:
+        logging.error("Input data not json serializable")
+        sys.exit(1)
 
 legend = []
+lines = 0
 for i, result in enumerate(data["data"]["result"]):
     skip = False
     for k, v in filter.items():
-        if k not in result["metric"] or result["metric"][k] != v:
-            logging.warning(v + " not found in data's keys, skipping result No." + str(i))
+        pattern = re.compile(v)
+        print(pattern)
+        if k not in result["metric"] or not re.search(pattern, result["metric"][k]):
+            logging.warning(f"{v} not found in {k}, skipping result No.{str(i)}")
             skip = True
             break
 
     if skip:
         continue
 
-    base = float(result["values"][0][0])
+    lines += 1
+
+    if not args.total or i == 0:
+        base = float(result["values"][0][0])
     time = []
     position = []
     for v in result["values"]:
@@ -94,13 +105,11 @@ for i, result in enumerate(data["data"]["result"]):
     else:
         plt.ylabel(result["metric"][args.yf])
 
-    if args.f is not None:
+    if args.f is not None and args.f in result["metric"].keys():
         legend.append(result["metric"][args.f])
 
     if not os.path.exists(filepath):
         os.makedirs(filepath)
-
-    max_id = find_max_id(filepath, args.o)
 
     if len(args.legend_list) > 0:
         legend = []
@@ -110,6 +119,13 @@ for i, result in enumerate(data["data"]["result"]):
     elif args.f is not None:
         plt.legend(legend)
 
+    if not args.total:
+        max_id = find_max_id(filepath, args.o)
+        plt.tight_layout()
+        plt.savefig(filepath + "/" + args.o + "_" + str(max_id) + '.png')
+        plt.figure().clear()
+
+if args.total and lines > 0:
+    max_id = find_max_id(filepath, args.o)
     plt.tight_layout()
     plt.savefig(filepath + "/" + args.o + "_" + str(max_id) + '.png')
-    plt.figure().clear()

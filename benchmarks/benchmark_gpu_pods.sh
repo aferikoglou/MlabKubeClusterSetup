@@ -17,6 +17,11 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
+    -a|--append)
+      APPEND="-a"
+      shift
+      shift
+      ;;
     --no)
       NO="-n"
       shift
@@ -36,6 +41,7 @@ while [[ $# -gt 0 ]]; do
     -c|--config /path/to/kube_config
     -y|--yaml Path to the yaml file(s)
     -b|--batch Number of pods to be deployed and benchmarked simultanouesly
+    -a|--append Append times on folders' names
     --no Boolean argument to skip loop if files exist
     --yes Boolean argument to delete files if they exist
     -s|--sleep Number of seconds to sleep between each loop. Default=60 secs"
@@ -65,9 +71,9 @@ then
     SLEEP="60"
 fi
 
-if [ ! -z "$NO" ] && [ ! -z "$YES" ]
+if ([ ! -z "$NO" ] && [ ! -z "$YES" ]) || ([ ! -z "$NO" ] && [ ! -z "$APPEND" ]) || ([ ! -z "$APPEND" ] && [ ! -z "$YES" ])
 then
-    echo "-n and -y can't be set simultaneously"
+    echo "Only one from -n, -y and -a can be set at a time"
 fi
 
 if [ -z $YAML ]
@@ -81,5 +87,5 @@ cd "$parent_path"
 kubectl port-forward -n prometheus svc/prometheus-operated 9090:9090 >/dev/null 2>&1 & disown
 PORT_FORWARD=$!
 echo $PWD/$YAML
-./bin/main -c $CONFIG -b $BATCH -yaml $PWD/$YAML $NO $YES -s $SLEEP
+./bin/main -c $CONFIG -b $BATCH -yaml $PWD/$YAML $NO $YES $APPEND -s $SLEEP
 kill $PORT_FORWARD
