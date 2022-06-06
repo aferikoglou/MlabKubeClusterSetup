@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mlperf-gpu-tensorflow-ssd-resnet34
+spec:
+  volumes:
+    - name: task-pv-storage
+      hostPath:
+        path: "/mnt/mlperf"
+  restartPolicy: Never
+  containers:
+    - name: mlperf-infer-imgclassify-gpu
+      image: tzourhs/mlperf-infer-imgclassify-gpu:1.4
+      env:
+      - name: DATA_DIR
+        value: "/tmp/mlperf/data/coco-1200"
+      - name: MODEL_DIR
+        value: "/tmp/mlperf/models/tf_ssd_resnet34"
+      volumeMounts:
+        - mountPath: "/tmp/mlperf"
+          name: task-pv-storage
+      workingDir: "/tmp/inference/vision/classification_and_detection/"
+      command: ["/bin/bash", "-c", "./run_local.sh tf ssd-resnet34 gpu --accuracy"]
+      resources:
+        limits:
+          nvidia.com/gpu: 1
