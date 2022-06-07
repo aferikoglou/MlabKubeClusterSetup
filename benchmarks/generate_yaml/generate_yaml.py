@@ -4,7 +4,9 @@ import argparse
 import sys
 import os 
 
+
 dir_path = os.path.dirname(os.path.realpath(__file__))
+
 
 def generate_yaml(path=None):
     file = os.path.join(dir_path, "template.yaml")
@@ -22,11 +24,8 @@ def generate_yaml(path=None):
             sys.exit(0)
     else:
         if len(os.listdir(pods_path)) > 0:
-            ans = input(f"Directory {pods_path} not empty, would like to delete files?[y/n]\n>>")
-            if ans == 'y' or ans == 'Y':
-                for f in os.listdir(pods_path):
-                    os.remove(os.path.join(pods_path, f))
-            else:
+            ans = input(f"Directory {pods_path} not empty, would like to overwrite files?[y/n]\n>>")
+            if not (ans == 'y' or ans == 'Y'):
                 sys.exit(0)
                 
     scenarios = ['SingleStream', 'MultiStream', 'Server', 'Offline']
@@ -56,11 +55,13 @@ def generate_yaml(path=None):
                         "{model}", model
                     ).replace(
                         "{backend}", backend
-                    ).replace("{data}", data[model]
+                    ).replace(
+                        "{data}", data[model]
                     )
 
                     with open(os.path.join(pods_path, f"{backend}-{model}-{scenario}-{time}.yaml"), "w") as f:
                         f.write(new_lines)
+
     print("Files created successfuly")
 
 

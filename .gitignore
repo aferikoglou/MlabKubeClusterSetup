@@ -4,5 +4,4 @@ figures
 bin
 log.txt
 vendor
-bin
 mlperf_gpu_pods

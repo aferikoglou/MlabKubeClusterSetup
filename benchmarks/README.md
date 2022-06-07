@@ -1,26 +1,26 @@
 ## Install
 Get required packages using:
 ``` bash
-$ go mod tidy; go mod vendor
+go mod tidy; go mod vendor
 ```
 
 ## Usage
 ``` bash
-$ go run main.go --help
+go run main.go --help
 ```
 
 ## Example usage
 ``` bash
-$ go run main.go -c "/path/to/config" -yaml "/path/to/yaml"
+go run main.go -c "/path/to/config" -yaml "/path/to/yaml"
 ```
 
 ## Build and run binary:
 ``` bash
-$ go build -o bin/main main.go
+go build -o bin/main main.go
 # or
-$ make build
+make build
 
-$ ./bin/main -c "/path/to/config" -yaml "/path/to/yaml"
+./bin/main -c "/path/to/config" -yaml "/path/to/yaml"
 ```
 
 ## Or install using makefile:
@@ -40,10 +40,10 @@ The models and datasets needed for each benchmark are illustrated in the followi
 ---
 Finally, you can run all the benchmarks from the top-level directory with:
 ``` bash
-    # --no option means if a benchmark is already ran skip it (there is also --yes which means if results exist, delete them), -s defines the number of seconds to sleep between 2
-    # consecutive batch executions and -b defines the batch size i.e the number of pods to deploy and benchmark
-    # in one go.
-    ./benchmarks/benchmark_gpu_pods.sh -c /home/dimitris/.kube/config --no -s 3 -b 2
+# --no option means if a benchmark is already ran skip it (there is also --yes which means if results exist, delete them), -s defines the number of seconds to sleep between 2
+# consecutive batch executions and -b defines the batch size i.e the number of pods to deploy and benchmark
+# in one go.
+./benchmarks/benchmark_gpu_pods.sh -c /home/dimitris/.kube/config --no -s 3 -b 2
 ```
 or just
 ``` bash
