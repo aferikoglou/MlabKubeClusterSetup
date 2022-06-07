@@ -59,3 +59,10 @@ for more information abou the benchmark shell script:
 > **Note1:** In order for the above to run you have to have installed the [Metrics cli](https://github.com/aferikoglou/mlab-k8s-cluster-setup/tree/main/prom_metrics_cli) first.
 
 > **Note2:** In order to run benchmark_gpu_pods.sh you have to have built ($ make) main.go first.
+
+The default location benchmark_gpu_pods.sh will look for yaml files to run is /benhcmarks/mlperf_gpu_pods. If you want to change the default directory you can overwrite it with the -y option. If you define a yaml file with the -y option then the benchmarks will be ran for just this file. If you define a whole directory then the scripts will look for each yaml file within this directory and try to run the benchmarks for each one of them. In order to generate the yaml files for all possible combinations you have to run "/benchmarks/genereate_yaml.py" from the top-level directory like that:
+```bash
+python ./benchmarks/generate_yaml.py 
+# Check out the options like that
+python ./benchmarks/generate_yaml.py --help
+```
