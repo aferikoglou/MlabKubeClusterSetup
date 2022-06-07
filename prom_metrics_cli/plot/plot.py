@@ -39,7 +39,7 @@ parser.add_argument('-yf', action='store', type=str,
                     help='ylabel extracted from json field. Overrides -y argument')
 parser.add_argument('-l', '--legend-list', nargs='+', default=[], help="Manually import a list of legends for matplotlib")
 parser.add_argument('-f', action='store', help="Json field from which to extract legends")
-parser.add_argument('-o', action='store',  required = True ,  help="Name of the output png. Name can only contain - _ :\
+parser.add_argument('-o', action='store', required = True ,  help="Name of the output png. Name can only contain - _ :\
     or alphanumerics and can't start or end with - or _")
 parser.add_argument('-filter', action='store', required = False,  help="Json string where keys correspond to json fields \
     and values correspond to the values you want to keep. Values can also be regex.")

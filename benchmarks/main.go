@@ -305,7 +305,7 @@ func main() {
 
 		if count == batch {
 			count = 0
-			log.Printf("Waiting for the first %d pod(s) to finish", batch)
+			log.Printf("Waiting for the previous batch to finish", batch)
 			wg.Wait()
 			log.Printf("Sleeping for %d seconds before starting next batch", sleep)
 			time.Sleep(time.Duration(sleep) * time.Second)
@@ -330,12 +330,6 @@ func main() {
 
 			outPath := fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), outfile)
 
-			if _, err := os.Stat(outPath); os.IsNotExist(err) {
-				newErr = os.MkdirAll(outPath, os.ModePerm)
-				if newErr != nil {
-					log.Println(newErr)
-				}
-			}
 			if newErr != nil {
 				if logs[ind] != "" {
 					_, writeErr := writeFile(outPath, logsFile, logs[ind])
@@ -347,6 +341,14 @@ func main() {
 				return
 			}
 
+
+			if _, err := os.Stat(outPath); os.IsNotExist(err) {
+				newErr = os.MkdirAll(outPath, os.ModePerm)
+				if newErr != nil {
+					log.Println(newErr)
+				}
+			}
+			
 			_, newErr = writeFile(outPath, logsFile, logs[ind])
 			if newErr != nil {
 				log.Printf("%+v, exiting", newErr)

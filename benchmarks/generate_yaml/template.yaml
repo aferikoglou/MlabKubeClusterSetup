@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: mlperf-gpu-tensorflow-ssd-mobilenet
+  name: mlperf-gpu-{backend}-{model}
 spec:
   volumes:
     - name: task-pv-storage
@@ -13,14 +13,16 @@ spec:
       image: tzourhs/mlperf-infer-imgclassify-gpu:1.4
       env:
       - name: DATA_DIR
-        value: "/tmp/mlperf/data/coco-300"
+        value: "/tmp/mlperf/data/{data}"
       - name: MODEL_DIR
-        value: "/tmp/mlperf/models/tf_ssd_mobilenet"
+        value: "/tmp/mlperf/models/{model}-{backend}"
+      - name: EXTRA_OPS
+        value: "--scenario {scenario} --time {time}"
       volumeMounts:
         - mountPath: "/tmp/mlperf"
           name: task-pv-storage
       workingDir: "/tmp/inference/vision/classification_and_detection/"
-      command: ["/bin/bash", "-c", "./run_local.sh tf ssd-mobilenet gpu --accuracy"]
+      command: ["/bin/bash", "-c", "./run_local.sh {backend} {model} gpu --accuracy"]
       resources:
         limits:
           nvidia.com/gpu: 1
