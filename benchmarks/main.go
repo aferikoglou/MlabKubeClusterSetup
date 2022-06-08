@@ -236,6 +236,10 @@ func main() {
 		}
 	}
 
+	if len(files) == 0{
+		log.Fatalf("Directory %s is empty", yamlPath)
+	}
+
 	var skip []int
 	var appendInd []int
 	for i, file := range files {

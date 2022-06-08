@@ -1,5 +1,8 @@
 #!/bin/bash
 
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+cd "$parent_path"
+
 while [[ $# -gt 0 ]]; do
   case $1 in
     -c|--config)
@@ -20,7 +23,6 @@ while [[ $# -gt 0 ]]; do
     -a|--append)
       APPEND="-a"
       shift
-      shift
       ;;
     --no)
       NO="-n"
@@ -39,7 +41,7 @@ while [[ $# -gt 0 ]]; do
       echo "usage: Loop through all mlperf_gpu_pods and run the benchmarks
   options:
     -c|--config /path/to/kube_config
-    -y|--yaml Path to the yaml file(s)
+    -y|--yaml Path to the yaml file(s) (absolute)
     -b|--batch Number of pods to be deployed and benchmarked simultanouesly
     -a|--append Append times on folders' names
     --no Boolean argument to skip loop if files exist
@@ -78,14 +80,10 @@ fi
 
 if [ -z $YAML ]
 then
-  YAML="mlperf_gpu_pods"
+  YAML="$PWD/mlperf_gpu_pods"
 fi
-
-parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-cd "$parent_path"
 
 kubectl port-forward -n prometheus svc/prometheus-operated 9090:9090 >/dev/null 2>&1 & disown
 PORT_FORWARD=$!
-echo $PWD/$YAML
-./bin/main -c $CONFIG -b $BATCH -yaml $PWD/$YAML $NO $YES $APPEND -s $SLEEP
+./bin/main -c $CONFIG -b $BATCH -yaml $YAML $NO $YES $APPEND -s $SLEEP
 kill $PORT_FORWARD
