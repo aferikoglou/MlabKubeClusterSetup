@@ -5,3 +5,4 @@ bin
 log.txt
 vendor
 mlperf_gpu_pods
+empty

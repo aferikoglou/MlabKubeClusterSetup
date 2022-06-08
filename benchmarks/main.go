@@ -153,7 +153,7 @@ func findMin(arr []int) int {
 			continue
 		}
 
-		if x < arr[min] {
+		if x < arr[min] || arr[min] < 0 {
 			min = i
 		}
 	}
@@ -161,6 +161,10 @@ func findMin(arr []int) int {
 }
 
 func convertDateStringToInt(date string) int {
+	if date == "" {
+		return -1
+	}
+
 	timestamp, _ := time.Parse("2006-01-02T15:04:05Z", date)
 
 	hr, min, sec := timestamp.Clock()
@@ -309,7 +313,7 @@ func main() {
 
 		if count == batch {
 			count = 0
-			log.Printf("Waiting for the previous batch to finish", batch)
+			log.Println("Waiting for the previous batch to finish")
 			wg.Wait()
 			log.Printf("Sleeping for %d seconds before starting next batch", sleep)
 			time.Sleep(time.Duration(sleep) * time.Second)
@@ -333,6 +337,12 @@ func main() {
 			}
 
 			outPath := fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), outfile)
+			if _, err := os.Stat(outPath); os.IsNotExist(err) {
+				err = os.MkdirAll(outPath, os.ModePerm)
+				if err != nil {
+					log.Println(err)
+				}
+			}
 
 			if newErr != nil {
 				if logs[ind] != "" {
@@ -343,14 +353,6 @@ func main() {
 				}
 				log.Printf("Error occured while running benchmarks for file %s: %+v", filename, newErr)
 				return
-			}
-
-
-			if _, err := os.Stat(outPath); os.IsNotExist(err) {
-				newErr = os.MkdirAll(outPath, os.ModePerm)
-				if newErr != nil {
-					log.Println(newErr)
-				}
 			}
 			
 			_, newErr = writeFile(outPath, logsFile, logs[ind])
@@ -399,7 +401,7 @@ func main() {
 
 	minInd := findMin(tmpStart)
 	maxInd := findMax(tmpEnd)
-	if minInd == -1 || maxInd == -1 {
+	if minInd == -1 || maxInd == -1 || tmpStart[minInd] == -1 || tmpEnd[maxInd] == -1 {
 		log.Fatal("Couldn't save total benchmarks")
 	}
 
