@@ -1,5 +1,5 @@
 #!/usr/bin/python3
- 
+
 import matplotlib.pyplot as plt
 import json
 import os
@@ -77,11 +77,12 @@ except:
 
 legend = []
 lines = 0
+plt.figure().set_figwidth(10)
+plt.figure().set_figheight(10)
 for i, result in enumerate(data["data"]["result"]):
     skip = False
     for k, v in filter.items():
         pattern = re.compile(v)
-        print(pattern)
         if k not in result["metric"] or not re.search(pattern, result["metric"][k]):
             logging.warning(f"{v} not found in {k}, skipping result No.{str(i)}")
             skip = True
@@ -100,7 +101,7 @@ for i, result in enumerate(data["data"]["result"]):
         time.append(float(v[0]) - base)
         position.append(float(v[1]))
 
-    plt.plot(time, position)
+    plt.plot(time, position, linewidth=1)
     plt.xlabel(args.x)
     if args.yf is None or args.yf not in result["metric"].keys():
         plt.ylabel(args.y)
@@ -130,4 +131,5 @@ for i, result in enumerate(data["data"]["result"]):
 if args.total and lines > 0:
     max_id = find_max_id(filepath, args.o)
     plt.tight_layout()
-    plt.savefig(filepath + "/" + args.o + "_" + str(max_id) + '.png')
+    plt.savefig(filepath + "/" + args.o + "_" + str(max_id) + '.png', linewidth=1)
+    

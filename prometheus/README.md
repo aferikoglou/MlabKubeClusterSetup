@@ -2,17 +2,18 @@
 ---
 ## Step 1: Install the nvidia graphics card driver
 Visit this site: https://www.nvidia.com/en-us/drivers/unix/ in order to realise which is the newest nvidia driver, let's call it XXXX.
-```` bash
+``` bash
 # clear existing driver
-sudo apt-get purge nvidia*
+sudo apt-get -y purge nvidia*
 # let us go ahead and add the graphics-driver PPA -
 sudo add-apt-repository ppa:graphics-drivers
 # update apt
 sudo apt-get update
 # go ahead and install driver which in my case is 510
-sudo apt-get install nvidia-driver-510
-````
-*Note: In order to install nvidia driver on your pc or VM you first need to make sure it is supported by your gpu.
+sudo apt-get -y install nvidia-driver-510
+```
+>Note: In the case of a [mig gpu](https://www.nvidia.com/en-us/technologies/multi-instance-gpu/) you have to install datacenter drivers [NVIDIA R450+ datacenter driver: 450.80.02+](https://www.nvidia.com/download/driverResults.aspx/165294/). See more here: https://docs.nvidia.com/datacenter/cloud-native/kubernetes/mig-k8s.html.
+>Note: In order to install nvidia driver on your pc or VM you first need to make sure it is supported by your gpu.
 
 Reboot and make sure everything was installed fine:
 ``` bash
@@ -21,7 +22,7 @@ nvidia-smi
 ```
 and before going on install cuda toolkit:
 ```bash
-sudo apt install nvidia-cuda-toolkit
+sudo apt -y install nvidia-cuda-toolkit
 ```
 ## Step 2: Install the nvidia cuda driver
 See this for more:
@@ -30,12 +31,12 @@ https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
 The NVIDIA driver requires that the kernel headers and development packages for the running version of the kernel be installed at the time of the driver installation, as well whenever the driver is rebuilt. For example, if your system is running kernel version 4.4.0, the 4.4.0 kernel headers and development packages must also be installed.
 The kernel headers and development packages for the currently running kernel can be installed with:
 ``` bash
-sudo apt-get install linux-headers-$(uname -r)
+sudo apt-get -y install linux-headers-$(uname -r)
 ```
 Ensure packages on the CUDA network repository have priority over the Canonical repository.
 ``` bash
 distribution=$(. /etc/os-release;echo $ID$VERSION_ID | sed -e 's/\.//g')
-wget https://developer.download.nvidia.com/compute/cuda/repos/$distribution/x86_64/cuda-$distribution.pin
+sudo wget https://developer.download.nvidia.com/compute/cuda/repos/$distribution/x86_64/cuda-$distribution.pin
 sudo mv cuda-$distribution.pin /etc/apt/preferences.d/cuda-repository-pin-600
 ```
 Install the CUDA repository public GPG key. Note that on Ubuntu 16.04, replace https with http in the command below.
@@ -48,7 +49,7 @@ echo "deb http://developer.download.nvidia.com/compute/cuda/repos/$distribution/
 Update the APT repository cache and install the driver using the cuda-drivers meta-package. Use the --no-install-recommends option for a lean driver install without any dependencies on X packages. This is particularly useful for headless installations on cloud instances.
 ``` bash
 sudo apt-get update
-sudo apt-get -y install cuda-drivers
+sudo apt-get -y install cuda-drivers-510
 ```
 
 The PATH variable needs to include
@@ -132,7 +133,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker
 ```
 
-Once you have configured the options above on all the GPU nodes in your cluster, you can enable GPU support by deploying the following Daemonset:
+Once you have configured the options above on all the GPU nodes in your cluster, you can enable GPU support by deploying the following Daemonset (**Non-mig gpu only**):
 ``` bash
 kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.10.0/nvidia-device-plugin.yml
 ```
@@ -144,7 +145,7 @@ chmod 700 get_helm.sh
 ./get_helm.sh
 ```
 
-Installing via helm install from the nvidia-device-plugin helm repository
+Installing from the nvidia-device-plugin helm repository
 ``` bash
 helm repo add nvdp https://nvidia.github.io/k8s-device-plugin
 helm repo update
@@ -187,6 +188,34 @@ helm install \
     --set compatWithCPUManager=true \
     --set migStrategy=mixed \
     nvdp/nvidia-device-plugin
+```
+
+### NOTE:
+In the case of a mig gpu you have to install the nvidia device plugin like so:
+```bash
+helm repo add nvdp https://nvidia.github.io/k8s-device-plugin
+helm repo add nvgfd https://nvidia.github.io/gpu-feature-discovery
+helm repo update
+# Verify thath package versions are v0.7.0 and v0.2.0 or later respectively 
+helm search repo nvdp --devel
+helm search repo nvgfd --devel
+# In this tutorial we will be using the "single" MIG_STRATEGY but there are also the following options: <none | single | mixed>
+helm install \
+   --generate-name \
+   --set migStrategy=single \
+   nvdp/nvidia-device-plugin
+helm install \
+   --generate-name \
+   --set migStrategy=single \
+   nvgfd/gpu-feature-discovery
+```
+Verify that all pods are running:
+```bash
+kubectl get pods -A
+```
+and that labels have been added to gpu nodes:
+```bash
+kubectl get node -o json | jq '.items[].metadata.labels'
 ```
 
 ### Building and Running locally with Docker

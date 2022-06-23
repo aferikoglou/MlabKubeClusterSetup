@@ -44,6 +44,9 @@ sudo apt-get -y install docker-ce docker-ce-cli containerd.io
 ```bash 
 sudo apt-get update
 sudo apt-get install -y apt-transport-https ca-certificates curl
+sudo apt-get purge kubeadm kubectl kubelet kubernetes-cni 
+sudo apt autoremove
+sudo rm -fr /etc/kubernetes/; sudo rm -fr ~/.kube/; sudo rm -fr /var/lib/etcd; sudo rm -rf /var/lib/cni/
 sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
 echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 sudo apt-get update
@@ -80,7 +83,7 @@ cgroupfs is the appropriate cgroup-driver for docker which we will be using as o
 # first disable paging and swapping since if memory swapping is allowed this can lead to stability issues when the scheduler tries to deploy a pod:
 sudo swapoff -a
 # delete previous plane if it exists:
-sudo kubeadm reset
+sudo kubeadm reset -f
 # remove previous configurations:
 sudo rm -r ~/.kube
 # initialize new control plane:
@@ -90,14 +93,34 @@ sudo kubeadm init --pod-network-cidr=10.244.0.0/16
 # 2. We could have also used --apiserver-advertise-address=<my_addr> to specify which ip we want the control plane to advertise to others, but since we didn't, kubelet will find the default network inteface and use its ip.
 # 3. We could have also specified --cri-socket and use another cri socket (e.g. containerd.sock) in order to make kubernetes play with other container runtimes (such as gVisor) too but for now we will just keep things simple.  
 
-# Move the appropriate configuration files in a place where kubernetes can find them, and give them the appropriate privileges:
+# Move the appropriate configuration files in a place where kubernetes can find them, and give them the appropriate privileges: 
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 # Alternatively if you are the root user: $ echo "export KUBECONFIG=/etc/kubernetes/admin.conf" | tee -a ~/.bashrc && source ~/.bashrc
 # save the "kubeadm join" command printed in the last line of "kubeadm init" output in a file because you will need it to add workers in the cluster. 
 ```
-## Step5: Apply the CNI 
+> FYI: If you lose the kubeadm join command printed in the output of kubeadm init command you can create a new token and get the related command by running the following :
+```
+kubeadm token create --print-join-command
+```
+
+## Step 5: Untaint master node:
+You can find all node's taints from this command:
+```bash
+kubectl describe $(kubectl get nodes -l node-role.kubernetes.io/control-plane= -o name) | grep Taints -A 10
+```
+And then run the following command for all the node's taints:
+```bash
+kubectl taint nodes $(kubectl get nodes -l node-role.kubernetes.io/control-plane= -o name) <taint>-
+# Don't forget the '-' in the end
+```
+Example:
+```bash
+kubectl taint nodes $(kubectl get nodes -l node-role.kubernetes.io/control-plane= -o name) node-role.kubernetes.io/master-
+```
+
+## Step 6: Apply the CNI 
 **Flannel:**
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
@@ -106,13 +129,9 @@ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documen
 # kubectl create -f https://projectcalico.docs.tigera.io/manifests/custom-resources.yaml
 ```
 
-## Step6: Untaint master node:
-```bash
-kubectl taint nodes $(kubectl get nodes -l node-role.kubernetes.io/control-plane= -o name) node-role.kubernetes.io/master-
-```
-
 ## Adding new nodes in your cluster:
-In order to join more nodes in the cluster you have to repeat the first 3 steps on the new node and then run the join command you saved before as a root user in the new node
+In order to join more nodes in the cluster you have to repeat the first 3 steps on the new node and then run the join command you saved before as a root user in the new node.
+>Note: before adding new nodes in the cluster you have to first make sure that you have reset the previous kubeadm configurations and delete all cni config files like demonstrated in the "Uninstalling" section later . 
 
 ## A couple useful aliases I like to use for kubectl:
 ```bash
@@ -131,4 +150,56 @@ alias kgd="kubectl get deploy --all-namespaces"
 EOF
 
 # In case you are using zsh as the default shell for your user you could use the same command as above by replacing "bashrc" either with "zshrc" or "profile"
+```
+
+## Uninstalling
+In order to completely uninstall the cluster and the kubernetes tools you can use the following commands:
+```
+sudo kubeadm reset -f
+
+sudo apt purge kubectl kubeadm kubelet kubernetes-cni -y --allow-change-held-packages
+sudo apt autoremove
+sudo rm -fr /etc/kubernetes/; sudo rm -fr ~/.kube/; sudo rm -fr /var/lib/etcd; sudo rm -rf /var/lib/cni/; sudo rm -rf /etc/cni/net.d
+
+sudo systemctl daemon-reload
+
+sudo iptables -F && sudo iptables -t nat -F && sudo iptables -t mangle -F && sudo iptables -X
+
+# remove all running docker containers
+sudo docker rm -f `sudo docker ps -a | grep "k8s_" | awk '{print $1}'` 2&>1 > /dev/null
+sudo ip link delete cni0
+```
+If you were using flannel then delete the following interface:
+```bash
+sudo ip link delete flannel.1
+```
+else if you were using calico then delete the following:
+```bash
+sudo ip link delete vxlan.calico
+``` 
+
+Run the following command and make sure that are no unused interfaces left from the previous cni:
+```bash
+ip addr
+```
+
+To completely uninstall docker run the following commands:
+```
+sudo apt-get purge -y docker-engine docker docker.io docker-ce docker-ce-cli
+sudo apt-get autoremove -y --purge docker-engine docker docker.io docker-ce  
+sudo rm -rf /var/lib/docker /etc/docker
+sudo rm /etc/apparmor.d/docker
+sudo groupdel docker
+sudo rm -rf /var/run/docker.sock
+```
+---
+>Note: the above commands should be ran on each node that has joined the cluster.
+>Note: If you are getting the following error when joining nodes in your cluster or when initializing the cluster:
+```
+Unimplemented desc = unknown service runtime.v1alpha2.RuntimeService
+```
+>Then you should probably try the following fix:
+```
+sudo rm /etc/containerd/config.toml
+sudo systemctl restart containerd
 ```

@@ -53,16 +53,20 @@ done
 if [ ! -z "$FILTER" ]
 then
   FILTER=$(echo $FILTER | tr _ -)
+else
+    FILTER=".*"
 fi
 
-if [ ! -z "$FILTER" ]
+if [ -z "$INTERVAL" ] && [ -z "$START" ] && [ -z "$END" ]
 then
-  FILTER=".*"
+  echo "Either (-i|--interval) or (-s|--start and -e|--end) should be provided"
+  exit 0
 fi
 
-if [ -z "$INTERVAL" ]
+if [ ! -z "$INTERVAL" ] && [ ! -z "$START" ] && [ ! -z "$END" ]
 then
-  INTERVAL='30'
+  echo "(-i|--interval and -s|--start and -e|--end) can not be provided simultanuousley"
+  exit 0
 fi
 
 if [ -z "$OUT" ]
@@ -71,9 +75,17 @@ then
   exit 0
 fi
 
-STEP="$(($INTERVAL / 100))"
-if [ "$STEP" = 0 ]
+if [ ! -z "$INTERVAL" ]
 then
+  STEP="$(($INTERVAL / 100))"
+  if [ "$STEP" = 0 ]
+  then
+    STEP="1"
+  fi
+fi
+
+if [ -z "$STEP" ]
+then 
   STEP="1"
 fi
 
