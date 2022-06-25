@@ -12,7 +12,7 @@ sudo apt-get update
 # go ahead and install driver which in my case is 510
 sudo apt-get -y install nvidia-driver-510
 ```
->Note: In the case of a [mig gpu](https://www.nvidia.com/en-us/technologies/multi-instance-gpu/) you have to install datacenter drivers [NVIDIA R450+ datacenter driver: 450.80.02+](https://www.nvidia.com/download/driverResults.aspx/165294/). See more here: https://docs.nvidia.com/datacenter/cloud-native/kubernetes/mig-k8s.html.
+>Note: In the case of a [mig gpu](https://www.nvidia.com/en-us/technologies/multi-instance-gpu/) you have to install datacenter drivers [NVIDIA R450+ datacenter driver: 450.80.02+](https://www.nvidia.com/download/driverResults.aspx/165294/). Specifically for NVIDIA A30  GPU you will be needing the [460.73.01](https://www.nvidia.com/Download/driverResults.aspx/173142/) driver version. Learn more here: https://docs.nvidia.com/datacenter/cloud-native/kubernetes/mig-k8s.html.
 >Note: In order to install nvidia driver on your pc or VM you first need to make sure it is supported by your gpu.
 
 Reboot and make sure everything was installed fine:
