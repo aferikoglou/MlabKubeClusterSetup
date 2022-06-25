@@ -117,7 +117,8 @@ kubectl taint nodes $(kubectl get nodes -l node-role.kubernetes.io/control-plane
 ```
 Example:
 ```bash
-kubectl taint nodes $(kubectl get nodes -l node-role.kubernetes.io/control-plane= -o name) node-role.kubernetes.io/master-
+# Usually this is the case:
+kubectl taint nodes $(kubectl get nodes -l node-role.kubernetes.io/control-plane= -o name) node-role.kubernetes.io/control-plane:NoSchedule- node-role.kubernetes.io/master:NoSchedule- node.kubernetes.io/not-ready:NoSchedule-
 ```
 
 ## Step 6: Apply the CNI 
@@ -153,7 +154,38 @@ EOF
 ```
 
 ## Uninstalling
-In order to completely uninstall the cluster and the kubernetes tools you can use the following commands:
+**In order to gracefully remove a single node from the cluster**, 
+
+run the following commands on the master node:
+```bash
+kubectl cordon <node-name>  
+kubectl drain <node-name> --ignore-daemonsets
+kubectl delete node <node-name>
+```
+
+and the following on the deleted node in order to reset all the configurations:
+```bash
+sudo kubeadm reset -f
+sudo rm -fr /etc/kubernetes/; sudo rm -fr ~/.kube/; sudo rm -fr /var/lib/etcd; sudo rm -rf /var/lib/cni/; sudo rm -rf /etc/cni/net.d
+sudo systemctl daemon-reload
+sudo iptables -F && sudo iptables -t nat -F && sudo iptables -t mangle -F && sudo iptables -X
+sudo docker rm -f `sudo docker ps -a | grep "k8s_" | awk '{print $1}'` 2&>1 > /dev/null
+sudo ip link delete cni0
+```
+If you were using flannel then delete the following interface:
+```bash
+sudo ip link delete flannel.1
+```
+else if you were using calico then delete the following:
+```bash
+sudo ip link delete vxlan.calico
+``` 
+Run the following command and make sure that are no unused interfaces left from the previous cni:
+```bash
+ip addr
+```
+
+**In order to completely delete the cluster** and the kubernetes tools run the following commands on each node:
 ```
 sudo kubeadm reset -f
 
@@ -183,8 +215,8 @@ Run the following command and make sure that are no unused interfaces left from 
 ip addr
 ```
 
-To completely uninstall docker run the following commands:
-```
+**To completely uninstall docker** run the following commands:  
+```bash
 sudo apt-get purge -y docker-engine docker docker.io docker-ce docker-ce-cli
 sudo apt-get autoremove -y --purge docker-engine docker docker.io docker-ce  
 sudo rm -rf /var/lib/docker /etc/docker

@@ -200,11 +200,15 @@ helm repo update
 helm search repo nvdp --devel
 helm search repo nvgfd --devel
 # In this tutorial we will be using the "single" MIG_STRATEGY but there are also the following options: <none | single | mixed>
+
+
 helm install \
+   --version=0.7.0 \
    --generate-name \
    --set migStrategy=single \
    nvdp/nvidia-device-plugin
 helm install \
+   --version=0.2.0 \
    --generate-name \
    --set migStrategy=single \
    nvgfd/gpu-feature-discovery
