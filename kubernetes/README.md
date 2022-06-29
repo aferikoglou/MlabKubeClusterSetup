@@ -29,15 +29,19 @@ sudo apt-get -y install \
     curl \
     gnupg \
     lsb-release
+
 # add docker's official gpg key
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+sudo mkdir -p /etc/apt/keyrings
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
 # set up the stable repository
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 # install docker engine
 sudo apt-get -y update
-sudo apt-get -y install docker-ce docker-ce-cli containerd.io
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
 ```
 
 ## Step 2: Install kubectl, kubeadm and kubelet
@@ -76,18 +80,32 @@ sudo cat /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 ```
 cgroupfs is the appropriate cgroup-driver for docker which we will be using as our container runtime for the sake of simplicity. If you want to use a more sophisticated container runtime for further sandboxing you might have to change this configuration.
 
+After v1.24 of kubernetes docker is no more supported and the default container runtime is containerd. In this occasion you have to use systemd as the cgroup-driver instead like below:
+```bash
+START=$(sudo head -n 2 /etc/systemd/system/kubelet.service.d/10-kubeadm.conf) 
+END=$(sudo tail -n $(expr $(sudo wc -l /etc/systemd/system/kubelet.service.d/10-kubeadm.conf | cut -c 1-2) - 2) /etc/systemd/system/kubelet.service.d/10-kubeadm.conf) 
+sudo truncate -s 0 /etc/systemd/system/kubelet.service.d/10-kubeadm.conf && sudo cat <<EOF | sudo tee -a /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+$START
+Environment="KUBELET_EXTRA_ARGS=--cgroup-driver=systemd"
+$END
+EOF
+
+# verify that extra args environment variable has been added in the third line of your conf file:
+sudo cat /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+```
 
 ## Step 4: Initialize the kube cluster:
 
 ```bash
 # first disable paging and swapping since if memory swapping is allowed this can lead to stability issues when the scheduler tries to deploy a pod:
 sudo swapoff -a
+sudo sed -i '/ swap / s/^/#/' /etc/fstab
 # delete previous plane if it exists:
 sudo kubeadm reset -f
 # remove previous configurations:
 sudo rm -r ~/.kube
 # initialize new control plane:
-sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --cri-socket unix:///var/run/cri-dockerd.sock
 # A couple of notes:
 # 1. --pod-network-cidr=10.244.0.0/16 is the appropriate network for flannel cni which we will be using, --pod-network-cidr=192.168.0.0/16 is for calico
 # 2. We could have also used --apiserver-advertise-address=<my_addr> to specify which ip we want the control plane to advertise to others, but since we didn't, kubelet will find the default network inteface and use its ip.
@@ -118,7 +136,7 @@ kubectl taint nodes $(kubectl get nodes -l node-role.kubernetes.io/control-plane
 Example:
 ```bash
 # Usually this is the case:
-kubectl taint nodes $(kubectl get nodes -l node-role.kubernetes.io/control-plane= -o name) node-role.kubernetes.io/control-plane:NoSchedule- node-role.kubernetes.io/master:NoSchedule- node.kubernetes.io/not-ready:NoSchedule-
+kubectl taint nodes $(kubectl get nodes -l node-role.kubernetes.io/control-plane= -o name) node-role.kubernetes.io/control-plane:NoSchedule- node-role.kubernetes.io/master:NoSchedule-
 ```
 
 ## Step 6: Apply the CNI 

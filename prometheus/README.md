@@ -12,7 +12,14 @@ sudo apt-get update
 # go ahead and install driver which in my case is 510
 sudo apt-get -y install nvidia-driver-510
 ```
->Note: In the case of a [mig gpu](https://www.nvidia.com/en-us/technologies/multi-instance-gpu/) you have to install datacenter drivers [NVIDIA R450+ datacenter driver: 450.80.02+](https://www.nvidia.com/download/driverResults.aspx/165294/). Specifically for NVIDIA A30  GPU you will be needing the [460.73.01](https://www.nvidia.com/Download/driverResults.aspx/173142/) driver version. Learn more here: https://docs.nvidia.com/datacenter/cloud-native/kubernetes/mig-k8s.html.
+>Note: In the case of a [mig gpu](https://www.nvidia.com/en-us/technologies/multi-instance-gpu/) you have to install datacenter drivers [NVIDIA R450+ datacenter driver: 450.80.02+](https://www.nvidia.com/download/driverResults.aspx/165294/). Specifically for NVIDIA A30  GPU you will be needing the [460.73.01](https://www.nvidia.com/Download/driverResults.aspx/173142/) driver version. Learn more here: https://docs.nvidia.com/datacenter/cloud-native/kubernetes/mig-k8s.html. After installing the driver for A30, run the following commands to enable persistence mode:
+```bash
+sudo -i
+
+nvidia-smi -pm 1
+
+exit
+```
 >Note: In order to install nvidia driver on your pc or VM you first need to make sure it is supported by your gpu.
 
 Reboot and make sure everything was installed fine:
@@ -132,6 +139,29 @@ and now you have to restart docker:
 sudo systemctl daemon-reload
 sudo systemctl restart docker
 ```
+> Note: If you are using containerd cri instead of dockershim (if for example you are using kubernetes v1.24.0+) you will need to set the nvidia container runtime as the default for containerd
+```bash
+sudo su
+cat<<EOF | tee -a /etc/containerd/config.toml
+version = 2
+[plugins]
+  [plugins."io.containerd.grpc.v1.cri"]
+    [plugins."io.containerd.grpc.v1.cri".containerd]
+      default_runtime_name = "nvidia"
+
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia]
+          privileged_without_host_devices = false
+          runtime_engine = ""
+          runtime_root = ""
+          runtime_type = "io.containerd.runc.v2"
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia.options]
+            BinaryName = "/usr/bin/nvidia-container-runtime"
+EOF
+
+sudo systemctl restart containerd
+```
+
 
 Once you have configured the options above on all the GPU nodes in your cluster, you can enable GPU support by deploying the following Daemonset (**Non-mig gpu only**):
 ``` bash
