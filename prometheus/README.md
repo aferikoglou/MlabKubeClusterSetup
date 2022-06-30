@@ -159,9 +159,13 @@ version = 2
             BinaryName = "/usr/bin/nvidia-container-runtime"
 EOF
 
+exit
+
 sudo systemctl restart containerd
 ```
 
+# Step 4: Installing NVIDIA device plugin to manage GPUs on cluster's nodes
+> Note: There is also the option of gpu-operator which is designed by NVIDIA and uses the operator framework within Kubernetes to automate the management of all NVIDIA software components needed to provision GPU. Documentation on how to deploy the operator can be found [here](https://github.com/aferikoglou/mlab-k8s-cluster-setup/blob/main/gpu-operator/README.md). If you decide to install gpu-operator you can skip this step and continue from step 5. Also, if you decide to install the gpu-operator there is no need to install the dcgm-exporter.
 
 Once you have configured the options above on all the GPU nodes in your cluster, you can enable GPU support by deploying the following Daemonset (**Non-mig gpu only**):
 ``` bash
@@ -259,7 +263,7 @@ docker tag nvcr.io/nvidia/k8s-device-plugin:v0.10.0 nvcr.io/nvidia/k8s-device-pl
 ```
 
 
-# Step 4: Installing Prometheus:
+# Step 5: Installing Prometheus:
 
 ###  First add helm repo:
 ``` bash
@@ -372,7 +376,7 @@ helm install prometheus-community/kube-prometheus-stack \
    --values /tmp/kube-prometheus-stack.values
 ```
 
-### Step 5: Patching the Grafana Service
+### Step 6: Patching the Grafana Service
 
 By default, Grafana uses a ClusterIP to expose the ports on which the service is accessible. This can be changed to a NodePort instead, so the page is accessible from the browser, similar to the Prometheus dashboard.
 
