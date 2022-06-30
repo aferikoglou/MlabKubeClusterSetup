@@ -182,7 +182,7 @@ sudo kubeadm reset -f
 sudo rm -fr /etc/kubernetes/; sudo rm -fr ~/.kube/; sudo rm -fr /var/lib/etcd; sudo rm -rf /var/lib/cni/; sudo rm -rf /etc/cni/net.d
 sudo systemctl daemon-reload
 sudo iptables -F && sudo iptables -t nat -F && sudo iptables -t mangle -F && sudo iptables -X
-sudo docker rm -f `sudo docker ps -a | grep "k8s_" | awk '{print $1}'` 2&>1 > /dev/null
+sudo docker rm -f `sudo docker ps -a | grep "k8s_" | awk '{print $1}'` 2>&1 > /dev/null
 sudo ip link delete cni0
 ```
 If you were using flannel then delete the following interface:
@@ -211,7 +211,7 @@ sudo systemctl daemon-reload
 sudo iptables -F && sudo iptables -t nat -F && sudo iptables -t mangle -F && sudo iptables -X
 
 # remove all running docker containers
-sudo docker rm -f `sudo docker ps -a | grep "k8s_" | awk '{print $1}'` 2&>1 > /dev/null
+sudo docker rm -f `sudo docker ps -a | grep "k8s_" | awk '{print $1}'` 2>&1 > /dev/null
 sudo ip link delete cni0
 ```
 If you were using flannel then delete the following interface:

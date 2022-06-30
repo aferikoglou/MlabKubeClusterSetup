@@ -304,6 +304,7 @@ func main() {
 	var start []string = make([]string, len(files))
 	var end []string = make([]string, len(files))
 	var logs []string = make([]string, len(files))
+	var nodeNames []string = make([]string, len(files))
 	var duration []float64 = make([]float64, len(files))
 	count := 0
 	for i, file := range files {
@@ -329,9 +330,9 @@ func main() {
 			tmp := strings.Split(filePath, "/")
 			filename := strings.Split(tmp[len(tmp)-1], ".")[0]
 
-			start[ind], end[ind], duration[ind], logs[ind], newErr = benchmark.Benchmark(configPath, filePath)
+			start[ind], end[ind], duration[ind], logs[ind], nodeNames[ind], newErr = benchmark.Benchmark(configPath, filePath)
 			if inArray(ind, appendInd) {
-				outfile = fmt.Sprintf("%s_%s", filename, start[ind])
+				outfile = fmt.Sprintf("%s_%s_%s", filename, nodeNames, start[ind])
 			} else {
 				outfile = filename
 			}

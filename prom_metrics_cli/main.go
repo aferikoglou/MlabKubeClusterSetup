@@ -46,7 +46,7 @@ func ParseCommandLineArgs() map[string]interface{} {
 	var path list
 	var stringParams list
 	var interval list
-	flag.StringVar(&endpoint, "e", "http://localhost:9090/", "Prometheus endpoint")
+	flag.StringVar(&endpoint, "e", "http://localhost:30090/", "Prometheus endpoint")
 	flag.Var(&path, "p", "Expression query path list (default 'api/v1/query')")
 	flag.Var(&stringParams, "params", "Query parameters as json string list")
 	flag.Var(&interval, "i", "If -i is set then an interval will be returned ending at current time."+

@@ -79,20 +79,21 @@ func fixTime(hours, minutes, seconds int) (h, m, s string) {
 	return h, m, s
 }
 
-func Benchmark(configPath string, yamlPath string) (begin string, end string, durationSecs float64, logs string, err error) {
+func Benchmark(configPath string, yamlPath string) (begin string, end string, durationSecs float64, logs string, nodeName string, err error) {
 
 	var wg sync.WaitGroup
 	var start time.Time
 	var pod Specification
+	nodeName = ""
 
 	yamlFile, err := ioutil.ReadFile(yamlPath)
 	if err != nil {
-		return "", "", -1, "", err
+		return "", "", -1, "", nodeName, err
 	}
 
 	err = yaml.Unmarshal(yamlFile, &pod)
 	if err != nil {
-		return "", "", -1, "", err
+		return "", "", -1, "", nodeName, err
 	}
 
 	// If no namespace is provided in the file then the pod will be automatically created in the default namespace
@@ -103,13 +104,13 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 	// Create the config struct
 	config, err := clientcmd.BuildConfigFromFlags("", configPath)
 	if err != nil {
-		return "", "", -1, "", err
+		return "", "", -1, "", nodeName, err
 	}
 
 	// Create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return "", "", -1, "", err
+		return "", "", -1, "", nodeName, err
 	}
 
 	FieldSelector := "metadata.name=" + pod.Metadata.Name
@@ -117,7 +118,7 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 	// If pod already exists we have to delete it first
 	list, err := pods.ListPods(clientset, pod.Metadata.Namespace, FieldSelector)
 	if err != nil {
-		return "", "", -1, "", err
+		return "", "", -1, "", nodeName, err
 	}
 
 	if len(list.Items) > 0 {
@@ -163,6 +164,7 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 			}
 			if p.Status.Phase == corev1.PodRunning {
 				// When pod gets ready start counting
+				nodeName = p.Spec.NodeName
 				start = time.Now()
 			}
 			log.Printf("Pod's status: %s\n", p.Status.Phase)
@@ -184,7 +186,7 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 	wg.Wait()
 
 	if failed {
-		return "", "", -1, logs, fmt.Errorf(fmt.Sprintf("Pod %s failed", pod.Metadata.Name))
+		return "", "", -1, logs, nodeName, fmt.Errorf(fmt.Sprintf("Pod %s failed", pod.Metadata.Name))
 	}
 
 	t := time.Now()
@@ -200,5 +202,5 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 	endHour, endMinutes, endSeconds := fixTime(start.Add(duration).Clock())
 	end = fmt.Sprintf("%s-%s-%sT%s:%s:%sZ", endYear, endMonth, endDay, endHour, endMinutes, endSeconds)
 
-	return begin, end, durationSecs, logs, nil
+	return begin, end, durationSecs, logs, nodeName, nil
 }

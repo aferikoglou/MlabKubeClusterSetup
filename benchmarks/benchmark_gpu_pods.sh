@@ -83,7 +83,7 @@ then
   YAML="$PWD/mlperf_gpu_pods"
 fi
 
-kubectl port-forward -n prometheus svc/prometheus-operated 9090:9090 >/dev/null 2>&1 & disown
-PORT_FORWARD=$!
+# kubectl port-forward -n prometheus svc/prometheus-operated 9090:9090 >/dev/null 2>&1 & disown
+# PORT_FORWARD=$!
 ./bin/main -c $CONFIG -b $BATCH -yaml $YAML $NO $YES $APPEND -s $SLEEP
-kill $PORT_FORWARD
+# kill $PORT_FORWARD
