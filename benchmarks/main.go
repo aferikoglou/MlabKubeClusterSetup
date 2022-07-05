@@ -240,7 +240,7 @@ func main() {
 		}
 	}
 
-	if len(files) == 0{
+	if len(files) == 0 {
 		log.Fatalf("Directory %s is empty", yamlPath)
 	}
 
@@ -332,7 +332,12 @@ func main() {
 
 			start[ind], end[ind], duration[ind], logs[ind], nodeNames[ind], newErr = benchmark.Benchmark(configPath, filePath)
 			if inArray(ind, appendInd) {
-				outfile = fmt.Sprintf("%s_%s_%s", filename, nodeNames, start[ind])
+				outfile = fmt.Sprintf(
+					"%s_%s_%s",
+					filename,
+					strings.ReplaceAll(nodeNames[ind], "-", "_"),
+					strings.ReplaceAll(start[ind], "-", "_"),
+				)
 			} else {
 				outfile = filename
 			}
@@ -355,7 +360,7 @@ func main() {
 				log.Printf("Error occured while running benchmarks for file %s: %+v", filename, newErr)
 				return
 			}
-			
+
 			_, newErr = writeFile(outPath, logsFile, logs[ind])
 			if newErr != nil {
 				log.Printf("%+v, exiting", newErr)
