@@ -19,7 +19,8 @@
 ---
 ### For a full tutorial on how to setup  dcgm exporter click [here](https://github.com/aferikoglou/mlab-k8s-cluster-setup/tree/main/dcgm_exporter/README.md) (kubernetes + Prometheus required).
 ---
-
+### For a full tutorial on how to partition Multi-Instance GPUs (MIG) click [here](https://github.com/aferikoglou/mlab-k8s-cluster-setup/tree/main/MIG/README.md) (NVIDIA driver + CUDA library required).
+---
 > Note: GPG keys are refreshed from time to time, thus if you are getting errors when updating apt like this one:
 ```
 The following signatures couldn't be verified because the public key is not available: NO_PUBKEY

@@ -61,7 +61,7 @@ sudo apt-get -y install cuda-drivers-510
 
 The PATH variable needs to include
 
- \$ export PATH=/usr/local/cuda-11.6/bin${PATH:+:${PATH}}. Nsight Compute has moved to */opt/nvidia/nsight-compute/* only in rpm/deb installation method. When using .run installer it is still located under /usr/local/cuda-11.6/.
+$ export PATH=/usr/local/cuda-11.6/bin${PATH:+:${PATH}}. Nsight Compute has moved to */opt/nvidia/nsight-compute/* only in rpm/deb installation method. When using .run installer it is still located under /usr/local/cuda-11.6/.
 
 To add this path to the PATH variable:
 ``` bash
@@ -251,9 +251,69 @@ Verify that all pods are running:
 ```bash
 kubectl get pods -A
 ```
-and that labels have been added to gpu nodes:
+and that labels have been added to gpu nodes by gpu feature discovery:
 ```bash
 kubectl get node -o json | jq '.items[].metadata.labels'
+```
+
+### NOTE:
+Install nvidia device plugin with multiple configurations (1 for MIG gpus and 1 with no MIG strategy):
+
+```
+cat << EOF > /tmp/dp-example-config0.yaml
+version: v1
+flags:
+  migStrategy: "none"
+  failOnInitError: true
+  nvidiaDriverRoot: "/"
+  plugin:
+    passDeviceSpecs: false
+    deviceListStrategy: envvar
+    deviceIDStrategy: uuid
+EOF
+
+
+cat << EOF > /tmp/dp-example-config1.yaml
+version: v1
+flags:
+  migStrategy: "single" # Only change from config0.yaml
+  failOnInitError: true
+  nvidiaDriverRoot: "/"
+  plugin:
+    passDeviceSpecs: false
+    deviceListStrategy: envvar
+    deviceIDStrategy: uuid
+EOF
+```
+
+and now deploy the helm chart with the config map pointing at both configs:
+```
+helm install nvdp/nvidia-device-plugin \
+   --version=0.7.0 \
+   --generate-name \
+   --set migStrategy=single \
+   --set config.default=config0 \
+   --set-file config.map.config0=/tmp/dp-example-config0.yaml \
+   --set-file config.map.config1=/tmp/dp-example-config1.yaml
+helm install \
+   --version=0.2.0 \
+   --generate-name \
+   --set migStrategy=single \
+   nvgfd/gpu-feature-discovery
+```
+
+The above command sets 2 configurations named "config0" and "config1" and sets "config0" to the default configuration. 
+All you have to do now in order to set a specific configuration for a node is label the node like below:
+
+```
+kubectl label nodes <node-name> --overwrite \
+    nvidia.com/device-plugin.config=<config-name>
+```
+
+Example:
+```
+kubectl label nodes k8s-aferik-gpu-a30 --overwrite \
+    nvidia.com/device-plugin.config=config1
 ```
 
 ### Building and Running locally with Docker

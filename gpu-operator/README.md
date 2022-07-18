@@ -9,8 +9,7 @@ In this tutorial, it is assumed that NVIDIA drivers and NVIDIA container toolkit
 
 ## Installing gpu-operator via helm chart:
 ```bash
-helm install --wait --generate-name \                                  
-     -n gpu-operator --create-namespace \
+helm install --wait --generate-name -n gpu-operator --create-namespace \
      nvidia/gpu-operator \
      --set driver.enabled=false \
      --set toolkit.enabled=false \
