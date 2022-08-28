@@ -1,5 +1,7 @@
 ## Let's first install nvidia graphics card drivers(same way on each gpu node), nvidia cuda driver(same way on each gpu node) and nvidia device plugin(using kubectl i.e. on master node) since we will be requiring prometheus to record gpu-metrics too
 ---
+>Note: In order to install nvidia driver on your pc or VM you first need to make sure it is supported by your gpu.
+
 ## Step 1: Install the nvidia graphics card driver
 Visit this site: https://www.nvidia.com/en-us/drivers/unix/ in order to realise which is the newest nvidia driver, let's call it XXXX.
 ``` bash
@@ -12,6 +14,8 @@ sudo apt-get update
 # go ahead and install driver which in my case is 510
 sudo apt-get -y install nvidia-driver-510
 ```
+
+Reboot and make sure everything was installed fine:
 >Note: In the case of a [mig gpu](https://www.nvidia.com/en-us/technologies/multi-instance-gpu/) you have to install datacenter drivers [NVIDIA R450+ datacenter driver: 450.80.02+](https://www.nvidia.com/download/driverResults.aspx/165294/). Specifically for NVIDIA A30  GPU you will be needing the [460.73.01](https://www.nvidia.com/Download/driverResults.aspx/173142/) driver version. Learn more here: https://docs.nvidia.com/datacenter/cloud-native/kubernetes/mig-k8s.html. After installing the driver for A30, run the following commands to enable persistence mode:
 ```bash
 sudo -i
@@ -20,14 +24,17 @@ nvidia-smi -pm 1
 
 exit
 ```
->Note: In order to install nvidia driver on your pc or VM you first need to make sure it is supported by your gpu.
-
-Reboot and make sure everything was installed fine:
 ``` bash
 lsmod | grep nvidia
 nvidia-smi
 ```
-and before going on install cuda toolkit:
+
+>Note: If you want to unload the nvidia modules from the kernel, run the following command:
+``` bash
+sudo rmmod nvidia-drm nvidia-modeset nvidia
+```
+
+and before going on, install cuda toolkit:
 ```bash
 sudo apt -y install nvidia-cuda-toolkit
 ```

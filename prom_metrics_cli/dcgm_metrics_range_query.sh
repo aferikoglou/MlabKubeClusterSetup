@@ -52,9 +52,11 @@ done
 
 if [ ! -z "$FILTER" ]
 then
+  echo $FILTER
   FILTER=$(echo $FILTER | tr _ -)
+  echo $FILTER
 else
-    FILTER=".*"
+  FILTER=".*"
 fi
 
 if [ -z "$INTERVAL" ] && [ -z "$START" ] && [ -z "$END" ]

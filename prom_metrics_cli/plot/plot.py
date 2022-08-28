@@ -50,7 +50,7 @@ parser.add_argument('--total', action='store_true', default = False,  help="Add 
 args = parser.parse_args()
 
 if not validate_filename(args.o):
-    print("Filename validation failed, exiting")
+    logging.error("Filename validation failed, exiting")
     parser.print_help()
     sys.exit(1)
 
@@ -82,9 +82,15 @@ plt.figure().set_figheight(10)
 for i, result in enumerate(data["data"]["result"]):
     skip = False
     for k, v in filter.items():
+        print(k,v)
         pattern = re.compile(v)
-        if k not in result["metric"] or not re.search(pattern, result["metric"][k]):
-            logging.warning(f"{v} not found in {k}, skipping result No.{str(i)}")
+        if k not in result["metric"]:
+            logging.warning(f'{k} not in result dict, skipping result No.{str(i)}')
+            skip = True
+            break
+
+        if not re.search(pattern, result["metric"][k]):
+            logging.warning(f'{v} not in "{k}", skipping result No.{str(i)}')
             skip = True
             break
 
@@ -95,6 +101,8 @@ for i, result in enumerate(data["data"]["result"]):
 
     if not args.total or i == 0:
         base = float(result["values"][0][0])
+    else:
+        base = 0
     time = []
     position = []
     for v in result["values"]:

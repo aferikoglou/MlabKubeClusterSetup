@@ -414,7 +414,7 @@ func main() {
 	log.Println(fmt.Sprintf("Total starting time: %s\nTotal ending time: %s", start[minInd], end[maxInd]))
 
 	totalOut := fmt.Sprintf("%s_%s", totalFiles, start[minInd])
-	cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start[minInd], "-e", end[maxInd], "-o", totalOut, "-f", ".*", "--total"}...)
+	cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start[minInd], "-e", end[maxInd], "-o", totalOut, "--total"}...)
 
 	out, newErr := cmd.Output()
 	if newErr != nil {
