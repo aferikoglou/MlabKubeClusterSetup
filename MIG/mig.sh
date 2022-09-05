@@ -27,11 +27,11 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
       echo "usage: Manage MIG partitions on A30 GPU
   options:
-    -i|--instance   Create new MIG partition based on one of the following profiles: [0, 14, 19]
-    -di|--destroy-instance      D   estroy MIG partiion based on one of the following profiles: [0, 14, 19]
-    -e|--enable     Enable MIG mode on the GPU
-    -d|--diable     Disable MIG mode on the GPU
-    -p|--profiles       List MIG profiles
+    -i|--instance  Create new MIG partition based on one of the following profiles: [0, 14, 19]
+    -di|--destroy-instance  Destroy MIG partiion based on one of the following profiles: [0, 14, 19]
+    -e|--enable  Enable MIG mode on the GPU
+    -d|--diable  Disable MIG mode on the GPU
+    -p|--profiles  List MIG profiles"
       exit 0
       ;;
     esac

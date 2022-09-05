@@ -179,21 +179,23 @@ func parsingError() {
 }
 
 func main() {
-	var configPath, yamlPath, logsFile, totalFiles string
+	var configPath, promURL, yamlPath, logsFile, totalFiles string
 	var autoskip, autodelete, appendTime bool
-	var batch, sleep int
+	var batch, sleep, timezone int
 	var wg sync.WaitGroup
 
 	flag.StringVar(&configPath, "c", "/root/.kube/config", "Kube config path")
 	flag.StringVar(&yamlPath, "yaml", "", "Path to the yaml file or to a directory containing the yaml file(s) to be applied.")
 	flag.StringVar(&logsFile, "l", "logs.txt", "Filename to save output logs")
 	flag.StringVar(&totalFiles, "t", "total", "Name for the figures for the total duration")
+	flag.StringVar(&promURL, "url", "http://localhost:30090/", "URL of prometheus service")
 	flag.BoolVar(&autoskip, "n", false, "If this flag is set then if files exist the program will exit")
 	flag.BoolVar(&autodelete, "y", false, "If this flag is set then all existing files will be automatically deleted")
 	flag.BoolVar(&appendTime, "a", false, "If this flag is set then starting time of the benchmarks will be appended on the folders' names")
 	flag.IntVar(&batch, "b", 1, "Number of pods to be ran concurrently")
 	flag.IntVar(&sleep, "s", 60, "Number of seconds to sleep between consecutive batch executions")
-
+	flag.IntVar(&timezone, "tz", +3, "Integer representing your timezone")
+	
 	flag.Parse()
 
 	if yamlPath == "" {
@@ -330,7 +332,7 @@ func main() {
 			tmp := strings.Split(filePath, "/")
 			filename := strings.Split(tmp[len(tmp)-1], ".")[0]
 
-			start[ind], end[ind], duration[ind], logs[ind], nodeNames[ind], newErr = benchmark.Benchmark(configPath, filePath)
+			start[ind], end[ind], duration[ind], logs[ind], nodeNames[ind], newErr = benchmark.Benchmark(timezone, configPath, filePath)
 			if inArray(ind, appendInd) {
 				outfile = fmt.Sprintf(
 					"%s_%s_%s",
@@ -376,7 +378,7 @@ func main() {
 			// and does not expand any glob patterns or handle other expansions, pipelines,
 			// or redirections typically done by shells
 			// Note: args should be provided in variadic form as a slice of strings
-			cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start[ind], "-e", end[ind], "-f", filename, "-o", outfile}...)
+			cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start[ind], "-e", end[ind], "-f", filename, "-o", outfile, "-url", promURL}...)
 
 			out, newErr := cmd.Output()
 			if newErr != nil {
@@ -414,7 +416,7 @@ func main() {
 	log.Println(fmt.Sprintf("Total starting time: %s\nTotal ending time: %s", start[minInd], end[maxInd]))
 
 	totalOut := fmt.Sprintf("%s_%s", totalFiles, start[minInd])
-	cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start[minInd], "-e", end[maxInd], "-o", totalOut, "--total"}...)
+	cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start[minInd], "-e", end[maxInd], "-o", totalOut, "--total", "-url", promURL}...)
 
 	out, newErr := cmd.Output()
 	if newErr != nil {
@@ -424,5 +426,5 @@ func main() {
 		}
 		log.Fatal(newErr)
 	}
-	log.Printf("Total figures saved at prom_metrics_cli/plot/figures/total/%s\n", totalOut)
+	log.Printf("Total figures saved at prom_metrics_cli/plot/figures/%s\n", totalOut)
 }

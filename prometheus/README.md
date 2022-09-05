@@ -378,6 +378,7 @@ helm install prometheus-community/kube-prometheus-stack \
 helm inspect values prometheus-community/kube-prometheus-stack > /tmp/kube-prometheus-stack.values
 
 vim /tmp/kube-prometheus-stack.values
+# Note: in this file you can also search for the "interval" keyword and change the prometheus' scraping intevals
 ```
 
 ## And change the lines:

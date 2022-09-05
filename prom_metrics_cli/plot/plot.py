@@ -61,7 +61,11 @@ if args.filter is not None:
     try:
         filter = json.loads(args.filter)
     except:
+        filter = None
         logging.warning("filter parameter is not json serializable, ignoring.")
+else:
+    filter = None
+
 
 data = input()
 
@@ -80,22 +84,22 @@ lines = 0
 plt.figure().set_figwidth(10)
 plt.figure().set_figheight(10)
 for i, result in enumerate(data["data"]["result"]):
-    skip = False
-    for k, v in filter.items():
-        print(k,v)
-        pattern = re.compile(v)
-        if k not in result["metric"]:
-            logging.warning(f'{k} not in result dict, skipping result No.{str(i)}')
-            skip = True
-            break
+    if filter is not None:
+        skip = False
+    
+        for k, v in filter.items():
+            pattern = re.compile(v)
+            if k not in result["metric"]:
+                logging.warning(f'{k} not in result dict, ignoring filter')
+                continue
 
-        if not re.search(pattern, result["metric"][k]):
-            logging.warning(f'{v} not in "{k}", skipping result No.{str(i)}')
-            skip = True
-            break
+            if not re.search(pattern, result["metric"][k]):
+                logging.warning(f'{v} not in "{k}", skipping result No.{str(i)}')
+                skip = True
+                break
 
-    if skip:
-        continue
+        if skip:
+            continue
 
     lines += 1
 

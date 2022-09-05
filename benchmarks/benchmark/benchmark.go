@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strings"
 	"math"
 	"strconv"
 	"sync"
@@ -79,7 +80,7 @@ func fixTime(hours, minutes, seconds int) (h, m, s string) {
 	return h, m, s
 }
 
-func Benchmark(configPath string, yamlPath string) (begin string, end string, durationSecs float64, logs string, nodeName string, err error) {
+func Benchmark(timezone int, configPath string, yamlPath string) (begin string, end string, durationSecs float64, logs string, nodeName string, err error) {
 
 	var wg sync.WaitGroup
 	var start time.Time
@@ -115,7 +116,7 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 
 	FieldSelector := "metadata.name=" + pod.Metadata.Name
 
-	// If pod already exists we have to delete it first
+	// If pod already exists delete it first
 	list, err := pods.ListPods(clientset, pod.Metadata.Namespace, FieldSelector)
 	if err != nil {
 		return "", "", -1, "", nodeName, err
@@ -153,9 +154,11 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 		log.Fatal(err)
 	}
 
+	tmp := strings.Split(yamlPath, "/")
+	filename := strings.Split(tmp[len(tmp)-1], ".")[0]
 	failed := false
 	wg.Add(1)
-	go func() {
+	go func(filename string, started bool) {
 		defer wg.Done()
 		for event := range watch.ResultChan() {
 			p, ok := event.Object.(*corev1.Pod)
@@ -165,9 +168,13 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 			if p.Status.Phase == corev1.PodRunning {
 				// When pod gets ready start counting
 				nodeName = p.Spec.NodeName
-				start = time.Now()
+				if (!started) {
+					started = true
+					diff := -1 * time.Duration(timezone) * time.Hour
+					start = time.Now().Add(diff)
+				}
 			}
-			log.Printf("Pod's status: %s\n", p.Status.Phase)
+			log.Printf("%s pod's status: %s\n", filename, p.Status.Phase)
 			if p.Status.Phase == corev1.PodSucceeded {
 				// When pod's state becomes Succeeded delete the pod and break out of the loop
 				logs = pods.GetLogs(clientset, *p)
@@ -180,7 +187,7 @@ func Benchmark(configPath string, yamlPath string) (begin string, end string, du
 			}
 		}
 		pods.DeletePod(configPath, pod.Metadata.Namespace, pod.Metadata.Name)
-	}()
+	}(filename, false)
 
 	// Wait for the goroutine to finish
 	wg.Wait()

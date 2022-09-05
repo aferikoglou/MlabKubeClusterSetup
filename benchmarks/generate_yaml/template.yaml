@@ -11,6 +11,7 @@ spec:
   containers:
     - name: mlperf-infer-imgclassify-gpu
       image: tzourhs/mlperf-infer-imgclassify-gpu:1.4
+      imagePullPolicy: IfNotPresent
       env:
       - name: DATA_DIR
         value: "/tmp/mlperf/data/{data}"
@@ -24,5 +25,7 @@ spec:
       workingDir: "/tmp/inference/vision/classification_and_detection/"
       command: ["/bin/bash", "-c", "./run_local.sh {backend} {model} gpu --accuracy"]
       resources:
+        requests:
+          ephemeral-storage: "7Gi"
         limits:
           nvidia.com/gpu: 1

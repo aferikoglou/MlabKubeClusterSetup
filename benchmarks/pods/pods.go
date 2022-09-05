@@ -26,8 +26,7 @@ func ApplyPod(kubeconfig string, filename string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("File data: %q \n", string(b))
-
+	
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
 		log.Fatal(err)

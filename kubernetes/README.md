@@ -99,8 +99,14 @@ sudo sed -i '/ swap / s/^/#/' /etc/fstab
 sudo kubeadm reset -f
 # remove previous configurations:
 sudo rm -r ~/.kube
+
+# NOTE: In the following command consider using --cri-socket argument to define a specific container runtime
+# e.g. docker since it is no longer the default runtime since dockershim got deprecated after kubernetes v1.20.
+# If you want to use docker the --cri-socket is unix:///var/run/cri-dockerd.sock but first you have to install
+# the docker engine and cri-dockerd.sock as shown here: https://github.com/Mirantis/cri-dockerd.
+
 # initialize new control plane:
-sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16 # --cri-socket unix:///var/run/cri-dockerd.sock
 # A couple of notes:
 # 1. --pod-network-cidr=10.244.0.0/16 is the appropriate network for flannel cni which we will be using, --pod-network-cidr=192.168.0.0/16 is for calico
 # 2. We could have also used --apiserver-advertise-address=<my_addr> to specify which ip we want the control plane to advertise to others, but since we didn't, kubelet will find the default network inteface and use its ip.

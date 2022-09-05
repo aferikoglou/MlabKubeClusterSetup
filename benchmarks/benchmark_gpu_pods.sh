@@ -5,6 +5,11 @@ cd "$parent_path"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
+    -url)
+      PROM_URL="$2"
+      shift
+      shift
+      ;;
     -c|--config)
       CONFIG="$2"
       shift
@@ -46,7 +51,8 @@ while [[ $# -gt 0 ]]; do
     -a|--append Append times on folders' names
     --no Boolean argument to skip loop if files exist
     --yes Boolean argument to delete files if they exist
-    -s|--sleep Number of seconds to sleep between each loop. Default=60 secs"
+    -s|--sleep Number of seconds to sleep between each loop. Default=60 secs
+    -url URL of prometheus service"
       exit 0
       ;;
     *)
@@ -61,6 +67,11 @@ if [ -z "$CONFIG" ]
 then
     echo "-c|--config argument not set, default: CONFIG=/root/.kube/config"
     CONFIG="/root/.kube/config"
+fi
+
+if [ -z "$PROM_URL" ]
+then
+    PROM_URL="http://localhost:30090/"
 fi
 
 if [ -z "$BATCH" ]
@@ -85,5 +96,5 @@ fi
 
 # kubectl port-forward -n prometheus svc/prometheus-operated 9090:9090 >/dev/null 2>&1 & disown
 # PORT_FORWARD=$!
-./bin/main -c $CONFIG -b $BATCH -yaml $YAML $NO $YES $APPEND -s $SLEEP
+./bin/main -c $CONFIG -b $BATCH -yaml $YAML $NO $YES $APPEND -s $SLEEP -url $PROM_URL
 # kill $PORT_FORWARD
