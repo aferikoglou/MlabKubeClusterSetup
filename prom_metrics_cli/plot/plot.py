@@ -46,6 +46,9 @@ parser.add_argument('-o', action='store', required = True ,  help="Name of the o
 parser.add_argument('-filter', action='store', required = False,  help="Json string where keys correspond to json fields \
     and values correspond to the values you want to keep. Values can also be regex.")
 parser.add_argument('--total', action='store_true', default = False,  help="Add all the metrics from the json object in a single diagram")
+parser.add_argument('--linewidth', type=int, default = 1,  help="Plot's line's linewidth")
+parser.add_argument('--figwidth', type=int, default = 10,  help="Figure's width")
+parser.add_argument('--figheight', type=int, default = 10,  help="Figure's height")
 
 args = parser.parse_args()
 
@@ -81,8 +84,8 @@ except:
 
 legend = []
 lines = 0
-plt.figure().set_figwidth(10)
-plt.figure().set_figheight(10)
+plt.figure().set_figwidth(args.figwidth)
+plt.figure().set_figheight(args.figheight)
 for i, result in enumerate(data["data"]["result"]):
     if filter is not None:
         skip = False
@@ -105,15 +108,14 @@ for i, result in enumerate(data["data"]["result"]):
 
     if not args.total or i == 0:
         base = float(result["values"][0][0])
-    else:
-        base = 0
+    
     time = []
     position = []
     for v in result["values"]:
         time.append(float(v[0]) - base)
         position.append(float(v[1]))
 
-    plt.plot(time, position, linewidth=1)
+    plt.plot(time, position, linewidth=args.linewidth)
     plt.xlabel(args.x)
     if args.yf is None or args.yf not in result["metric"].keys():
         plt.ylabel(args.y)
@@ -139,9 +141,10 @@ for i, result in enumerate(data["data"]["result"]):
         plt.tight_layout()
         plt.savefig(filepath + "/" + args.o + "_" + str(max_id) + '.png')
         plt.figure().clear()
+    
 
 if args.total and lines > 0:
     max_id = find_max_id(filepath, args.o)
     plt.tight_layout()
-    plt.savefig(filepath + "/" + args.o + "_" + str(max_id) + '.png', linewidth=1)
+    plt.savefig(filepath + "/" + args.o + "_" + str(max_id) + '.png',)
     
