@@ -63,7 +63,21 @@ then
     PARTITION="0,4g.24gb"
 elif [[ ! -z "$PARTITION" ]]
 then 
-    echo -e "partition can be one of the following: {0, 14, 19}"
+    echo -e "partition must be one of the following: {0, 14, 19}"
+fi
+
+if [[ "$DESTROY" == "14" ]] 
+then 
+    DESTROY="14,2g.6gb"
+elif [[ "$DESTROY" == "19" ]]
+then 
+    DESTROY="19,1g.3gb"
+elif [[ "$DESTROY" == "0" ]]
+then
+    DESTROY="0,4g.24gb"
+elif [[ ! -z "$DESTROY" ]]
+then 
+    echo -e "partition must be one of the following: {0, 14, 19}"
 fi
 
 if [[ $ENABLE == "True" ]] 

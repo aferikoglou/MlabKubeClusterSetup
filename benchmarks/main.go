@@ -179,9 +179,9 @@ func parsingError() {
 }
 
 func main() {
-	var configPath, promURL, yamlPath, logsFile, totalFiles string
+	var configPath, promURL, yamlPath, logsFile, totalFiles, timezone string
 	var autoskip, autodelete, appendTime bool
-	var batch, sleep, timezone int
+	var batch, sleep int
 	var wg sync.WaitGroup
 
 	flag.StringVar(&configPath, "c", "/root/.kube/config", "Kube config path")
@@ -189,12 +189,12 @@ func main() {
 	flag.StringVar(&logsFile, "l", "logs.txt", "Filename to save output logs")
 	flag.StringVar(&totalFiles, "t", "total", "Name for the figures for the total duration")
 	flag.StringVar(&promURL, "url", "http://localhost:30090/", "URL of prometheus service")
+	flag.StringVar(&timezone, "tz", "UTC", "Location related to the timezone")
 	flag.BoolVar(&autoskip, "n", false, "If this flag is set then if files exist the program will exit")
 	flag.BoolVar(&autodelete, "y", false, "If this flag is set then all existing files will be automatically deleted")
 	flag.BoolVar(&appendTime, "a", false, "If this flag is set then starting time of the benchmarks will be appended on the folders' names")
 	flag.IntVar(&batch, "b", 1, "Number of pods to be ran concurrently")
 	flag.IntVar(&sleep, "s", 60, "Number of seconds to sleep between consecutive batch executions")
-	flag.IntVar(&timezone, "tz", +3, "Integer representing your timezone")
 	
 	flag.Parse()
 

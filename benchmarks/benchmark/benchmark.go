@@ -57,12 +57,18 @@ func fixDate(year int, month time.Month, day int) (y, m, d string) {
 }
 
 func fixTime(hours, minutes, seconds int) (h, m, s string) {
-	if hours >= 3 && hours < 13 {
-		h = "0" + strconv.Itoa(hours-3)
-	} else if hours >= 13 {
-		h = strconv.Itoa(hours - 3)
-	} else if hours < 3 {
-		h = strconv.Itoa(23 - (3 - (hours + 1)))
+	// if hours >= 3 && hours < 13 {
+	// 	h = "0" + strconv.Itoa(hours-3)
+	// } else if hours >= 13 {
+	// 	h = strconv.Itoa(hours - 3)
+	// } else if hours < 3 {
+	// 	h = strconv.Itoa(23 - (3 - (hours + 1)))
+	// }
+
+	if hours < 10 {
+		h = "0" + strconv.Itoa(hours)
+	} else {
+		h = strconv.Itoa(hours)
 	}
 
 	if minutes < 10 {
@@ -80,12 +86,14 @@ func fixTime(hours, minutes, seconds int) (h, m, s string) {
 	return h, m, s
 }
 
-func Benchmark(timezone int, configPath string, yamlPath string) (begin string, end string, durationSecs float64, logs string, nodeName string, err error) {
+func Benchmark(timezone string, configPath string, yamlPath string) (begin string, end string, durationSecs float64, logs string, nodeName string, err error) {
 
 	var wg sync.WaitGroup
 	var start time.Time
 	var pod Specification
 	nodeName = ""
+	// diff := -time.Hour * time.Duration(timezone)
+	loc, _ := time.LoadLocation(timezone)
 
 	yamlFile, err := ioutil.ReadFile(yamlPath)
 	if err != nil {
@@ -170,8 +178,7 @@ func Benchmark(timezone int, configPath string, yamlPath string) (begin string, 
 				nodeName = p.Spec.NodeName
 				if (!started) {
 					started = true
-					diff := -1 * time.Duration(timezone) * time.Hour
-					start = time.Now().Add(diff)
+					start = time.Now().In(loc)		
 				}
 			}
 			log.Printf("%s pod's status: %s\n", filename, p.Status.Phase)
@@ -196,7 +203,7 @@ func Benchmark(timezone int, configPath string, yamlPath string) (begin string, 
 		return "", "", -1, logs, nodeName, fmt.Errorf(fmt.Sprintf("Pod %s failed", pod.Metadata.Name))
 	}
 
-	t := time.Now()
+	t := time.Now().In(loc)
 	duration := t.Sub(start)
 	// Converting time.Duration to seconds since t.Sub() return value is in nanoseconds
 	durationSecs = float64(duration) / math.Pow(10, 9)
