@@ -127,11 +127,11 @@ kubeadm token create --print-join-command
 ## Step 5: Untaint master node:
 You can find all node's taints from this command:
 ```bash
-kubectl describe $(kubectl get nodes -l node-role.kubernetes.io/control-plane= -o name) | grep Taints -A 10
+kubectl get node -o json | jq '.items[].spec.taints' # in the key field
 ```
 And then run the following command for all the node's taints:
 ```bash
-kubectl taint nodes $(kubectl get nodes -l node-role.kubernetes.io/control-plane= -o name) <taint>-
+kubectl taint nodes $(kubectl get nodes -l node-role.kubernetes.io/control-plane= -o name) <taint-key>:<taint-effect>-
 # Don't forget the '-' in the end
 ```
 Example:

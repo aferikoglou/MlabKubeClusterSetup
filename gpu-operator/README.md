@@ -19,13 +19,13 @@ As seen in the above command -n sets the namespace in which the deployment will 
 
 **mig.strategy** also provides "single" and "mixed" strategies.
 
-If driver.enabled=false is not set then an nvidia driver daemonset will be deployed on all gpu nodes which will install the nvidia drivers. Same for toolkit. It is also possible to explicitly define the version for each component to be installed. There are more information in the links in the end of the tutorial.
+If driver.enabled=false is not set then an nvidia driver daemonset will be deployed on all gpu nodes which will install the nvidia drivers. Same for toolkit. It is also possible to explicitly define the version for each component to be installed. You can find more infromation on this topic [here] (https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/getting-started.html).
 
 Once the gpu-operator is deployed, gpu nodes are labeled with the labels related to their memory, architecture, model, driver memory etc. Among the rest of the labels there are also labels defining which of all the daemonsets will be deployed on this specific node. 
 
 Example:
 ```bash
-kubectl describe node k8s-aferik-gpu-a30 | grep -A 60 Label
+kubectl get node -o json | jq '.items[].metadata.labels'
 ```
 Output:
 ```bash
