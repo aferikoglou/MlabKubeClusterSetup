@@ -78,16 +78,63 @@ EOF
 # verify that extra args environment variable has been added in the third line of your conf file:
 sudo cat /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 ```
-cgroupfs is the appropriate cgroup-driver for docker which we will be using as our container runtime for the sake of simplicity. If you want to use a more sophisticated container runtime for further sandboxing you might have to change this configuration.
+cgroupfs is the appropriate cgroup-driver for docker which we will be using as our container runtime for the sake of simplicity. If you want to use a more sophisticated container runtime for further sandboxing you might have to change this configuration (e.g. for containerd you should use systemd).
 
->Note: For kubernetes version 1.24.0+ the default container runtime is containerd instead of kubernetes. In this case you have to edit the containerd configuration (usually /etc/containerd/config.toml) and remove "cri" from the disabled_plugins:
+>Note: For kubernetes version 1.24.0+ the default container runtime is containerd instead of docker. In this case you have to edit the containerd configuration (/etc/containerd/config.toml) and remove "cri" from the disabled_plugins:
 ```bash
+# Enable the overlay and br_netflilter modules
+sudo modprobe overlay
+sudo modprobe br_netfilter
+# Generate config.toml
+sudo mkdir -p /etc/containerd
+sudo rm /etc/containerd/config.toml
+sudo containerd config default | tee -a /etc/containerd/config.toml
 # You can either use the following command
 sudo sed -i 's/disabled\_plugins\ \=\ \[\"cri\"\]/disabled\_plugins\ \=\ \[\]/g' /etc/containerd/config.toml
-# or do it by your
+# or do it by yourself
 sudo vim /etc/containerd/config.toml
-sudo systemctl restart containerd
 ``` 
+
+Install CNI plugins for containerd
+
+Download the cni-plugins-<OS>-<ARCH>-<VERSION>.tgz archive from https://github.com/containernetworking/plugins/releases , verify its sha256sum, and extract it under /opt/cni/bin:
+
+```bash
+$ mkdir -p /opt/cni/bin
+$ tar Cxzvf /opt/cni/bin cni-plugins-linux-amd64-v1.1.1.tgz
+```
+```
+./
+./macvlan
+./static
+./vlan
+./portmap
+./host-local
+./vrf
+./bridge
+./tuning
+./firewall
+./host-device
+./sbr
+./loopback
+./dhcp
+./ptp
+./ipvlan
+./bandwidth
+```
+
+Finally, if you are using containerd as your container runtime you should change the following configuration in order for containerd to use systemd cgroup driver:
+```
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+  ...
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+    SystemdCgroup = true
+```
+
+and finally: 
+```bash
+sudo systemctl restart containerd
+```
 
 ## Step 4: Initialize the kube cluster:
 
@@ -156,7 +203,7 @@ In order to join more nodes in the cluster you have to repeat the first 3 steps 
 ## A couple useful aliases I like to use for kubectl:
 ```bash
 alias kgp="kubectl get pods --all-namespaces"
-alias kgn="kubectl get nodes"
+alias kgn="kubectl get nodes --all-namespaces -o wide"
 alias kgd="kubectl get deploy"
 ```
 
@@ -165,7 +212,7 @@ alias kgd="kubectl get deploy"
 cat <<EOF | tee -a ~/.bashrc && source ~/.bashrc
 
 alias kgp="kubectl get pods --all-namespaces"
-alias kgn="kubectl get nodes --all-namespaces"
+alias kgn="kubectl get nodes --all-namespaces -o wide"
 alias kgd="kubectl get deploy --all-namespaces"
 EOF
 

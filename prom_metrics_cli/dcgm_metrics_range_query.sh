@@ -49,9 +49,8 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      shift
-      shift
-      ;;
+      echo -e `Unexpected argument: $1`
+      exit 0
   esac
 done
 
@@ -97,6 +96,11 @@ fi
 if [ -z "$STEP" ]
 then 
   STEP="1"
+fi
+
+if [ -z "$TOTAL" ]
+then
+  python plot/parse_mlperf_metrics.py -o "$OUT"
 fi
 
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )

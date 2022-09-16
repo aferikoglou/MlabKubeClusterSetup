@@ -15,6 +15,9 @@ helm install --wait --generate-name -n gpu-operator --create-namespace \
      --set toolkit.enabled=false \
      --set mig.strategy=none
 ```
+
+> Note: gpu-operator may not be compatible with kubernetes versions >= v1.25.0 since RuntimeClass in the node.k8s.io/v1beta1 API version will no longer be served in v1.25.  
+
 As seen in the above command -n sets the namespace in which the deployment will be created, driver.enabled=false means that the driver is preinstalled on all nodes and thus the nvidia driver daemonset does not need to be deployed, toolkit.enabled=false means the nvidia container toolkit is preinstalled and thus the corresponding doesn't need to be installed and finally mig.strategy=none means that the operator won't manage MIG partitions. Feel free to configure the helm chart to fulfill your needs.
 
 **mig.strategy** also provides "single" and "mixed" strategies.

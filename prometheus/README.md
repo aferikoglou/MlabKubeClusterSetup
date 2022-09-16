@@ -11,12 +11,13 @@ sudo apt-get -y purge nvidia*
 sudo add-apt-repository ppa:graphics-drivers
 # update apt
 sudo apt-get update
-# go ahead and install driver which in my case is 510
-sudo apt-get -y install nvidia-driver-510
+# go ahead and install the drivers which in my case is 510
+sudo apt-get -y install nvidia-driver-510 nvidia-dkms-510
 ```
 
-Reboot and make sure everything was installed fine:
 >Note: In the case of a [mig gpu](https://www.nvidia.com/en-us/technologies/multi-instance-gpu/) you have to install datacenter drivers [NVIDIA R450+ datacenter driver: 450.80.02+](https://www.nvidia.com/download/driverResults.aspx/165294/). Specifically for NVIDIA A30  GPU you will be needing the [460.73.01](https://www.nvidia.com/Download/driverResults.aspx/173142/) driver version. Learn more here: https://docs.nvidia.com/datacenter/cloud-native/kubernetes/mig-k8s.html. After installing the driver for A30, run the following commands to enable persistence mode:
+
+Reboot and make sure everything was properly installed:
 ```bash
 sudo -i
 
@@ -56,7 +57,7 @@ sudo mv cuda-$distribution.pin /etc/apt/preferences.d/cuda-repository-pin-600
 Install the CUDA repository public GPG key. Note that on Ubuntu 16.04, replace https with http in the command below.
 ``` bash
 sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/$distribution/x86_64/7fa2af80.pub
-#Setup the CUDA network repository.
+# Setup the CUDA network repository.
 echo "deb http://developer.download.nvidia.com/compute/cuda/repos/$distribution/x86_64 /" | sudo tee /etc/apt/sources.list.d/cuda.list
 ```
 
@@ -169,6 +170,24 @@ EOF
 exit
 
 sudo systemctl restart containerd
+```
+
+If you want to manually change the container runtime without reseting the cluster you have to run the following:
+```bash
+# on the master node:
+kubectl cordon <node-name>                   
+kubectl drain <node-name> --ignore-daemonsets --delete-emptydir-data
+
+# on the worker node:
+sudo systemctl stop kubelet
+sudo vim /var/lib/kubelet/kubeadm-flags.env
+``` 
+In the above file you have to replace --container-runtime-endpoint with the cri socket which corresponds to the containerd runtime you would like to use and then:
+```bash
+# on the worker node:
+sudo systemctl start kubelet
+# on the master node:
+kubectl uncordon <node-name>
 ```
 
 # Step 4: Installing NVIDIA device plugin to manage GPUs on cluster's nodes

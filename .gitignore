@@ -6,3 +6,4 @@ log.txt
 vendor
 mlperf_gpu_pods
 empty
+__pycache__

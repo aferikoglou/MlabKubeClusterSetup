@@ -25,7 +25,5 @@ spec:
       workingDir: "/tmp/inference/vision/classification_and_detection/"
       command: ["/bin/bash", "-c", "./run_local.sh {backend} {model} gpu --accuracy"]
       resources:
-        requests:
-          ephemeral-storage: "7Gi"
         limits:
           nvidia.com/gpu: 1
