@@ -54,6 +54,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+
+cd "$parent_path"
+
 if [ ! -z "$FILTER" ]
 then
   FILTER=$(echo $FILTER | tr _ -)
@@ -102,10 +106,6 @@ if [ -z "$TOTAL" ]
 then
   python plot/parse_mlperf_metrics.py -o "$OUT"
 fi
-
-parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-
-cd "$parent_path"
 
 if [ ! -z "$START" ] && [ ! -z "$END" ]
 then

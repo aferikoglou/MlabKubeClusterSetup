@@ -42,7 +42,7 @@ def find_max_id(dirname: str, outfile: str)-> int:
     return max_id + 1
 
 
-def parse_mlperf_metrics(path: str):
+def parse_mlperf_metrics(path: str) -> dict:
     with open(path, "rb") as file:
         try:
             file.seek(-2, os.SEEK_END)
@@ -51,5 +51,11 @@ def parse_mlperf_metrics(path: str):
         except OSError:
             file.seek(0)
         last_line = file.readline().decode()
-    scenario, qps, mean, time, acc, queries, tiles = [x[1].strip(',') if len(x) > 1 else x[0] for x in [y.split("=") for y in last_line.split(" ")]]
-    return scenario, qps, mean, time, acc, queries, tiles
+    metrics = [(x[0], x[1].strip(',')) if len(x) > 1 else x[0] for x in [y.split("=") for y in last_line.split(" ")]]
+    d = {}
+    for x in metrics:
+        if isinstance(x, tuple):
+            d[x[0]] = x[1]
+        else:
+            d['scenario'] = x
+    return d

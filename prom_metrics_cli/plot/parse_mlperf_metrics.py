@@ -37,24 +37,14 @@ if args.tsv_out is not None and not validate_filename(args.tsv_out):
     sys.exit(1)
 
 try:
-    scenario, qps, mean, time, acc, queries, tiles = parse_mlperf_metrics(logs_filepath)
-        
     d = {}
-    for var_name in [ 
-        "scenario", 
-        "qps", 
-        "mean", 
-        "time", 
-        "acc", 
-        "queries", 
-        "tiles"
-    ]:
-        d[var_name] = eval(var_name)
+    d["name"] = args.o
+    d.update(parse_mlperf_metrics(logs_filepath))
+    
     write_tsv(
         path=filepath + "/" + tsv_name + "_logs.tsv",
         **d
     )
-    d["name"] = args.o
-
-except:
-    logging.error("Couldn't parse logs.txt file")
+    
+except Exception as e:
+    logging.error(f"Couldn't parse logs.txt file: {e}")
