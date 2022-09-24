@@ -7,6 +7,11 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
+    -step)
+      STEP="$2"
+      shift
+      shift
+      ;;
     -i|--interval)
       INTERVAL="$2"
       shift

@@ -4,7 +4,7 @@ import argparse
 import sys
 import logging
 
-parser = argparse.ArgumentParser(description='Parse matplotlib labels.')
+parser = argparse.ArgumentParser(description='Parse mlperf metrics.')
 parser.add_argument(
     '-o', 
     action='store', 

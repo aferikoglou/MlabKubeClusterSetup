@@ -171,8 +171,8 @@ for i, result in enumerate(data["data"]["result"]):
 
     plt.plot(time_x, position_y, linewidth=args.linewidth, label=legend)
     if not args.total:
-        mean_value = np.mean(position_y)
-        variance = np.var(position_y)
+        mean_value = round(np.mean(position_y), 3)
+        variance = round(np.var(position_y), 3)
         
         d = {}
         for var_name in [
@@ -198,8 +198,8 @@ for i, result in enumerate(data["data"]["result"]):
     
 
 if args.total and lines > 0:
-    mean = np.mean(position_y)
-    var = np.var(position_y)
+    mean = round(np.mean(position_y), 3)
+    var = round(np.var(position_y), 3)
     write_tsv(
         path=filepath + "/" + tsv_name + ".tsv",
         names=",".join(pods), 

@@ -195,8 +195,10 @@ func main() {
 	flag.BoolVar(&appendTime, "a", false, "If this flag is set then starting time of the benchmarks will be appended on the folders' names")
 	flag.IntVar(&batch, "b", 1, "Number of pods to be ran concurrently")
 	flag.IntVar(&sleep, "s", 60, "Number of seconds to sleep between consecutive batch executions")
-	
+
 	flag.Parse()
+
+	layout := "2006-01-02T15:04:05Z"
 
 	if yamlPath == "" {
 		fmt.Println("Note: Yaml path cant be empty")
@@ -378,7 +380,21 @@ func main() {
 			// and does not expand any glob patterns or handle other expansions, pipelines,
 			// or redirections typically done by shells
 			// Note: args should be provided in variadic form as a slice of strings
-			cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start[ind], "-e", end[ind], "-f", filename, "-o", outfile, "-url", promURL}...)
+			step := strconv.Itoa(int(duration[ind] / 100))
+			if step == "0" {
+				step = "1"
+			}
+			cmd := exec.Command(
+				"../prom_metrics_cli/dcgm_metrics_range_query.sh",
+				[]string{
+					"-s", start[ind],
+					"-e", end[ind],
+					"-f", filename,
+					"-o", outfile,
+					"-url", promURL,
+					"-step", step,
+				}...,
+			)
 
 			out, newErr := cmd.Output()
 			if newErr != nil {
@@ -415,8 +431,30 @@ func main() {
 
 	log.Println(fmt.Sprintf("Total starting time: %s\nTotal ending time: %s", start[minInd], end[maxInd]))
 
+	totalEndTime, err := time.Parse(layout, end[maxInd])
+	if err != nil {
+		log.Fatal("Unable to convert total ending time")
+	}
+	totalStartTime, err := time.Parse(layout, start[minInd])
+	if err != nil {
+		log.Fatal("Unable to convert total starting time")
+	}
+	step := strconv.Itoa(int(totalEndTime.Sub(totalStartTime).Seconds() / 100))
+	if step == "0" {
+		step = "1"
+	}
 	totalOut := fmt.Sprintf("%s_%s", totalFiles, start[minInd])
-	cmd := exec.Command("../prom_metrics_cli/dcgm_metrics_range_query.sh", []string{"-s", start[minInd], "-e", end[maxInd], "-o", totalOut, "--total", "-url", promURL}...)
+	cmd := exec.Command(
+		"../prom_metrics_cli/dcgm_metrics_range_query.sh",
+		[]string{
+			"-s", start[minInd],
+			"-e", end[maxInd],
+			"-o", totalOut,
+			"--total",
+			"-url", promURL,
+			"-step", step,
+		}...,
+	)
 
 	out, newErr := cmd.Output()
 	if newErr != nil {
