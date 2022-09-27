@@ -1,0 +1,120 @@
+#!/usr/bin/python3
+
+import pandas as pd
+from utils.utils import find_max_id
+import os 
+import argparse
+
+parser = argparse.ArgumentParser(description='Parse metrics of all benchmarks into a single tsv file.')
+parser.add_argument(
+    '-i', 
+    action='store', 
+    required=True ,  
+    help="Path to input log files/figures."
+)
+parser.add_argument(
+    '--tsv-out', 
+    type=str, 
+    required=False,
+    help="Tsv output's path. \
+        If not provided summary will be saved at \
+            /mlab-k8s-cluster-setup/prom_metrics_cli/plot/figures/summary.tsv"
+)
+parser.add_argument(
+    '--benchmark', 
+    type=str, 
+    required=True,
+    help="Name of the benchmark"
+)
+
+args = parser.parse_args()
+
+dirname, _ = os.path.split(os.path.abspath(__file__))
+filepath = os.path.join(dirname, "figures")
+tsv_path = args.tsv_out if (args.tsv_out is not None) \
+    else os.path.join(
+        filepath, 
+        "summary_" + str(find_max_id(filepath, "summary")) + ".ods"
+    )
+header = False if (os.path.exists(tsv_path)) else True
+
+
+# Count benchmarks with common model/backend according to their names
+benchmarks = os.listdir(args.i)
+benchmarks_count = {}
+for dir in benchmarks:
+    benchmark_dir = os.path.join(args.i, dir)
+    files = os.listdir(benchmark_dir)
+    for file in files:
+        if file.endswith("logs.tsv"):
+            metrics_tmp = pd.read_csv(os.path.join(benchmark_dir, file), sep="\t")
+            name_list = metrics_tmp.loc[0, "name"].split('_')
+            name = "_".join(name_list[2:5]) \
+                if "ssd" in metrics_tmp.loc[0, "name"] \
+                else "_".join(name_list[2:4])
+            if name not in benchmarks_count:
+                benchmarks_count[name] = 1
+            else:
+                benchmarks_count[name] += 1
+                break
+
+df = pd.DataFrame([], columns=["name", "benchmark", "scenario", "qps", "mean", "time", "acc", "mAP", "queries", "tiles"])
+metrics = {}
+for dir in benchmarks:
+    benchmark_dir = os.path.join(args.i, dir)
+    files = os.listdir(benchmark_dir)
+    for file in files:
+        if file.endswith("logs.tsv"):
+            metrics_tmp = pd.read_csv(os.path.join(benchmark_dir, file), sep="\t")
+            name_list = metrics_tmp.loc[0, "name"].split('_')
+            name = "_".join(name_list[2:5]) \
+                if "ssd" in metrics_tmp.loc[0, "name"] \
+                else "_".join(name_list[2:4])
+            
+            if name in df["name"].values:
+                for column in metrics_tmp.columns:
+                    if column == "qps":
+                        df.loc[df['name'] == name, "qps"] += metrics_tmp.loc[0, "qps"]
+                    elif column == "mean":
+                        df.loc[df['name'] == name, "mean"] += \
+                            float(metrics_tmp.loc[0, "mean"]) / benchmarks_count[name]
+                    elif column == "time":
+                        if metrics_tmp.loc[0, "time"] > df.loc[df['name'] == name, "time"].values[0]: 
+                            df.loc[df['name'] == name, "time"] = metrics_tmp.loc[0, "time"]
+                    elif column == "acc":
+                        df.loc[df['name'] == name, "acc"] += \
+                            (float(metrics_tmp.loc[0, "acc"].strip('%')) / 100) / benchmarks_count[name]
+                    elif column == "queries":
+                        df.loc[df['name'] == name, "queries"] += metrics_tmp.loc[0, "queries"]
+                    elif column == "tiles":
+                        g = [x.split(':') for x in metrics_tmp.loc[0, "tiles"].split(',')]
+                        tmp = {}
+                        for x1, x2 in g:
+                            tmp[x1] = float(x2)
+                        g = [x.split(':') \
+                            for x in df.loc[df['name'] == name, "tiles"].values[0].split(',')]
+                        new_tiles = []
+                        for x1, x2 in g:
+                            new_tiles.append(str(x1) + ":" + \
+                                str(round(float(x2) + tmp[x1] / benchmarks_count[name], 4)))
+                        df.loc[df['name'] == name, "tiles"] = ",".join(new_tiles)
+                    elif column == "mAP":
+                        df.loc[df['name'] == name, "mAP"] += \
+                            (float(metrics_tmp.loc[0, "mAP"].strip('%')) / 100) / benchmarks_count[name]
+            else:
+                metrics_tmp.loc[0, "name"] = name
+                df.loc[len(df.index)] = metrics_tmp.loc[0]
+                df.loc[len(df.index) - 1, "acc"] = \
+                    (float(df.loc[len(df.index) - 1, "acc"].strip('%')) / 100) / benchmarks_count[name]
+                df.loc[len(df.index) - 1, "mean"] = \
+                    float(df.loc[len(df.index) - 1, "mean"]) / benchmarks_count[name]
+                try:
+                    df.loc[len(df.index) - 1, "mAP"] = \
+                        (float(df.loc[len(df.index) - 1, "mAP"].strip('%')) / 100) / benchmarks_count[name]
+                except:
+                    pass
+            break
+
+df['benchmark'] = [args.benchmark] * len(df)
+
+df.to_csv(tsv_path, mode='a', index=False, header=header, sep="\t")

@@ -1,6 +1,7 @@
 package requests
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -42,7 +43,7 @@ func makeRequest(url string, wg *sync.WaitGroup) {
 		if err != nil {
 			log.Fatalf("%+v\n", err)
 		}
-		log.Printf("%s\n", string(bodyBytes))
+		fmt.Printf("%s\n", string(bodyBytes))
 	} else {
 		log.Printf("Server response with status code: %d", resp.StatusCode)
 	}

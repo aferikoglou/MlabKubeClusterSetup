@@ -81,7 +81,6 @@ if args.filter is not None:
 else:
     filter = None
 
-
 data = input()
 
 try:
@@ -91,9 +90,16 @@ except:
     try:
         data = json.loads(data)
     except:
-        logging.error("Input data not json serializable")
-        sys.exit(1)
-
+        data = input()
+        try:
+            data = json.loads(data)
+        except:
+            data = "".join(data.split(" ")[2:])
+            try:
+                data = json.loads(data)
+            except:
+                logging.error("Input data not json serializable")
+                sys.exit(1)
 
 lines = 0
 plt.figure().set_figwidth(args.figwidth)
@@ -202,10 +208,10 @@ if args.total and lines > 0:
     var = round(np.var(position_y), 3)
     write_tsv(
         path=filepath + "/" + tsv_name + ".tsv",
-        names=",".join(pods), 
+        name=",".join(pods), 
         gpu=",".join(gpus),
-        modelName=",".join(model_names),
-        metric=metric_name, 
+        model_name=",".join(model_names),
+        metric_name=metric_name, 
         mean_value=mean, 
         variance=var
     )

@@ -114,127 +114,86 @@ fi
 
 if [ ! -z "$START" ] && [ ! -z "$END" ]
 then
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_DEC_UTIL'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o "$OUT" -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_DEC_UTIL'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o "$OUT" -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_ENC_UTIL'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_ENC_UTIL'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_FB_FREE'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_FB_FREE'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_FB_USED'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_FB_USED'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_GPU_TEMP'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_GPU_TEMP'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_MEMORY_TEMP'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_MEMORY_TEMP'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_MEM_CLOCK'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_MEM_CLOCK'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_MEM_COPY_UTIL'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_MEM_COPY_UTIL'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_PCIE_REPLAY_COUNTER'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_PCIE_REPLAY_COUNTER'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_POWER_USAGE'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_POWER_USAGE'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_SM_CLOCK'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_SM_CLOCK'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_VGPU_LICENSE_STATUS'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_VGPU_LICENSE_STATUS'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_XID_ERRORS'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_DEV_XID_ERRORS'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_PROF_DRAM_ACTIVE'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_PROF_DRAM_ACTIVE'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_PROF_GR_ENGINE_ACTIVE'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_PROF_GR_ENGINE_ACTIVE'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_PROF_PCIE_RX_BYTES'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_PROF_PCIE_RX_BYTES'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_PROF_PCIE_TX_BYTES'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_PROF_PCIE_TX_BYTES'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_PROF_PIPE_TENSOR_ACTIVE'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': 'DCGM_FI_PROF_PIPE_TENSOR_ACTIVE'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
 else
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_DEC_UTIL'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_DEC_UTIL'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_DEC_UTIL'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o "$OUT" -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_DEC_UTIL'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o "$OUT" -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_ENC_UTIL'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_ENC_UTIL'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_FB_FREE'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_FB_FREE'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_FB_USED'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_FB_USED'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_GPU_TEMP'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_GPU_TEMP'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_MEMORY_TEMP'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_MEMORY_TEMP'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_MEM_CLOCK'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_MEM_CLOCK'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_MEM_COPY_UTIL'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_MEM_COPY_UTIL'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_PCIE_REPLAY_COUNTER'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_PCIE_REPLAY_COUNTER'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_POWER_USAGE'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_POWER_USAGE'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_SM_CLOCK'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_SM_CLOCK'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_VGPU_LICENSE_STATUS'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_VGPU_LICENSE_STATUS'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params"{'step': '$STEP', 'query': 'DCGM_FI_DEV_XID_ERRORS'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params"{'step': '$STEP', 'query': 'DCGM_FI_DEV_XID_ERRORS'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_PROF_DRAM_ACTIVE'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_PROF_DRAM_ACTIVE'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_PROF_GR_ENGINE_ACTIVE'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_PROF_GR_ENGINE_ACTIVE'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_PROF_PCIE_RX_BYTES'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_PROF_PCIE_RX_BYTES'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_PROF_PCIE_TX_BYTES'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_PROF_PCIE_TX_BYTES'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 
-  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_PROF_PIPE_TENSOR_ACTIVE'}" &>> log.txt
-  tail -1 log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+  ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_PROF_PIPE_TENSOR_ACTIVE'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
 fi

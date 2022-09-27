@@ -1,15 +1,17 @@
+#!/usr/bin/python3
+ 
 from utils.utils import parse_mlperf_metrics, write_tsv, validate_filename
 import os 
 import argparse
 import sys
 import logging
 
-parser = argparse.ArgumentParser(description='Parse mlperf metrics.')
+parser = argparse.ArgumentParser(description='Parse mlperf metrics from logs.txt.')
 parser.add_argument(
     '-o', 
     action='store', 
     required=True ,  
-    help="Name of the output png. Name can only contain - _ :\
+    help="Name of the figures' directory. Name can only contain - _ :\
     or alphanumerics and can't start or end with - or _"
 )
 parser.add_argument(
@@ -23,7 +25,7 @@ args = parser.parse_args()
 
 dirname, _ = os.path.split(os.path.abspath(__file__))
 filepath = os.path.join(dirname, "figures", args.o)
-logs_filepath = os.path.join(dirname, "figures", args.o, "logs.txt")
+logs_filepath = os.path.join(filepath, "logs.txt")
 tsv_name = args.tsv_out if (args.tsv_out is not None) else args.o
 
 if not validate_filename(args.o):

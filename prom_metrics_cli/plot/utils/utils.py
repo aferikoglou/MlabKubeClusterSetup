@@ -20,7 +20,7 @@ def write_tsv(path: str, **kwargs) -> None:
 
 
 def validate_filename(filename):
-    pattern  = r'^[a-zA-Z0-9][:a-zA-Z0-9_-]+[a-zA-Z0-9]$'
+    pattern  = r'^[a-zA-Z0-9][.:a-zA-Z0-9_-]+[a-zA-Z0-9]$'
     pat = re.compile(pattern)
     return re.fullmatch(pat, filename)
 
@@ -29,7 +29,7 @@ def find_max_id(dirname: str, outfile: str)-> int:
     max_id = 0
     for filename in os.listdir(dirname):
         tmp = filename.split(".")
-        if (not len(tmp) > 1) or (not "_".join(tmp[0].split("_")[:-1]).startswith(outfile)):
+        if not "_".join(tmp[0].split("_")[:-1]).startswith(outfile):
             continue
         try:
             tmp = int(tmp[0].split("_")[-1])
