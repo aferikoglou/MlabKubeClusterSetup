@@ -16,27 +16,34 @@ parser.add_argument(
     help="Path to input mlperf logs."
 )
 parser.add_argument(
-    '--tsv-out', 
+    '--out', 
     type=str, 
     required=False,
     help="Path to output folder. \
         If not provided heatmaps will be saved at \
-            /mlab-k8s-cluster-setup/prom_metrics_cli/plot/figures/heatmaps"
+            /mlab-k8s-cluster-setup/prom_metrics_cli/plot/figures/heatmaps/mlperf_logs"
 )
 
 args = parser.parse_args()
 
-if args.tsv_out is not None and os.path.isfile(args.tsv_out):
+if args.out is not None and os.path.isfile(args.out):
     print("-i should be a directory")
     sys.exit(0)
 
 mlperflogs_df = pd.read_csv(args.i, sep="\t")
 dirname, _ = os.path.split(os.path.abspath(__file__))
 
-if args.tsv_out is not None:
-    out_path = args.tsv_out
+if args.out is not None:
+    out_path = args.out
+
+    if not os.path.exists(out_path):
+        os.makedirs(out_path)
+
+    max_id_dir = "out_" + str(find_max_id(out_path, "out"))
+    out_path = os.path.join(out_path, max_id_dir)
+    os.makedirs(out_path)
 else:
-    filepath = os.path.join(dirname, "figures", "heatmaps")
+    filepath = os.path.join(dirname, "figures", "heatmaps", "mlperf_logs")
 
     if not os.path.exists(filepath):
         os.makedirs(filepath)
@@ -45,6 +52,16 @@ else:
     out_path = os.path.join(filepath, max_id_dir)
     os.makedirs(out_path)
 
+benchmarks_count = {}
+for row in range(len(mlperflogs_df)):
+    name = mlperflogs_df.loc[row, 'name']
+    benchmark = mlperflogs_df.loc[row, 'benchmark']
+    if name not in benchmarks_count:
+        benchmarks_count[name] = {}
+    if benchmark not in benchmarks_count[name]:
+        benchmarks_count[name][benchmark] = 1
+    else:
+        benchmarks_count[name][benchmark] += 1
 
 d = {}
 for column in mlperflogs_df.columns:
@@ -56,32 +73,11 @@ for column in mlperflogs_df.columns:
         benchmark = mlperflogs_df.loc[row, 'benchmark']
         if benchmark not in d[column]:
             d[column][benchmark] = {}
-        d[column][benchmark][name] = mlperflogs_df.loc[row, column]
+        if name not in d[column][benchmark]:
+            d[column][benchmark][name] = round(float(mlperflogs_df.loc[row, column]) / float(benchmarks_count[name][benchmark]), 4)
+        else:
+            d[column][benchmark][name] += round(float(mlperflogs_df.loc[row, column]) / float(benchmarks_count[name][benchmark]), 4)
 
-new_d = {}
-for k, v in d.items():
-    for k1, v1 in v.items():
-        for k2, v2 in v1.items():
-            if k == "tiles":
-                g = [x.split(':') for x in v2.split(',')]
-                for x1, x2 in g:
-                    if x1 not in new_d:
-                        new_d[x1] = {}
-                    if k1 not in new_d[x1]:
-                        new_d[x1][k1] = {}
-
-                    new_d[x1][k1][k2] = float(x2)
-            elif isinstance(v2, str) and v2.endswith('%'):
-                d[k][k1][k2] = float(v2.strip('%')) / 100
-
-            if k != 'tiles':
-                if d[k][k1][k2] is not None:
-                    d[k][k1][k2] = float(d[k][k1][k2])
-                else:
-                    d[k][k1][k2] = float(0)
-
-del d['tiles']
-d.update(new_d)
 for k, v in d.items():
     if k == "mAP":
         continue

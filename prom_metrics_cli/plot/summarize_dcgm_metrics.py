@@ -33,9 +33,11 @@ dirname, _ = os.path.split(os.path.abspath(__file__))
 filepath = os.path.join(dirname, "figures")
 tsv_path = args.tsv_out if (args.tsv_out is not None) \
     else os.path.join(
-        filepath, 
-        "summary_" + str(find_max_id(filepath, "summary")) + ".ods"
+        filepath,
+        "dcgm_summary_" + str(find_max_id(filepath, "summary")) + ".ods"
     )
+if not os.path.exists(filepath):
+    os.makedirs(filepath)
 header = False if (os.path.exists(tsv_path)) else True
 
 
@@ -46,17 +48,21 @@ for dir in benchmarks:
     benchmark_dir = os.path.join(args.i, dir)
     files = os.listdir(benchmark_dir)
     for file in files:
-        if file.endswith("logs.tsv"):
+        if file.endswith(".tsv") and not file.endswith("logs.tsv") and not file.startswith("total"):
             metrics_tmp = pd.read_csv(os.path.join(benchmark_dir, file), sep="\t")
-            name_list = metrics_tmp.loc[0, "name"].split('_')
-            name = "_".join(name_list[2:5]) \
-                if "ssd" in metrics_tmp.loc[0, "name"] \
-                else "_".join(name_list[2:4])
-            if name not in benchmarks_count:
-                benchmarks_count[name] = 1
-            else:
-                benchmarks_count[name] += 1
-                break
+            for row in range(len(metrics_tmp)):
+                name_list = metrics_tmp.loc[row, "name"].split('_')
+                name = "_".join(name_list[2:5]) \
+                    if "ssd" in metrics_tmp.loc[row, "name"] \
+                    else "_".join(name_list[2:4])
+                metric_name = metrics_tmp.loc[row, "metric_name"]
+                if name not in benchmarks_count:
+                    benchmarks_count[name] = {}
+                if metric_name not in benchmarks_count[name]:
+                    benchmarks_count[name][metric_name] = 1
+                else:
+                    benchmarks_count[name][metric_name] += 1
+            break
 
 df = pd.DataFrame([], columns=["name", "benchmark", "gpu", "model_name", "metric_name", "mean_value", "variance"])
 metrics = {}
@@ -64,29 +70,27 @@ for dir in benchmarks:
     benchmark_dir = os.path.join(args.i, dir)
     files = os.listdir(benchmark_dir)
     for file in files:
-        if file.endswith(".tsv") and not file.endswith("logs.tsv"):
+        if file.endswith(".tsv") and not file.endswith("logs.tsv") and not file.startswith("total"):
             metrics_tmp = pd.read_csv(os.path.join(benchmark_dir, file), sep="\t")
             for row in range(len(metrics_tmp)):
-                if file.startswith("total"):
-                    name = "total"
-                else:
-                    name_list = metrics_tmp.loc[row, "name"].split('_')
-                    name = "_".join(name_list[2:5]) \
-                        if "ssd" in metrics_tmp.loc[row, "name"] \
-                        else "_".join(name_list[2:4])
+                name_list = metrics_tmp.loc[row, "name"].split('_')
+                name = "_".join(name_list[2:5]) \
+                    if "ssd" in metrics_tmp.loc[row, "name"] \
+                    else "_".join(name_list[2:4])
                 metric_name = metrics_tmp.loc[row, "metric_name"]
 
                 if not df.loc[(df["name"] == name) & (df["metric_name"] == metric_name)].empty:
                     for column in metrics_tmp.columns:
                         if column == "mean_value":
                             df.loc[(df["name"] == name) & (df["metric_name"] == metric_name), "mean_value"] += \
-                                float(metrics_tmp.loc[row, "mean_value"]) / benchmarks_count[name]
+                                float(metrics_tmp.loc[row, "mean_value"]) / benchmarks_count[name][metric_name]
                         elif column == "variance":
                             df.loc[(df["name"] == name) & (df["metric_name"] == metric_name), "variance"] += \
-                                float(metrics_tmp.loc[row, "variance"]) / benchmarks_count[name]
+                                float(metrics_tmp.loc[row, "variance"]) / benchmarks_count[name][metric_name]
                 else:
                     metrics_tmp.loc[row, "name"] = name
                     df.loc[len(df.index)] = metrics_tmp.loc[row]
+                    df.loc[len(df.index) - 1, "mean_value"] = df.loc[len(df.index) - 1, "mean_value"] / benchmarks_count[name][metric_name]
             break
 
 df['benchmark'] = [args.benchmark] * len(df)

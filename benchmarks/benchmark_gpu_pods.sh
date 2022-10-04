@@ -1,12 +1,17 @@
 #!/bin/bash
 
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-cd "$parent_path"
+cd $parent_path
 
 while [[ $# -gt 0 ]]; do
   case $1 in
     -url)
       PROM_URL="$2"
+      shift
+      shift
+      ;;
+    --benchmark)
+      BENCHMARK="$2"
       shift
       shift
       ;;
@@ -42,6 +47,11 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
+    -o|--out)
+      OUT="$2"
+      shift
+      shift
+      ;;
     -h|--help)
       echo "usage: Loop through all mlperf_gpu_pods and run the benchmarks
   options:
@@ -52,7 +62,8 @@ while [[ $# -gt 0 ]]; do
     --no Boolean argument to skip loop if files exist
     --yes Boolean argument to delete files if they exist
     -s|--sleep Number of seconds to sleep between each loop. Default=60 secs
-    -url URL of prometheus service"
+    -url URL of prometheus service
+    --benchmark Name for the benchmark"
       exit 0
       ;;
     *)
@@ -67,6 +78,17 @@ if [ -z "$CONFIG" ]
 then
     echo "-c|--config argument not set, default: CONFIG=/root/.kube/config"
     CONFIG="/root/.kube/config"
+fi
+
+if [ -z "$BENCHMARK" ]
+then
+    echo "--benchmark can not be empty"
+fi
+
+
+if [ -z "$OUT" ]
+then
+    OUT="$parent_path/../prom_metrics_cli/plot/figures/$(date +'%Y_%m_%dT-%H:%mZ')"
 fi
 
 if [ -z "$PROM_URL" ]
@@ -94,7 +116,8 @@ then
   YAML="$PWD/mlperf_gpu_pods"
 fi
 
-# kubectl port-forward -n prometheus svc/prometheus-operated 9090:9090 >/dev/null 2>&1 & disown
-# PORT_FORWARD=$!
-./bin/main -c $CONFIG -b $BATCH -yaml $YAML $NO $YES $APPEND -s $SLEEP -url $PROM_URL
-# kill $PORT_FORWARD
+./bin/main -c $CONFIG -b $BATCH -yaml $YAML $NO $YES $APPEND -s $SLEEP -url $PROM_URL -o $OUT
+../prom_metrics_cli/plot/summarize_dcgm_metrics.py -i "$OUT" --benchmark "$BENCHMARK" --tsv-out "$parent_path/../prom_metrics_cli/plot/figures/dcgm_metrics_summary.ods"
+../prom_metrics_cli/plot/summarize_mlperf_logs.py -i "$OUT" --benchmark "$BENCHMARK" --tsv-out "$parent_path/../prom_metrics_cli/plot/figures/mlperf_logs_summary.ods"
+../prom_metrics_cli/plot/dcgm_metrics_heatmaps.py -i "$parent_path/../prom_metrics_cli/plot/figures/dcgm_metrics_summary.ods"
+../prom_metrics_cli/plot/mlperf_logs_heatmaps.py -i "$parent_path/../prom_metrics_cli/plot/figures/mlperf_logs_summary.ods"

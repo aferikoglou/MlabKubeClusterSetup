@@ -30,6 +30,12 @@ parser.add_argument(
     or alphanumerics and can't start or end with - or _"
 )
 parser.add_argument(
+    '--out-dir', 
+    type=str, 
+    default="",  
+    help="Out files' directory."
+)
+parser.add_argument(
     '-filter', 
     action='store', 
     required=False,  
@@ -66,10 +72,9 @@ if args.tsv_out is not None and not validate_filename(args.tsv_out):
     parser.print_help()
     sys.exit(1)
 
-
 dirname, _ = os.path.split(os.path.abspath(__file__))
-filepath = os.path.join(dirname, "figures", args.o)
-logs_filepath = os.path.join(dirname, "figures", args.o, "logs.txt")
+filepath = os.path.join(args.out_dir, args.o) if (args.out_dir is not None and len(args.out_dir) > 0) else os.path.join(dirname, "figures", args.o)
+logs_filepath = os.path.join(filepath, "logs.txt")
 tsv_name = args.tsv_out if (args.tsv_out is not None) else args.o
         
 if args.filter is not None:

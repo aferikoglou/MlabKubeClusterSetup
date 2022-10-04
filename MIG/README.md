@@ -30,7 +30,7 @@ nvidia-smi -i 0
 
 ```
 
-MIG mode can be enabled on a per-GPU basis with the following command: nvidia-smi -i <GPU_IDs> -mig 1 (and be disabled with -mig 0). The GPUs can be selected using comma separated GPU indexes, PCI Bus Ids or UUIDs. If no GPU ID is specified, then MIG mode is applied to all the GPUs on the system. Note that **MIG mode (Disabled or Enabled states) is persistent across system reboots**. 
+MIG mode can be enabled on a per-GPU basis with the following command: nvidia-smi -i <GPU_IDs> -mig 1 (and disabled with -mig 0). The GPUs can be selected using comma separated GPU indexes, PCI Bus Ids or UUIDs. If no GPU ID is specified, then MIG mode is applied to all the GPUs on the system. Note that **MIG mode (Disabled or Enabled states) is persistent across system reboots**. 
 
 ```
 $ sudo nvidia-smi -i 0 -mig 1
@@ -87,7 +87,7 @@ Once the GPU instances are created, one needs to create the corresponding Comput
 >Note:
 Without creating GPU instances (and corresponding compute instances), CUDA workloads cannot be run on the GPU. In other words, simply enabling MIG mode on the GPU is not sufficient. Also **note that, the created MIG devices are not persistent across system reboots**. Thus, the user or system administrator needs to recreate the desired MIG configurations if the GPU or system is reset. For automated tooling support for this purpose, refer to the NVIDIA MIG Partition Editor (or mig-parted) [tool](https://github.com/nvidia/mig-parted).
 
-The following example shows how the user can create GPU instances (and corresponding compute instances). In this example, the user can create two GPU instances (of type 3g.20gb), with each GPU instance having half of the available compute and memory capacity. In this example, we purposefully use profile ID and short profile name to showcase how either option can be used:
+The following example shows how the user can create GPU instances (and corresponding compute instances). In this example, the user can create two GPU instances (of type 2g.6gb), with each GPU instance having half of the available compute and memory capacity. In this example, we purposefully use profile ID and short profile name to showcase how either option can be used:
 
 ```    
 $ sudo nvidia-smi mig -cgi 14,2g.6gb -C

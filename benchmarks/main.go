@@ -179,12 +179,13 @@ func parsingError() {
 }
 
 func main() {
-	var configPath, promURL, yamlPath, logsFile, totalFiles, timezone string
+	var configPath, promURL, yamlPath, logsFile, totalFiles, timezone, out string
 	var autoskip, autodelete, appendTime bool
 	var batch, sleep int
 	var wg sync.WaitGroup
 
 	flag.StringVar(&configPath, "c", "/root/.kube/config", "Kube config path")
+	flag.StringVar(&out, "o", "", "Output directory")
 	flag.StringVar(&yamlPath, "yaml", "", "Path to the yaml file or to a directory containing the yaml file(s) to be applied.")
 	flag.StringVar(&logsFile, "l", "logs.txt", "Filename to save output logs")
 	flag.StringVar(&totalFiles, "t", "total", "Name for the figures for the total duration")
@@ -253,7 +254,7 @@ func main() {
 	for i, file := range files {
 		tmp = strings.Split(file, "/")
 		filename := strings.Split(tmp[len(tmp)-1], ".")[0]
-		path := fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), filename)
+		path := fmt.Sprintf("%s/%s", out, filename)
 
 		if appendTime {
 			// Append starting times on folders' names
@@ -311,6 +312,8 @@ func main() {
 	var nodeNames []string = make([]string, len(files))
 	var duration []float64 = make([]float64, len(files))
 	count := 0
+	finishedCounter := 0
+	var outDir string
 	for i, file := range files {
 		if inArray(i, skip) {
 			continue
@@ -335,6 +338,14 @@ func main() {
 			filename := strings.Split(tmp[len(tmp)-1], ".")[0]
 
 			start[ind], end[ind], duration[ind], logs[ind], nodeNames[ind], newErr = benchmark.Benchmark(timezone, configPath, filePath)
+			if finishedCounter == 0 {
+				if out != "" {
+					outDir = out
+				} else {
+					outDir = fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), strings.ReplaceAll(start[ind], "-", "_"))
+				}
+				finishedCounter += 1
+			}
 			if inArray(ind, appendInd) {
 				outfile = fmt.Sprintf(
 					"%s_%s_%s",
@@ -346,7 +357,7 @@ func main() {
 				outfile = filename
 			}
 
-			outPath := fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), outfile)
+			outPath := fmt.Sprintf("%s/%s", outDir, outfile)
 			if _, err := os.Stat(outPath); os.IsNotExist(err) {
 				err = os.MkdirAll(outPath, os.ModePerm)
 				if err != nil {
@@ -391,6 +402,7 @@ func main() {
 					"-e", end[ind],
 					"-f", filename,
 					"-o", outfile,
+					"--out-dir", outDir,
 					"-url", promURL,
 					"-step", step,
 				}...,
@@ -405,7 +417,7 @@ func main() {
 				log.Print(newErr)
 				return
 			}
-			log.Printf("Figures saved at prom_metrics_cli/plot/figures/%s\n", outfile)
+			log.Printf("Figures saved at %s\n", outDir)
 		}(i, file)
 	}
 
@@ -450,19 +462,20 @@ func main() {
 			"-s", start[minInd],
 			"-e", end[maxInd],
 			"-o", totalOut,
+			"--out-dir", outDir,
 			"--total",
 			"-url", promURL,
 			"-step", step,
 		}...,
 	)
 
-	out, newErr := cmd.Output()
+	cmdOut, newErr := cmd.Output()
 	if newErr != nil {
-		output := string(out[:])
+		output := string(cmdOut[:])
 		if output != "" {
 			log.Printf("Output: %s\n", output)
 		}
 		log.Fatal(newErr)
 	}
-	log.Printf("Total figures saved at prom_metrics_cli/plot/figures/%s\n", totalOut)
+	log.Printf("Total figures saved at %s\n", outDir)
 }
