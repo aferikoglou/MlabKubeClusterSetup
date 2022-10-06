@@ -179,13 +179,13 @@ func parsingError() {
 }
 
 func main() {
-	var configPath, promURL, yamlPath, logsFile, totalFiles, timezone, out string
+	var configPath, promURL, yamlPath, logsFile, totalFiles, timezone, outDir string
 	var autoskip, autodelete, appendTime bool
 	var batch, sleep int
 	var wg sync.WaitGroup
 
 	flag.StringVar(&configPath, "c", "/root/.kube/config", "Kube config path")
-	flag.StringVar(&out, "o", "", "Output directory")
+	flag.StringVar(&outDir, "o", "", "Output directory")
 	flag.StringVar(&yamlPath, "yaml", "", "Path to the yaml file or to a directory containing the yaml file(s) to be applied.")
 	flag.StringVar(&logsFile, "l", "logs.txt", "Filename to save output logs")
 	flag.StringVar(&totalFiles, "t", "total", "Name for the figures for the total duration")
@@ -254,7 +254,7 @@ func main() {
 	for i, file := range files {
 		tmp = strings.Split(file, "/")
 		filename := strings.Split(tmp[len(tmp)-1], ".")[0]
-		path := fmt.Sprintf("%s/%s", out, filename)
+		path := fmt.Sprintf("%s/%s", outDir, filename)
 
 		if appendTime {
 			// Append starting times on folders' names
@@ -313,7 +313,6 @@ func main() {
 	var duration []float64 = make([]float64, len(files))
 	count := 0
 	finishedCounter := 0
-	var outDir string
 	for i, file := range files {
 		if inArray(i, skip) {
 			continue
@@ -339,9 +338,7 @@ func main() {
 
 			start[ind], end[ind], duration[ind], logs[ind], nodeNames[ind], newErr = benchmark.Benchmark(timezone, configPath, filePath)
 			if finishedCounter == 0 {
-				if out != "" {
-					outDir = out
-				} else {
+				if outDir == "" {
 					outDir = fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), strings.ReplaceAll(start[ind], "-", "_"))
 				}
 				finishedCounter += 1
@@ -408,7 +405,7 @@ func main() {
 				}...,
 			)
 
-			out, newErr := cmd.Output()
+			out, newErr := cmd.CombinedOutput()
 			if newErr != nil {
 				output := string(out[:])
 				if output != "" {
@@ -469,7 +466,7 @@ func main() {
 		}...,
 	)
 
-	cmdOut, newErr := cmd.Output()
+	cmdOut, newErr := cmd.CombinedOutput()
 	if newErr != nil {
 		output := string(cmdOut[:])
 		if output != "" {

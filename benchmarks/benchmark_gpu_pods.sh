@@ -52,6 +52,11 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
+    --tsv-out)
+      TSV_OUT="$2"
+      shift
+      shift
+      ;;
     -h|--help)
       echo "usage: Loop through all mlperf_gpu_pods and run the benchmarks
   options:
@@ -63,7 +68,9 @@ while [[ $# -gt 0 ]]; do
     --yes Boolean argument to delete files if they exist
     -s|--sleep Number of seconds to sleep between each loop. Default=60 secs
     -url URL of prometheus service
-    --benchmark Name for the benchmark"
+    --benchmark Name for the benchmark
+    --tsv-out Output folder for summarized metrics under /mlab-k8s-cluster-setup/prom_metrics_cli/plot/figures/ (dcgm_metrics_summary_ and mlperf_logs_summary_ will be prepended respectively)
+    -o|--out Output folder for dcgm figures and mlperf logs. Default: /mlab-k8s-cluster-setup/prom_metrics_cli/plot/figures/$(date +'%Y_%m_%dT-%H:%mZ')"
       exit 0
       ;;
     *)
@@ -80,6 +87,12 @@ then
     CONFIG="/root/.kube/config"
 fi
 
+if [ -z "$TSV_OUT" ]
+then
+    echo "--tsv-out can't be empty"
+    exit 0
+fi
+
 if [ -z "$BENCHMARK" ]
 then
     echo "--benchmark can not be empty"
@@ -88,7 +101,7 @@ fi
 
 if [ -z "$OUT" ]
 then
-    OUT="$parent_path/../prom_metrics_cli/plot/figures/$(date +'%Y_%m_%dT-%H:%mZ')"
+    OUT="$parent_path/../prom_metrics_cli/plot/figures/$(date +'%Y_%m_%dT-%H:%MZ')"
 fi
 
 if [ -z "$PROM_URL" ]
@@ -117,7 +130,7 @@ then
 fi
 
 ./bin/main -c $CONFIG -b $BATCH -yaml $YAML $NO $YES $APPEND -s $SLEEP -url $PROM_URL -o $OUT
-../prom_metrics_cli/plot/summarize_dcgm_metrics.py -i "$OUT" --benchmark "$BENCHMARK" --tsv-out "$parent_path/../prom_metrics_cli/plot/figures/dcgm_metrics_summary.ods"
-../prom_metrics_cli/plot/summarize_mlperf_logs.py -i "$OUT" --benchmark "$BENCHMARK" --tsv-out "$parent_path/../prom_metrics_cli/plot/figures/mlperf_logs_summary.ods"
-../prom_metrics_cli/plot/dcgm_metrics_heatmaps.py -i "$parent_path/../prom_metrics_cli/plot/figures/dcgm_metrics_summary.ods"
-../prom_metrics_cli/plot/mlperf_logs_heatmaps.py -i "$parent_path/../prom_metrics_cli/plot/figures/mlperf_logs_summary.ods"
+../prom_metrics_cli/plot/summarize_dcgm_metrics.py -i "$OUT" --benchmark "$BENCHMARK" --tsv-out "$parent_path/../prom_metrics_cli/plot/figures/dcgm_metrics_summary_$TSV_OUT"
+../prom_metrics_cli/plot/summarize_mlperf_logs.py -i "$OUT" --benchmark "$BENCHMARK" --tsv-out "$parent_path/../prom_metrics_cli/plot/figures/mlperf_logs_summary_$TSV_OUT"
+../prom_metrics_cli/plot/dcgm_metrics_heatmaps.py -i "$parent_path/../prom_metrics_cli/plot/figures/dcgm_metrics_summary_$TSV_OUT"
+../prom_metrics_cli/plot/mlperf_logs_heatmaps.py -i "$parent_path/../prom_metrics_cli/plot/figures/mlperf_logs_summary_$TSV_OUT"

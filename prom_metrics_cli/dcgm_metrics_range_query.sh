@@ -118,7 +118,7 @@ then
 fi
 
 METRICS=(
-  "DCGM_FI_DEV_DEC_UTIL"
+  'DCGM_FI_DEV_DEC_UTIL'
   'DCGM_FI_DEV_ENC_UTIL' 
   'DCGM_FI_DEV_FB_FREE' 
   'DCGM_FI_DEV_FB_USED' 
@@ -144,12 +144,12 @@ if [ ! -z "$START" ] && [ ! -z "$END" ]
 then
   for METRIC in "${METRICS[@]}"
   do
-    ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': '$METRIC'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' $OUT_DIR -o "$OUT" -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+    ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': '$METRIC'}" 2>&1 | tee -a log.txt >(python plot/plot.py -yf '__name__' -x 'Time(s)' $OUT_DIR -o "$OUT" -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL) >/dev/null
   done
 
 else
   for METRIC in "${METRICS[@]}"
   do
-    /bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': 'DCGM_FI_DEV_DEC_UTIL'}" 2>&1 >> log.txt | python plot/plot.py -yf '__name__' -x 'Time(s)' $OUT_DIR -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
+    ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': '$METRIC'}" 2>&1 | tee -a log.txt >(python plot/plot.py -yf '__name__' -x 'Time(s)' $OUT_DIR -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL) >/dev/null
   done
 fi

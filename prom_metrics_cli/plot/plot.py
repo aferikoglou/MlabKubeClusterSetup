@@ -137,12 +137,13 @@ for i, result in enumerate(data["data"]["result"]):
         skip = False
     
         for k, v in filter.items():
-            pattern = re.compile(v)
-            if k not in result["metric"]:
-                logging.warning(f'{k} not in result dict, ignoring filter')
+            pattern = re.compile(v.replace('-', '_'))
+            if k not in result["metric"].keys():
+                logging.warning(f'{k} not in result dict, skipping result No.{str(i)}')
+                skip = True
                 continue
 
-            if not re.search(pattern, result["metric"][k]):
+            if not re.search(pattern, result["metric"][k].replace('-', '_')):
                 logging.warning(f'{v} not in "{k}", skipping result No.{str(i)}')
                 skip = True
                 break
@@ -180,6 +181,7 @@ for i, result in enumerate(data["data"]["result"]):
     if not os.path.exists(filepath):
         os.makedirs(filepath)
 
+
     plt.plot(time_x, position_y, linewidth=args.linewidth, label=legend)
     if not args.total:
         mean_value = round(np.mean(position_y), 3)
@@ -213,7 +215,7 @@ if args.total and lines > 0:
     var = round(np.var(position_y), 3)
     write_tsv(
         path=filepath + "/" + tsv_name + ".tsv",
-        name=",".join(pods), 
+        name=",".join(pods) if (",".join(pods) is not None) else args.o,
         gpu=",".join(gpus),
         model_name=",".join(model_names),
         metric_name=metric_name, 
