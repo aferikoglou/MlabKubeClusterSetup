@@ -139,8 +139,7 @@ for i, result in enumerate(data["data"]["result"]):
         for k, v in filter.items():
             pattern = re.compile(v.replace('-', '_'))
             if k not in result["metric"].keys():
-                logging.warning(f'{k} not in result dict, skipping result No.{str(i)}')
-                skip = True
+                logging.warning(f'{k} not in result dict, ignoring filter')
                 continue
 
             if not re.search(pattern, result["metric"][k].replace('-', '_')):
@@ -215,9 +214,7 @@ if args.total and lines > 0:
     var = round(np.var(position_y), 3)
     write_tsv(
         path=filepath + "/" + tsv_name + ".tsv",
-        name=",".join(pods) if (",".join(pods) is not None) else args.o,
-        gpu=",".join(gpus),
-        model_name=",".join(model_names),
+        name=args.o,
         metric_name=metric_name, 
         mean_value=mean, 
         variance=var

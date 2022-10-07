@@ -144,12 +144,12 @@ if [ ! -z "$START" ] && [ ! -z "$END" ]
 then
   for METRIC in "${METRICS[@]}"
   do
-    ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': '$METRIC'}" 2>&1 | tee -a log.txt >(python plot/plot.py -yf '__name__' -x 'Time(s)' $OUT_DIR -o "$OUT" -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL) >/dev/null
+    ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': '$METRIC'}" 2>&1 | python plot/plot.py -yf '__name__' -x 'Time(s)' $OUT_DIR -o "$OUT" -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
   done
 
 else
   for METRIC in "${METRICS[@]}"
   do
-    ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': '$METRIC'}" 2>&1 | tee -a log.txt >(python plot/plot.py -yf '__name__' -x 'Time(s)' $OUT_DIR -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL) >/dev/null
+    ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': '$METRIC'}" 2>&1 | python plot/plot.py -yf '__name__' -x 'Time(s)' $OUT_DIR -o $OUT -filter '{"exported_pod":"'"$FILTER"'"}' -f "exported_pod" $TOTAL
   done
 fi

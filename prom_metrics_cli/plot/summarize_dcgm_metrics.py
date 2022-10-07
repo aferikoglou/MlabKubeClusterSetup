@@ -48,11 +48,14 @@ for dir in benchmarks:
     benchmark_dir = os.path.join(args.i, dir)
     files = os.listdir(benchmark_dir)
     for file in files:
-        if file.endswith(".tsv") and not file.endswith("logs.tsv") and not file.startswith("total"):
+        if file.endswith(".tsv") and not file.endswith("logs.tsv"):
             metrics_tmp = pd.read_csv(os.path.join(benchmark_dir, file), sep="\t")
             for row in range(len(metrics_tmp)):
                 name_list = metrics_tmp.loc[row, "name"].split('_')
-                name = "_".join(name_list[2:5]) \
+                if name_list[0] == "total":
+                    name = "total"
+                else:
+                    name = "_".join(name_list[2:5]) \
                     if "ssd" in metrics_tmp.loc[row, "name"] \
                     else "_".join(name_list[2:4])
                 metric_name = metrics_tmp.loc[row, "metric_name"]
@@ -70,11 +73,15 @@ for dir in benchmarks:
     benchmark_dir = os.path.join(args.i, dir)
     files = os.listdir(benchmark_dir)
     for file in files:
-        if file.endswith(".tsv") and not file.endswith("logs.tsv") and not file.startswith("total"):
+        if file.endswith(".tsv") and not file.endswith("logs.tsv"):
             metrics_tmp = pd.read_csv(os.path.join(benchmark_dir, file), sep="\t")
             for row in range(len(metrics_tmp)):
+                if metrics_tmp.loc[row, "name"] is None or metrics_tmp.loc[row, "name"] == "":
+                    continue
                 name_list = metrics_tmp.loc[row, "name"].split('_')
-                name = "_".join(name_list[2:5]) \
+                if name_list[0] == "total": name = "total"
+                else:
+                    name = "_".join(name_list[2:5]) \
                     if "ssd" in metrics_tmp.loc[row, "name"] \
                     else "_".join(name_list[2:4])
                 metric_name = metrics_tmp.loc[row, "metric_name"]
