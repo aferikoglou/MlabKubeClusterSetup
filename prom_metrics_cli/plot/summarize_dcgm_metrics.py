@@ -18,7 +18,7 @@ parser.add_argument(
     required=False,
     help="Tsv output's path. \
         If not provided summary will be saved at \
-            /mlab-k8s-cluster-setup/prom_metrics_cli/plot/figures/summary.tsv"
+            /mlab-k8s-cluster-setup/prom_metrics_cli/plot/summary/summary.tsv"
 )
 parser.add_argument(
     '--benchmark', 
@@ -30,14 +30,14 @@ parser.add_argument(
 args = parser.parse_args()
 
 dirname, _ = os.path.split(os.path.abspath(__file__))
-filepath = os.path.join(dirname, "figures")
+filepath = os.path.join(dirname, "summary")
+if not os.path.exists(filepath):
+    os.makedirs(filepath)
 tsv_path = args.tsv_out if (args.tsv_out is not None) \
     else os.path.join(
         filepath,
         "dcgm_summary_" + str(find_max_id(filepath, "summary")) + ".ods"
     )
-if not os.path.exists(filepath):
-    os.makedirs(filepath)
 header = False if (os.path.exists(tsv_path)) else True
 
 

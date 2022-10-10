@@ -31,11 +31,11 @@ make all
 ## Models and data
 
 The folder [mlperf_gpu_pods](https://github.com/aferikoglou/mlab-k8s-cluster-setup/tree/main/benchmarks/mlpref_gpu_pods) contains the yaml files needed to deploy the benchmarks on the gpu nodes of your kubernetes cluster. In order to run those benchmarks you have to add the respective models in the **/mnt/mlperf/models** folder of your host gpu machine and the datasets in the **/mnt/mlperf/data/coco-300**, **/mnt/mlperf/data/coco-1200** and **/mnt/mlperf/data/imagenet2012** folders respectively.
-A good way to share the the models and datasets among your gpu nodes, if you'd like to run the experiments in a distributed cluster, is to add them in the **/mnt/mlperf** directory of the master node and then use NFS (network file share) as described [here](https://www.tecmint.com/install-nfs-server-on-ubuntu/).
+A good way to share the models and datasets among your gpu nodes, if you'd like to run the experiments in a distributed cluster, is to add them in the **/mnt/mlperf** directory of the master node and then use NFS (network file share) as described [here](https://www.tecmint.com/install-nfs-server-on-ubuntu/).
 
 You can learn how to resize the datasets [here](https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection#prepare-the-coco-dataset).
 
-The models and datasets needed for each benchmark are illustrated in the following table: https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection
+The models and datasets needed for each benchmark are illustrated in the following table: https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection#supported-models
 
 ---
 Finally, you can run all the benchmarks from the top-level directory with:

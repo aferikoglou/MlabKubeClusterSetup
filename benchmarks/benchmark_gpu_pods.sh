@@ -101,7 +101,7 @@ fi
 
 if [ -z "$OUT" ]
 then
-    OUT="$parent_path/../prom_metrics_cli/plot/figures/$(date +'%Y_%m_%dT-%H:%MZ')"
+    OUT="$parent_path/../prom_metrics_cli/plot/figures/$BENCHMARK_$(date +'%Y_%m_%dT-%H:%MZ')"
 fi
 
 if [ -z "$PROM_URL" ]
@@ -130,7 +130,7 @@ then
 fi
 
 ./bin/main -c $CONFIG -b $BATCH -yaml $YAML $NO $YES $APPEND -s $SLEEP -url $PROM_URL -o $OUT
-../prom_metrics_cli/plot/summarize_dcgm_metrics.py -i "$OUT" --benchmark "$BENCHMARK" --tsv-out "$parent_path/../prom_metrics_cli/plot/figures/dcgm_metrics_summary_$TSV_OUT"
-../prom_metrics_cli/plot/summarize_mlperf_logs.py -i "$OUT" --benchmark "$BENCHMARK" --tsv-out "$parent_path/../prom_metrics_cli/plot/figures/mlperf_logs_summary_$TSV_OUT"
-../prom_metrics_cli/plot/dcgm_metrics_heatmaps.py -i "$parent_path/../prom_metrics_cli/plot/figures/dcgm_metrics_summary_$TSV_OUT"
-../prom_metrics_cli/plot/mlperf_logs_heatmaps.py -i "$parent_path/../prom_metrics_cli/plot/figures/mlperf_logs_summary_$TSV_OUT"
+../prom_metrics_cli/plot/summarize_dcgm_metrics.py -i "$OUT" --benchmark "$BENCHMARK" --tsv-out "$parent_path/../prom_metrics_cli/plot/summary/dcgm_metrics_summary_$TSV_OUT"
+../prom_metrics_cli/plot/summarize_mlperf_logs.py -i "$OUT" --benchmark "$BENCHMARK" --tsv-out "$parent_path/../prom_metrics_cli/plot/summary/mlperf_logs_summary_$TSV_OUT"
+../prom_metrics_cli/plot/dcgm_metrics_heatmaps.py -i "$parent_path/../prom_metrics_cli/plot/summary/dcgm_metrics_summary_$TSV_OUT"
+../prom_metrics_cli/plot/mlperf_logs_heatmaps.py -i "$parent_path/../prom_metrics_cli/plot/summary/mlperf_logs_summary_$TSV_OUT"

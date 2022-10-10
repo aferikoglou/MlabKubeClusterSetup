@@ -76,7 +76,7 @@ dirname, _ = os.path.split(os.path.abspath(__file__))
 filepath = os.path.join(args.out_dir, args.o) if (args.out_dir is not None and len(args.out_dir) > 0) else os.path.join(dirname, "figures", args.o)
 logs_filepath = os.path.join(filepath, "logs.txt")
 tsv_name = args.tsv_out if (args.tsv_out is not None) else args.o
-        
+
 if args.filter is not None:
     try:
         filter = json.loads(args.filter)
@@ -105,6 +105,9 @@ except:
             except:
                 logging.error("Input data not json serializable")
                 sys.exit(1)
+
+with open(os.path.join(dirname, "../log.txt"), "a") as f:
+    f.write(str(data) + "\n")
 
 lines = 0
 plt.figure().set_figwidth(args.figwidth)
@@ -137,10 +140,15 @@ for i, result in enumerate(data["data"]["result"]):
         skip = False
     
         for k, v in filter.items():
+            if not v.startswith("^"):
+                v = "^" + v
+            if not v.endswith("$"):
+                v = v + "$"
             pattern = re.compile(v.replace('-', '_'))
             if k not in result["metric"].keys():
-                logging.warning(f'{k} not in result dict, ignoring filter')
-                continue
+                logging.warning(f'{k} not in result dict, skipping')
+                skip = True
+                break
 
             if not re.search(pattern, result["metric"][k].replace('-', '_')):
                 logging.warning(f'{v} not in "{k}", skipping result No.{str(i)}')
@@ -194,8 +202,11 @@ for i, result in enumerate(data["data"]["result"]):
             "mean_value", 
             "variance", 
         ]:
-            d[var_name] = eval(var_name)
-
+            try:
+                d[var_name] = round(int(eval(var_name)), 4)
+            except:
+                d[var_name] = eval(var_name)
+                
         write_tsv(
             path=filepath + "/" + tsv_name + ".tsv",
             name=args.tsv_out if (args.tsv_out is not None) else args.o,
@@ -210,14 +221,23 @@ for i, result in enumerate(data["data"]["result"]):
     
 
 if args.total and lines > 0:
-    mean = round(np.mean(position_y), 3)
-    var = round(np.var(position_y), 3)
+    mean_value = round(np.mean(position_y), 3)
+    variance = round(np.var(position_y), 3)
+    d = {}
+    for var_name in [
+        "metric_name", 
+        "mean_value", 
+        "variance", 
+    ]:
+        try:
+            d[var_name] = round(int(eval(var_name)), 4)
+        except:
+            d[var_name] = eval(var_name)
+    
     write_tsv(
         path=filepath + "/" + tsv_name + ".tsv",
         name=args.o,
-        metric_name=metric_name, 
-        mean_value=mean, 
-        variance=var
+        **d,
     )
 
     max_id = find_max_id(filepath, args.o)

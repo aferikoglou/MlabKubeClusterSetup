@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"strings"
 	"math"
 	"strconv"
+	"strings"
 	"sync"
 
 	pods "github.com/aferikoglou/mlab-k8s-cluster-setup/benchmarks/pods"
@@ -155,6 +155,7 @@ func Benchmark(timezone string, configPath string, yamlPath string) (begin strin
 
 	// Apply the pod yaml file
 	pods.ApplyPod(configPath, yamlPath)
+	start = time.Now().In(loc)
 
 	// Watch the pod until its status becomes "Succeeded"
 	watch, err := pods.WatchPods(clientset, pod.Metadata.Namespace, FieldSelector)
@@ -166,7 +167,7 @@ func Benchmark(timezone string, configPath string, yamlPath string) (begin strin
 	filename := strings.Split(tmp[len(tmp)-1], ".")[0]
 	failed := false
 	wg.Add(1)
-	go func(filename string, started bool) {
+	go func(filename string) {
 		defer wg.Done()
 		for event := range watch.ResultChan() {
 			p, ok := event.Object.(*corev1.Pod)
@@ -174,12 +175,7 @@ func Benchmark(timezone string, configPath string, yamlPath string) (begin strin
 				log.Fatal("got unexpected type while running pod")
 			}
 			if p.Status.Phase == corev1.PodRunning {
-				// When pod gets ready start counting
 				nodeName = p.Spec.NodeName
-				if (!started) {
-					started = true
-					start = time.Now().In(loc)		
-				}
 			}
 			log.Printf("%s pod's status: %s\n", filename, p.Status.Phase)
 			if p.Status.Phase == corev1.PodSucceeded {
@@ -194,7 +190,7 @@ func Benchmark(timezone string, configPath string, yamlPath string) (begin strin
 			}
 		}
 		pods.DeletePod(configPath, pod.Metadata.Namespace, pod.Metadata.Name)
-	}(filename, false)
+	}(filename)
 
 	// Wait for the goroutine to finish
 	wg.Wait()

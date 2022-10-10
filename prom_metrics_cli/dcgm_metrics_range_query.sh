@@ -8,7 +8,8 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --out-dir)
-      OUT_DIR="--out-dir $2"
+      DIR=$2
+      OUT_DIR="--out-dir $DIR"
       shift
       shift
       ;;
@@ -46,6 +47,11 @@ while [[ $# -gt 0 ]]; do
       TOTAL="$1"
       shift
       ;;
+    --duration)
+      DURATION="$2"
+      shift
+      shift
+      ;;
     -h|--help)
       echo "usage: Extract all dcgm metrics from prometheus api
   options:
@@ -55,6 +61,8 @@ while [[ $# -gt 0 ]]; do
     -o Output name (./plot/figures/<output_name>), required
     -f Name of the pod, not required
     -url URL of prometheus service
+    --total If this flag is provided then the metrics will be shown in a single figure
+    --duration Duration of the benchmark in seconds: Starting time - ending time
     NOTE: if both -s and -e are defined they override -i"
       exit 0
       ;;
@@ -73,6 +81,13 @@ then
   FILTER=$(echo $FILTER | tr _ -)
 else
   FILTER=".*"
+fi
+
+if [ ! -z "$DIR" ]
+then
+  DURATION_DIR="$DIR/$OUT/duration.txt"
+else
+  DURATION_DIR="$parent_path/plot/figures/$OUT/duration.txt"
 fi
 
 if [ -z "$INTERVAL" ] && [ -z "$START" ] && [ -z "$END" ]
@@ -112,10 +127,13 @@ then
   STEP="1"
 fi
 
-if [ -z "$TOTAL" ]
+echo "$DURATION"
+if [ ! -z "$DURATION" ] 
 then
-  python plot/parse_mlperf_metrics.py -o "$OUT" $OUT_DIR
+  echo "$DURATION" >> "$DURATION_DIR"
 fi
+
+python plot/parse_mlperf_metrics.py -o "$OUT" $OUT_DIR
 
 METRICS=(
   'DCGM_FI_DEV_DEC_UTIL'

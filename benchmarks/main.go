@@ -183,6 +183,7 @@ func main() {
 	var autoskip, autodelete, appendTime bool
 	var batch, sleep int
 	var wg sync.WaitGroup
+	var mu sync.Mutex
 
 	flag.StringVar(&configPath, "c", "/root/.kube/config", "Kube config path")
 	flag.StringVar(&outDir, "o", "", "Output directory")
@@ -202,7 +203,7 @@ func main() {
 	layout := "2006-01-02T15:04:05Z"
 
 	if yamlPath == "" {
-		fmt.Println("Note: Yaml path cant be empty")
+		fmt.Println("Note: -yaml cant be empty")
 		parsingError()
 	}
 
@@ -311,6 +312,8 @@ func main() {
 	var logs []string = make([]string, len(files))
 	var nodeNames []string = make([]string, len(files))
 	var duration []float64 = make([]float64, len(files))
+	var totalDuration float64
+	totalDuration = 0
 	count := 0
 	finishedCounter := 0
 	for i, file := range files {
@@ -319,7 +322,6 @@ func main() {
 		}
 
 		if count == batch {
-			count = 0
 			log.Println("Waiting for the previous batch to finish")
 			wg.Wait()
 			log.Printf("Sleeping for %d seconds before starting next batch", sleep)
@@ -337,6 +339,12 @@ func main() {
 			filename := strings.Split(tmp[len(tmp)-1], ".")[0]
 
 			start[ind], end[ind], duration[ind], logs[ind], nodeNames[ind], newErr = benchmark.Benchmark(timezone, configPath, filePath)
+			mu.Lock()
+			count--
+			if count == 0 {
+				totalDuration += duration[ind]
+			}
+			mu.Unlock()
 			if finishedCounter == 0 {
 				if outDir == "" {
 					outDir = fmt.Sprintf("%s/../../prom_metrics_cli/plot/figures/%s", getDirname(), strings.ReplaceAll(start[ind], "-", "_"))
@@ -392,6 +400,7 @@ func main() {
 			if step == "0" {
 				step = "1"
 			}
+			s := fmt.Sprintf("%f", duration[ind])
 			cmd := exec.Command(
 				"../prom_metrics_cli/dcgm_metrics_range_query.sh",
 				[]string{
@@ -402,6 +411,7 @@ func main() {
 					"--out-dir", outDir,
 					"-url", promURL,
 					"-step", step,
+					"--duration", s,
 				}...,
 			)
 
@@ -438,8 +448,6 @@ func main() {
 		log.Fatal("Couldn't save total benchmarks")
 	}
 
-	log.Println(fmt.Sprintf("Total starting time: %s\nTotal ending time: %s", start[minInd], end[maxInd]))
-
 	totalEndTime, err := time.Parse(layout, end[maxInd])
 	if err != nil {
 		log.Fatal("Unable to convert total ending time")
@@ -448,11 +456,22 @@ func main() {
 	if err != nil {
 		log.Fatal("Unable to convert total starting time")
 	}
-	step := strconv.Itoa(int(totalEndTime.Sub(totalStartTime).Seconds() / 100))
+	expadedDuration := totalEndTime.Sub(totalStartTime).Seconds()
+	step := strconv.Itoa(int(expadedDuration / 100))
 	if step == "0" {
 		step = "1"
 	}
 	totalOut := fmt.Sprintf("%s_%s", totalFiles, start[minInd])
+	outPath := fmt.Sprintf("%s/%s", outDir, totalOut)
+	if _, err := os.Stat(outPath); os.IsNotExist(err) {
+		err = os.MkdirAll(outPath, os.ModePerm)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+
+	s := fmt.Sprintf("%f", totalDuration)
+	log.Println(fmt.Sprintf("Total starting time: %s\nTotal ending time: %s\nTotal duration: %s", start[minInd], end[maxInd], s))
 	cmd := exec.Command(
 		"../prom_metrics_cli/dcgm_metrics_range_query.sh",
 		[]string{
@@ -463,6 +482,7 @@ func main() {
 			"--total",
 			"-url", promURL,
 			"-step", step,
+			"--duration", s,
 		}...,
 	)
 

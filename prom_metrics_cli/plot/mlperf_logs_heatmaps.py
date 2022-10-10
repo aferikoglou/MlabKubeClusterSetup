@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+from collections import OrderedDict
+import numpy as np
 from utils.utils import find_max_id
 import sys
 import seaborn as sns
@@ -34,22 +36,22 @@ mlperflogs_df = pd.read_csv(args.i, sep="\t")
 dirname, _ = os.path.split(os.path.abspath(__file__))
 
 if args.out is not None:
-    out_path = args.out
-
-    if not os.path.exists(out_path):
-        os.makedirs(out_path)
-
-    max_id_dir = "out_" + str(find_max_id(out_path, "out"))
-    out_path = os.path.join(out_path, max_id_dir)
-    os.makedirs(out_path)
+    filepath = args.out
 else:
-    filepath = os.path.join(dirname, "figures", "heatmaps", "mlperf_logs")
+    filepath = os.path.join(dirname, "heatmaps", "mlperf_logs")
 
-    if not os.path.exists(filepath):
-        os.makedirs(filepath)
+if not os.path.exists(filepath):
+    os.makedirs(filepath)
 
-    max_id_dir = "out_" + str(find_max_id(filepath, "out"))
-    out_path = os.path.join(filepath, max_id_dir)
+benchmark = "_".join(args.i.split("/")[-1].split(".")[0].split("_")[3:])
+if benchmark == "":
+    benchmark = "out"
+benchmark_dir = os.path.join(filepath, benchmark)
+if not os.path.exists(benchmark_dir):
+    os.makedirs(benchmark_dir)
+max_id_dir = os.path.join(benchmark, str(find_max_id(benchmark_dir, "")))
+out_path = os.path.join(filepath, max_id_dir)
+if not os.path.exists(out_path):
     os.makedirs(out_path)
 
 benchmarks_count = {}
@@ -69,6 +71,8 @@ for column in mlperflogs_df.columns:
         continue
     d[column] = {}
     for row in range(len(mlperflogs_df)):
+        if np.isnan(mlperflogs_df.loc[row, column]):
+            continue
         name = mlperflogs_df.loc[row, 'name']
         benchmark = mlperflogs_df.loc[row, 'benchmark']
         if benchmark not in d[column]:
@@ -81,7 +85,7 @@ for column in mlperflogs_df.columns:
 for k, v in d.items():
     if k == "mAP":
         continue
-    d[k] = pd.DataFrame(d[k])
+    d[k] = pd.DataFrame(OrderedDict(sorted(d[k].items())))
 
     ax = sns.heatmap(
         d[k],
