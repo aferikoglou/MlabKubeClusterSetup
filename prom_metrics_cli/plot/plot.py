@@ -162,7 +162,7 @@ for i, result in enumerate(data["data"]["result"]):
 
     time_x = []
     position_y = []
-    if not args.total or i == 0:
+    if not args.total or 'base' not in locals():
         base = float(result["values"][0][0])
     
     for v in result["values"]:

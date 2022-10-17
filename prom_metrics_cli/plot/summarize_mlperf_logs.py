@@ -99,54 +99,68 @@ for dir in benchmarks:
             
             if name in df["name"].values:
                 for column in metrics_tmp.columns:
-                    if column == "qps":
-                        df.loc[df['name'] == name, "qps"] += metrics_tmp.loc[0, "qps"]
-                    elif column == "mean":
-                        df.loc[df['name'] == name, "mean"] += \
-                            float(metrics_tmp.loc[0, "mean"]) / benchmarks_count[name]
-                    elif column == "time":
-                        if metrics_tmp.loc[0, "time"] > df.loc[df['name'] == name, "time"].values[0]: 
-                            df.loc[df['name'] == name, "time"] = metrics_tmp.loc[0, "time"]
-                    elif column == "system_latency":
-                        if metrics_tmp.loc[0, "system_latency"] > df.loc[df['name'] == name, "system_latency"].values[0]: 
-                            df.loc[df['name'] == name, "system_latency"] = round(metrics_tmp.loc[0, "system_latency"], 4)
-                    elif column == "acc":
-                        df.loc[df['name'] == name, "acc"] += \
-                            (float(metrics_tmp.loc[0, "acc"].strip('%')) / 100) / benchmarks_count[name]
-                    elif column == "queries":
-                        df.loc[df['name'] == name, "queries"] += metrics_tmp.loc[0, "queries"]
-                    elif column == "tiles":
-                        g = [x.split(':') for x in metrics_tmp.loc[0, "tiles"].split(',')]
-                        tmp = {}
-                        for x1, x2 in g: 
-                            if x1 not in df.columns or df.loc[df['name'] == name, x1].isnull().values.any():
-                                df.loc[df['name'] == name, x1] = round(float(x2) / benchmarks_count[name], 4)
-                            else:
-                                df.loc[df['name'] == name, x1] += round(float(x2) / benchmarks_count[name], 4)
-                    elif column == "mAP":
-                        df.loc[df['name'] == name, "mAP"] += \
-                            (float(metrics_tmp.loc[0, "mAP"].strip('%')) / 100) / benchmarks_count[name]
+                    try:
+                        if column == "qps":
+                            df.loc[df['name'] == name, "qps"] += metrics_tmp.loc[0, "qps"]
+                        elif column == "mean":
+                            df.loc[df['name'] == name, "mean"] += \
+                                float(metrics_tmp.loc[0, "mean"]) / benchmarks_count[name]
+                        elif column == "time":
+                            if metrics_tmp.loc[0, "time"] > df.loc[df['name'] == name, "time"].values[0]: 
+                                df.loc[df['name'] == name, "time"] = metrics_tmp.loc[0, "time"]
+                        elif column == "system_latency":
+                            if metrics_tmp.loc[0, "system_latency"] > df.loc[df['name'] == name, "system_latency"].values[0]: 
+                                df.loc[df['name'] == name, "system_latency"] = round(metrics_tmp.loc[0, "system_latency"], 4)
+                        elif column == "acc":
+                            df.loc[df['name'] == name, "acc"] += \
+                                (float(metrics_tmp.loc[0, "acc"].strip('%')) / 100) / benchmarks_count[name]
+                        elif column == "queries":
+                            df.loc[df['name'] == name, "queries"] += metrics_tmp.loc[0, "queries"]
+                        elif column == "tiles":
+                            g = [x.split(':') for x in metrics_tmp.loc[0, "tiles"].split(',')]
+                            tmp = {}
+                            for x1, x2 in g: 
+                                if x1 not in df.columns or df.loc[df['name'] == name, x1].isnull().values.any():
+                                    df.loc[df['name'] == name, x1] = round(float(x2) / benchmarks_count[name], 4)
+                                else:
+                                    df.loc[df['name'] == name, x1] += round(float(x2) / benchmarks_count[name], 4)
+                        elif column == "mAP":
+                            df.loc[df['name'] == name, "mAP"] += \
+                                (float(metrics_tmp.loc[0, "mAP"].strip('%')) / 100) / benchmarks_count[name]
+                    except:
+                        pass
             else:
                 metrics_tmp.loc[0, "name"] = name
                 df.loc[len(df.index)] = metrics_tmp.loc[0]
-                df.loc[len(df.index) - 1, "system_latency"] = round(df.loc[len(df.index) - 1, "system_latency"], 4)
-                df.loc[len(df.index) - 1, "acc"] = \
+                try:
+                    df.loc[len(df.index) - 1, "system_latency"] = round(df.loc[len(df.index) - 1, "system_latency"], 4)
+                except:
+                    pass
+                try:
+                    df.loc[len(df.index) - 1, "acc"] = \
                     (float(df.loc[len(df.index) - 1, "acc"].strip('%')) / 100) / benchmarks_count[name]
-                df.loc[len(df.index) - 1, "mean"] = \
+                except:
+                    pass
+                try:
+                    df.loc[len(df.index) - 1, "mean"] = \
                     float(df.loc[len(df.index) - 1, "mean"]) / benchmarks_count[name]
+                except:
+                    pass
                 try:
                     df.loc[len(df.index) - 1, "mAP"] = \
                         (float(df.loc[len(df.index) - 1, "mAP"].strip('%')) / 100) / benchmarks_count[name]
                 except:
                     pass
-                g = [x.split(':') for x in metrics_tmp.loc[0, "tiles"].split(',')]
-                tmp = {}
-                for x1, x2 in g: 
-                    if x1 not in df.columns or df.loc[df['name'] == name, x1].isnull().values.any():
-                        df.loc[df['name'] == name, x1] = round(float(x2) / benchmarks_count[name], 4)
-                    else:
-                        df.loc[df['name'] == name, x1] += round(float(x2) / benchmarks_count[name], 4)
-            
+                try:
+                    g = [x.split(':') for x in metrics_tmp.loc[0, "tiles"].split(',')]
+                    tmp = {}
+                    for x1, x2 in g: 
+                        if x1 not in df.columns or df.loc[df['name'] == name, x1].isnull().values.any():
+                            df.loc[df['name'] == name, x1] = round(float(x2) / benchmarks_count[name], 4)
+                        else:
+                            df.loc[df['name'] == name, x1] += round(float(x2) / benchmarks_count[name], 4)
+                except:
+                    pass    
             break
 
 df['benchmark'] = [args.benchmark] * len(df)

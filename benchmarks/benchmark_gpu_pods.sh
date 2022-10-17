@@ -101,7 +101,7 @@ fi
 
 if [ -z "$OUT" ]
 then
-    OUT="$parent_path/../prom_metrics_cli/plot/figures/$BENCHMARK_$(date +'%Y_%m_%dT-%H:%MZ')"
+    OUT="$parent_path/../prom_metrics_cli/plot/figures/$BENCHMARK_$(date +'%Y_%m_%dT%H:%MZ')"
 fi
 
 if [ -z "$PROM_URL" ]
