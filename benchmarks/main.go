@@ -406,7 +406,7 @@ func main() {
 				[]string{
 					"-s", start[ind],
 					"-e", end[ind],
-					"-f", filename,
+					"-f", "^" + filename + "$",
 					"-o", outfile,
 					"--out-dir", outDir,
 					"-url", promURL,

@@ -140,10 +140,6 @@ for i, result in enumerate(data["data"]["result"]):
         skip = False
     
         for k, v in filter.items():
-            if not v.startswith("^"):
-                v = "^" + v
-            if not v.endswith("$"):
-                v = v + "$"
             pattern = re.compile(v.replace('-', '_'))
             if k not in result["metric"].keys():
                 logging.warning(f'{k} not in result dict, skipping')
@@ -208,7 +204,7 @@ for i, result in enumerate(data["data"]["result"]):
                 d[var_name] = eval(var_name)
                 
         write_tsv(
-            path=filepath + "/" + tsv_name + ".tsv",
+            path=os.path.join(filepath, tsv_name + ".tsv"),
             name=args.tsv_out if (args.tsv_out is not None) else args.o,
             **d,
         )
@@ -216,7 +212,7 @@ for i, result in enumerate(data["data"]["result"]):
         max_id = find_max_id(filepath, args.o)
         plt.legend()
         plt.tight_layout()
-        plt.savefig(filepath + "/" + args.o + "_" + str(max_id) + '.png')
+        plt.savefig(os.path.join(filepath, args.o + "_" + str(max_id) + '.png'))
         plt.figure().clear()    
     
 
@@ -235,7 +231,7 @@ if args.total and lines > 0:
             d[var_name] = eval(var_name)
     
     write_tsv(
-        path=filepath + "/" + tsv_name + ".tsv",
+        path=os.path.join(filepath, tsv_name + ".tsv",),
         name=args.o,
         **d,
     )
@@ -243,5 +239,5 @@ if args.total and lines > 0:
     max_id = find_max_id(filepath, args.o)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(filepath + "/" + args.o + "_" + str(max_id) + '.png',)
+    plt.savefig(os.path.join(filepath, args.o + "_" + str(max_id) + '.png',))
     
