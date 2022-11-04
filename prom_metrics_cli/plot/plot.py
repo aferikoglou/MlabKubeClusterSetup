@@ -88,6 +88,8 @@ else:
 
 data = input()
 
+print(data)
+
 try:
     data = json.loads(data)
 except:

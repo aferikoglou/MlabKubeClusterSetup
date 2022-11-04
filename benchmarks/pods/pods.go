@@ -26,7 +26,7 @@ func ApplyPod(kubeconfig string, filename string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
 		log.Fatal(err)
@@ -104,7 +104,8 @@ func DeletePod(configPath string, namespace string, podName string) {
 		panic(err)
 	}
 
-	err = clientset.CoreV1().Pods(namespace).Delete(context.TODO(), podName, metav1.DeleteOptions{})
+	gracePeriod := int64(0)
+	err = clientset.CoreV1().Pods(namespace).Delete(context.TODO(), podName, metav1.DeleteOptions{GracePeriodSeconds: &gracePeriod})
 	if err != nil {
 		log.Fatal(err)
 		panic(err)

@@ -14,8 +14,16 @@ import (
 	"sync"
 	"time"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/aferikoglou/mlab-k8s-cluster-setup/benchmarks/benchmark"
 )
+
+type Specification struct {
+	Metadata struct {
+		Name string `yaml:"name"`
+	}
+}
 
 func getDirname() string {
 	ex, err := os.Executable()
@@ -192,8 +200,8 @@ func main() {
 	flag.StringVar(&totalFiles, "t", "total", "Name for the figures for the total duration")
 	flag.StringVar(&promURL, "url", "http://localhost:30090/", "URL of prometheus service")
 	flag.StringVar(&timezone, "tz", "UTC", "Location related to the timezone")
-	flag.BoolVar(&autoskip, "n", false, "If this flag is set then if files exist the program will exit")
-	flag.BoolVar(&autodelete, "y", false, "If this flag is set then all existing files will be automatically deleted")
+	flag.BoolVar(&autoskip, "n", false, "If this flag is set then if files exist then the program will exit")
+	flag.BoolVar(&autodelete, "y", false, "If this flag is set then if the benchmarks that are about to be ran already exist, files will be deleted")
 	flag.BoolVar(&appendTime, "a", false, "If this flag is set then starting time of the benchmarks will be appended on the folders' names")
 	flag.IntVar(&batch, "b", 1, "Number of pods to be ran concurrently")
 	flag.IntVar(&sleep, "s", 60, "Number of seconds to sleep between consecutive batch executions")
@@ -313,6 +321,7 @@ func main() {
 	var nodeNames []string = make([]string, len(files))
 	var duration []float64 = make([]float64, len(files))
 	var totalDuration float64
+	var pod Specification
 	totalDuration = 0
 	count := 0
 	finishedCounter := 0
@@ -335,8 +344,14 @@ func main() {
 
 			var newErr error
 			var outfile string
-			tmp := strings.Split(filePath, "/")
-			filename := strings.Split(tmp[len(tmp)-1], ".")[0]
+
+			yamlFile, err := ioutil.ReadFile(filePath)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			yaml.Unmarshal(yamlFile, &pod)
+			filename := pod.Metadata.Name
 
 			start[ind], end[ind], duration[ind], logs[ind], nodeNames[ind], newErr = benchmark.Benchmark(timezone, configPath, filePath)
 			mu.Lock()
@@ -401,6 +416,7 @@ func main() {
 				step = "1"
 			}
 			s := fmt.Sprintf("%f", duration[ind])
+
 			cmd := exec.Command(
 				"../prom_metrics_cli/dcgm_metrics_range_query.sh",
 				[]string{

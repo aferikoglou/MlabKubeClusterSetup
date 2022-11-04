@@ -5,6 +5,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
+	"path"
 	"sync"
 )
 
@@ -14,9 +16,14 @@ type PromMetrics interface {
 	makeRequest(url string, wg *sync.WaitGroup)
 }
 
-func CreateQueryURL(endpoint string, path string, args map[string]string) string {
+func CreateQueryURL(endpoint string, url_path string, args map[string]string) string {
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		panic(err)
+	}
+	u.Path = path.Join(u.Path, url_path)
+	url := u.String()
 
-	url := endpoint + path
 	count := 0
 	for value, key := range args {
 		if count == 0 {

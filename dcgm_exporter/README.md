@@ -17,6 +17,8 @@ extraEnv:
   value: "default:exporter-metrics-volume"
 - name: "DCGM_EXPORTER_INTERVAL"
   value: "1000"
+- name: "DCGM_EXPORTER_KUBERNETES_GPU_ID_TYPE"
+  value: "device-name"
 ```
 
 ### We will use the Helm chart for setting up dcgm-exporter and values.yaml for setting its extra arguments. First, add the Helm repo:
@@ -25,10 +27,22 @@ helm repo add gpu-helm-charts \
 https://nvidia.github.io/gpu-monitoring-tools/helm-charts
 # Update helm:
 helm repo update
+```
+Right now you can change dcgm's service monitor to export metrics every 1 second by editing the helm values:
+``` bash
+helm inspect values gpu-helm-charts/dcgm-exporter > /tmp/dcgm.values && vim /tmp/dcgm.values
+# find the field serviceMonitor.interval and change it from 15s to 1s
+```
+
+>**Important note:** The image tag I use for my experiments is "2.4.5-2.6.7-ubuntu20.04", so I also suggest changing the image.tag
+field in helm values to the aforementioned.
+
+``` bash
 # Install the chart:
 helm install \
    --generate-name \
-   gpu-helm-charts/dcgm-exporter -f values.yaml
+   --values /tmp/dcgm.values -f values.yaml \
+   gpu-helm-charts/dcgm-exporter
 ```
 
 ### All the chart installation in one command:

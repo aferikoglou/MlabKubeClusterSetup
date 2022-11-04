@@ -6,7 +6,6 @@ import (
 	"log"
 	"math"
 	"strconv"
-	"strings"
 	"sync"
 
 	pods "github.com/aferikoglou/mlab-k8s-cluster-setup/benchmarks/pods"
@@ -163,11 +162,9 @@ func Benchmark(timezone string, configPath string, yamlPath string) (begin strin
 		log.Fatal(err)
 	}
 
-	tmp := strings.Split(yamlPath, "/")
-	filename := strings.Split(tmp[len(tmp)-1], ".")[0]
 	failed := false
 	wg.Add(1)
-	go func(filename string) {
+	go func() {
 		defer wg.Done()
 		for event := range watch.ResultChan() {
 			p, ok := event.Object.(*corev1.Pod)
@@ -177,7 +174,7 @@ func Benchmark(timezone string, configPath string, yamlPath string) (begin strin
 			if p.Status.Phase == corev1.PodRunning {
 				nodeName = p.Spec.NodeName
 			}
-			log.Printf("%s pod's status: %s\n", filename, p.Status.Phase)
+			log.Printf("%s pod's status: %s\n", pod.Metadata.Name, p.Status.Phase)
 			if p.Status.Phase == corev1.PodSucceeded {
 				// When pod's state becomes Succeeded delete the pod and break out of the loop
 				logs = pods.GetLogs(clientset, *p)
@@ -190,7 +187,7 @@ func Benchmark(timezone string, configPath string, yamlPath string) (begin strin
 			}
 		}
 		pods.DeletePod(configPath, pod.Metadata.Namespace, pod.Metadata.Name)
-	}(filename)
+	}()
 
 	// Wait for the goroutine to finish
 	wg.Wait()

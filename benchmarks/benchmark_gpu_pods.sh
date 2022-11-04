@@ -20,7 +20,7 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
-    -y|--YAML)
+    -y|--yaml)
       YAML="$2"
       shift
       shift
@@ -134,12 +134,12 @@ then
     echo "Only one from -n, -y and -a can be set at a time"
 fi
 
-if [ -z $YAML ]
+if [ -z "$YAML" ]
 then
   YAML="$PWD/mlperf_gpu_pods"
 fi
 
-./bin/main -c $CONFIG -b $BATCH -yaml $YAML $NO $YES $APPEND -s $SLEEP -url $PROM_URL -o $OUT
+./bin/main -c "$CONFIG" -b "$BATCH" -yaml "$YAML" -s "$SLEEP" -url "$PROM_URL" -o "$OUT" $NO $YES $APPEND
 if [ ! -z "$TSV" ]
 then
   ../prom_metrics_cli/plot/summarize_dcgm_metrics.py -i "$OUT" --benchmark "$BENCHMARK" --tsv-out "$parent_path/../prom_metrics_cli/plot/summary/dcgm_metrics_summary_$TSV_OUT"
