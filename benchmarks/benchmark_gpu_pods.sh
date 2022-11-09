@@ -93,8 +93,8 @@ done
 
 if [ -z "$CONFIG" ]
 then
-    echo "-c|--config argument not set, default: CONFIG=/root/.kube/config"
-    CONFIG="/root/.kube/config"
+    echo "-c|--config argument not set, default: CONFIG=$HOME/.kube/config"
+    CONFIG="$HOME/.kube/config"
 fi
 
 if [ -z "$TSV_OUT" ]
@@ -106,6 +106,7 @@ fi
 if [ -z "$BENCHMARK" ]
 then
     echo "--benchmark can not be empty"
+    exit 0
 fi
 
 

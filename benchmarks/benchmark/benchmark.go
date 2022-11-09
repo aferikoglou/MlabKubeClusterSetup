@@ -85,7 +85,7 @@ func fixTime(hours, minutes, seconds int) (h, m, s string) {
 	return h, m, s
 }
 
-func Benchmark(timezone string, configPath string, yamlPath string) (begin string, end string, durationSecs float64, logs string, nodeName string, err error) {
+func Benchmark(timezone string, configPath string, yamlPath string) (begin string, runningBegin string, end string, durationSecs float64, logs string, nodeName string, err error) {
 
 	var wg sync.WaitGroup
 	var start time.Time
@@ -96,12 +96,12 @@ func Benchmark(timezone string, configPath string, yamlPath string) (begin strin
 
 	yamlFile, err := ioutil.ReadFile(yamlPath)
 	if err != nil {
-		return "", "", -1, "", nodeName, err
+		return "", "", "", -1, "", nodeName, err
 	}
 
 	err = yaml.Unmarshal(yamlFile, &pod)
 	if err != nil {
-		return "", "", -1, "", nodeName, err
+		return "", "", "", -1, "", nodeName, err
 	}
 
 	// If no namespace is provided in the file then the pod will be automatically created in the default namespace
@@ -112,13 +112,13 @@ func Benchmark(timezone string, configPath string, yamlPath string) (begin strin
 	// Create the config struct
 	config, err := clientcmd.BuildConfigFromFlags("", configPath)
 	if err != nil {
-		return "", "", -1, "", nodeName, err
+		return "", "", "", -1, "", nodeName, err
 	}
 
 	// Create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return "", "", -1, "", nodeName, err
+		return "", "", "", -1, "", nodeName, err
 	}
 
 	FieldSelector := "metadata.name=" + pod.Metadata.Name
@@ -126,7 +126,7 @@ func Benchmark(timezone string, configPath string, yamlPath string) (begin strin
 	// If pod already exists delete it first
 	list, err := pods.ListPods(clientset, pod.Metadata.Namespace, FieldSelector)
 	if err != nil {
-		return "", "", -1, "", nodeName, err
+		return "", "", "", -1, "", nodeName, err
 	}
 
 	if len(list.Items) > 0 {
@@ -163,6 +163,8 @@ func Benchmark(timezone string, configPath string, yamlPath string) (begin strin
 	}
 
 	failed := false
+	counter := 0
+	var runningStart time.Time
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -172,6 +174,10 @@ func Benchmark(timezone string, configPath string, yamlPath string) (begin strin
 				log.Fatal("got unexpected type while running pod")
 			}
 			if p.Status.Phase == corev1.PodRunning {
+				if counter == 0 {
+					counter += 1
+					runningStart = time.Now().In(loc)
+				}
 				nodeName = p.Spec.NodeName
 			}
 			log.Printf("%s pod's status: %s\n", pod.Metadata.Name, p.Status.Phase)
@@ -193,7 +199,7 @@ func Benchmark(timezone string, configPath string, yamlPath string) (begin strin
 	wg.Wait()
 
 	if failed {
-		return "", "", -1, logs, nodeName, fmt.Errorf(fmt.Sprintf("Pod %s failed", pod.Metadata.Name))
+		return "", "", "", -1, logs, nodeName, fmt.Errorf(fmt.Sprintf("Pod %s failed", pod.Metadata.Name))
 	}
 
 	t := time.Now().In(loc)
@@ -205,9 +211,13 @@ func Benchmark(timezone string, configPath string, yamlPath string) (begin strin
 	startHour, startMinutes, startSeconds := fixTime(start.Clock())
 	begin = fmt.Sprintf("%s-%s-%sT%s:%s:%sZ", startYear, startMonth, startDay, startHour, startMinutes, startSeconds)
 
+	runningStartYear, runningStartMonth, runningStartDay := fixDate(runningStart.Date())
+	runningStartHour, runningStartMinutes, runningStartSeconds := fixTime(runningStart.Clock())
+	runningBegin = fmt.Sprintf("%s-%s-%sT%s:%s:%sZ", runningStartYear, runningStartMonth, runningStartDay, runningStartHour, runningStartMinutes, runningStartSeconds)
+
 	endYear, endMonth, endDay := fixDate(start.Add(duration).Date())
 	endHour, endMinutes, endSeconds := fixTime(start.Add(duration).Clock())
 	end = fmt.Sprintf("%s-%s-%sT%s:%s:%sZ", endYear, endMonth, endDay, endHour, endMinutes, endSeconds)
 
-	return begin, end, durationSecs, logs, nodeName, nil
+	return begin, runningBegin, end, durationSecs, logs, nodeName, nil
 }

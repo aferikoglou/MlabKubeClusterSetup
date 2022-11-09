@@ -316,6 +316,7 @@ func main() {
 	}
 
 	var start []string = make([]string, len(files))
+	var appliedAt []string = make([]string, len(files))
 	var end []string = make([]string, len(files))
 	var logs []string = make([]string, len(files))
 	var nodeNames []string = make([]string, len(files))
@@ -353,7 +354,7 @@ func main() {
 			yaml.Unmarshal(yamlFile, &pod)
 			filename := pod.Metadata.Name
 
-			start[ind], end[ind], duration[ind], logs[ind], nodeNames[ind], newErr = benchmark.Benchmark(timezone, configPath, filePath)
+			appliedAt[ind], start[ind], end[ind], duration[ind], logs[ind], nodeNames[ind], newErr = benchmark.Benchmark(timezone, configPath, filePath)
 			mu.Lock()
 			count--
 			if count == 0 {
@@ -401,7 +402,7 @@ func main() {
 				log.Printf("%+v, exiting", newErr)
 				return
 			}
-			log.Printf("Started at: %s\nEnded at: %s\nTime elapsed: %f\n", start[ind], end[ind], duration[ind])
+			log.Printf("Applied at: %s\nStarted running at: %s\nEnded at: %s\nTime elapsed: %f\n", appliedAt[ind], start[ind], end[ind], duration[ind])
 
 			log.Printf("Output filename: [%s]", outfile)
 

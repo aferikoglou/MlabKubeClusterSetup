@@ -51,7 +51,7 @@ for dir in benchmarks:
         if file.endswith(".tsv") and not file.endswith("logs.tsv"):
             metrics_tmp = pd.read_csv(os.path.join(benchmark_dir, file), sep="\t")
             for row in range(len(metrics_tmp)):
-                name_list = metrics_tmp.loc[row, "name"].split('_')
+                name_list = metrics_tmp.loc[row, "name"].replace('-', '_').split('_')
                 if name_list[0] == "total":
                     name = "total"
                 else:
@@ -78,7 +78,7 @@ for dir in benchmarks:
             for row in range(len(metrics_tmp)):
                 if metrics_tmp.loc[row, "name"] is None or metrics_tmp.loc[row, "name"] == "":
                     continue
-                name_list = metrics_tmp.loc[row, "name"].split('_')
+                name_list = metrics_tmp.loc[row, "name"].replace('-', '_').split('_')
                 if name_list[0] == "total": name = "total"
                 else:
                     name = "_".join(name_list[2:5]) \

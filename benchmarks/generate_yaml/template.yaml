@@ -10,7 +10,7 @@ spec:
   restartPolicy: Never
   containers:
     - name: mlperf-infer-imgclassify-gpu
-      image: tzourhs/mlperf-infer-imgclassify-gpu:1.4
+      image: tzourhs/mlperf-infer-imgclassify-gpu:1.10
       imagePullPolicy: IfNotPresent
       env:
       - name: DATA_DIR
