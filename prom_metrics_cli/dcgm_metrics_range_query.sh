@@ -83,6 +83,8 @@ else
   FILTER=".*"
 fi
 
+echo """Filter: \"$FILTER\""""
+
 if [ ! -z "$DIR" ]
 then
   DURATION_DIR="$DIR/$OUT/duration.txt"

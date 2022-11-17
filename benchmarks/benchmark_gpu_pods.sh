@@ -65,22 +65,28 @@ while [[ $# -gt 0 ]]; do
       HEATMAPS="TRUE"
       shift
       ;;
+    --filter)
+      FILTER="-f \"$2\""
+      shift
+      shift
+      ;;
     -h|--help)
       echo "usage: Loop through all mlperf_gpu_pods and run the benchmarks
   options:
-    -c|--config /path/to/kube_config
-    -y|--yaml Path to the yaml file(s) (absolute)
-    -b|--batch Number of pods to be deployed and benchmarked simultanouesly
-    -a|--append Append times on folders' names
-    --no Boolean argument to skip loop if files exist
-    --yes Boolean argument to delete files if they exist
-    -s|--sleep Number of seconds to sleep between each loop. Default=60 secs
-    -url URL of prometheus service
-    --benchmark Name for the benchmark
-    --tsv-out Output folder for summarized metrics under /mlab-k8s-cluster-setup/prom_metrics_cli/plot/figures/ (dcgm_metrics_summary_ and mlperf_logs_summary_ will be prepended respectively)
-    --tsv Produce output tsv files with summarized metrics for all benchmarks
-    --heatmaps Produce output heatmaps with summarized metrics for all benchmarks
-    -o|--out Output folder for dcgm figures and mlperf logs. Default: /mlab-k8s-cluster-setup/prom_metrics_cli/plot/figures/$(date +'%Y_%m_%dT-%H:%mZ')"
+    -c|--config  /path/to/kube_config
+    -y|--yaml  Path to the yaml file(s) (absolute)
+    -b|--batch  Number of pods to be deployed and benchmarked simultanouesly
+    -a|--append  Append times on folders' names
+    --no  Boolean argument to skip loop if files exist
+    --yes  Boolean argument to delete files if they exist
+    -s|--sleep  Number of seconds to sleep between each loop. Default=60 secs
+    -url  URL of prometheus service
+    --benchmark  Name for the benchmark
+    --tsv-out  Output folder for summarized metrics under /mlab-k8s-cluster-setup/prom_metrics_cli/plot/figures/ (dcgm_metrics_summary_ and mlperf_logs_summary_ will be prepended respectively)
+    --tsv  Produce output tsv files with summarized metrics for all benchmarks
+    --heatmaps  Produce output heatmaps with summarized metrics for all benchmarks
+    -o|--out  Output folder for dcgm figures and mlperf logs. Default: /mlab-k8s-cluster-setup/prom_metrics_cli/plot/figures/$(date +'%Y_%m_%dT-%H:%mZ')
+    --filter  Regex string used to match the exported pod field from prometheus results. Defaults to the running pod's name"
       exit 0
       ;;
     *)
@@ -140,7 +146,7 @@ then
   YAML="$PWD/mlperf_gpu_pods"
 fi
 
-./bin/main -c "$CONFIG" -b "$BATCH" -yaml "$YAML" -s "$SLEEP" -url "$PROM_URL" -o "$OUT" $NO $YES $APPEND
+./bin/main -c "$CONFIG" -b "$BATCH" -yaml "$YAML" -s "$SLEEP" -url "$PROM_URL" -o "$OUT" $NO $YES $APPEND $FILTER
 if [ ! -z "$TSV" ]
 then
   ../prom_metrics_cli/plot/summarize_dcgm_metrics.py -i "$OUT" --benchmark "$BENCHMARK" --tsv-out "$parent_path/../prom_metrics_cli/plot/summary/dcgm_metrics_summary_$TSV_OUT"

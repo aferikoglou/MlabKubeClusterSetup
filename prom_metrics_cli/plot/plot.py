@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import ast
 from curses import noecho
 import numpy as np
 import matplotlib.pyplot as plt
@@ -86,29 +87,36 @@ if args.filter is not None:
 else:
     filter = None
 
-data = input()
+print(filter)
 
-print(data)
+data = input()
 
 try:
     data = json.loads(data)
 except:
-    data = "".join(data.split(" ")[2:])
     try:
+        data = data.replace("'", "\"")
         data = json.loads(data)
     except:
-        data = input()
+        data = "".join(data.split(" ")[2:])
         try:
             data = json.loads(data)
         except:
-            data = "".join(data.split(" ")[2:])
+            data = input()
             try:
                 data = json.loads(data)
             except:
-                logging.error("Input data not json serializable")
-                sys.exit(1)
+                data = "".join(data.split(" ")[2:])
+                try:
+                    data = json.loads(data)
+                except:
+                    logging.error("Input data not json serializable")
+                    sys.exit(1)
 
 with open(os.path.join(dirname, "../log.txt"), "a") as f:
+    f.write(str(data) + "\n")
+
+with open(os.path.join(filepath, "data.txt"), "a") as f:
     f.write(str(data) + "\n")
 
 lines = 0
@@ -144,12 +152,11 @@ for i, result in enumerate(data["data"]["result"]):
         for k, v in filter.items():
             pattern = re.compile(v.replace('-', '_'))
             if k not in result["metric"].keys():
-                logging.warning(f'{k} not in result dict, skipping')
-                skip = True
-                break
+                logging.warning(f'{k} not in result dict, ignoring filter')
+                continue
 
             if not re.search(pattern, result["metric"][k].replace('-', '_')):
-                logging.warning(f'{v} not in "{k}", skipping result No.{str(i)}')
+                logging.warning(f'{v} doesnt match "{k}" ({result["metric"][k]}), skipping result No.{str(i)}')
                 skip = True
                 break
 
@@ -191,17 +198,20 @@ for i, result in enumerate(data["data"]["result"]):
     if not args.total:
         mean_value = round(np.mean(position_y), 3)
         variance = round(np.var(position_y), 3)
-        
+        max_value = max(position_y)
+        min_value = min(position_y)
         d = {}
         for var_name in [
             "gpu", 
             "model_name", 
             "metric_name", 
             "mean_value", 
-            "variance", 
+            "variance",
+            "max_value",
+            "min_value",
         ]:
             try:
-                d[var_name] = round(int(eval(var_name)), 4)
+                d[var_name] = round(float(eval(var_name)), 4)
             except:
                 d[var_name] = eval(var_name)
                 

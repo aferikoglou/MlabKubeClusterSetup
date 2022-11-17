@@ -7,7 +7,6 @@ import subprocess
 import os
 from itertools import combinations
 import sys
-from typing import Tuple
 dirname, _ = os.path.split(os.path.abspath(__file__))
 sys.path.append(os.path.join(dirname, ".."))
 from prom_metrics_cli.plot.utils import utils
@@ -110,7 +109,7 @@ def run_combinations(
         base_out_path = os.path.join("../prom_metrics_cli/plot/figures/combinations", f"({benchmark})")
         if not os.path.exists(base_out_path):
             os.makedirs(base_out_path)
-        out_path = os.path.join(dirname, base_out_path, str(utils.find_max_id("/".join(base_out_path.split("/")[:-1]), f"({benchmark})")))
+        out_path = os.path.join(dirname, base_out_path, str(utils.find_max_id("/".join(base_out_path.split("/")[:-1]), "")))
         if not os.path.exists(out_path):
             os.makedirs(out_path)
         args = [script, "-url", url, "-c", config, "-a", "-s", str(sleep), "-b", str(size), "--benchmark", benchmark, "--tsv-out", tsv_out, "-o", out_path, "--tsv"]

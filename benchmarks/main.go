@@ -187,7 +187,7 @@ func parsingError() {
 }
 
 func main() {
-	var configPath, promURL, yamlPath, logsFile, totalFiles, timezone, outDir string
+	var configPath, promURL, yamlPath, logsFile, totalFiles, timezone, outDir, filter string
 	var autoskip, autodelete, appendTime bool
 	var batch, sleep int
 	var wg sync.WaitGroup
@@ -200,6 +200,7 @@ func main() {
 	flag.StringVar(&totalFiles, "t", "total", "Name for the figures for the total duration")
 	flag.StringVar(&promURL, "url", "http://localhost:30090/", "URL of prometheus service")
 	flag.StringVar(&timezone, "tz", "UTC", "Location related to the timezone")
+	flag.StringVar(&filter, "f", "", "Regex string used to match the exported pod field from prometheus results. Defaults to the running pod's name")
 	flag.BoolVar(&autoskip, "n", false, "If this flag is set then if files exist then the program will exit")
 	flag.BoolVar(&autodelete, "y", false, "If this flag is set then if the benchmarks that are about to be ran already exist, files will be deleted")
 	flag.BoolVar(&appendTime, "a", false, "If this flag is set then starting time of the benchmarks will be appended on the folders' names")
@@ -228,6 +229,11 @@ func main() {
 	if sleep < 0 {
 		fmt.Println("Note: -s can't be less than zero")
 		parsingError()
+	}
+
+	var filterByPodName bool
+	if filter == "" {
+		filterByPodName = true
 	}
 
 	// If yamlPath ends with '/' remove it for consistency
@@ -352,7 +358,7 @@ func main() {
 			}
 
 			yaml.Unmarshal(yamlFile, &pod)
-			filename := pod.Metadata.Name
+			podName := pod.Metadata.Name
 
 			appliedAt[ind], start[ind], end[ind], duration[ind], logs[ind], nodeNames[ind], newErr = benchmark.Benchmark(timezone, configPath, filePath)
 			mu.Lock()
@@ -370,12 +376,12 @@ func main() {
 			if inArray(ind, appendInd) {
 				outfile = fmt.Sprintf(
 					"%s_%s_%s",
-					filename,
+					podName,
 					strings.ReplaceAll(nodeNames[ind], "-", "_"),
 					strings.ReplaceAll(start[ind], "-", "_"),
 				)
 			} else {
-				outfile = filename
+				outfile = podName
 			}
 
 			outPath := fmt.Sprintf("%s/%s", outDir, outfile)
@@ -393,7 +399,7 @@ func main() {
 						log.Printf("%+v", writeErr)
 					}
 				}
-				log.Printf("Error occured while running benchmarks for file %s: %+v", filename, newErr)
+				log.Printf("Error occured while running benchmarks for file %s: %+v", podName, newErr)
 				return
 			}
 
@@ -418,12 +424,15 @@ func main() {
 			}
 			s := fmt.Sprintf("%f", duration[ind])
 
+			if filterByPodName {
+				filter = "^" + podName + "$"
+			}
 			cmd := exec.Command(
 				"../prom_metrics_cli/dcgm_metrics_range_query.sh",
 				[]string{
 					"-s", start[ind],
 					"-e", end[ind],
-					"-f", "^" + filename + "$",
+					"-f", filter,
 					"-o", outfile,
 					"--out-dir", outDir,
 					"-url", promURL,
@@ -433,14 +442,15 @@ func main() {
 			)
 
 			out, newErr := cmd.CombinedOutput()
+			output := string(out[:])
 			if newErr != nil {
-				output := string(out[:])
-				if output != "" {
-					log.Printf("Output: %s\n", output)
-				}
 				log.Print(newErr)
 				return
 			}
+			if output != "" {
+				log.Printf("Output: %s\n", output)
+			}
+
 			log.Printf("Figures saved at %s\n", outDir)
 		}(i, file)
 	}
