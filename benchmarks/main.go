@@ -186,6 +186,16 @@ func parsingError() {
 	os.Exit(1)
 }
 
+func isFlagPassed(name string) bool {
+	found := false
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == name {
+			found = true
+		}
+	})
+	return found
+}
+
 func main() {
 	var configPath, promURL, yamlPath, logsFile, totalFiles, timezone, outDir, filter string
 	var autoskip, autodelete, appendTime bool
@@ -232,7 +242,7 @@ func main() {
 	}
 
 	var filterByPodName bool
-	if filter == "" {
+	if !isFlagPassed("f") {
 		filterByPodName = true
 	}
 
@@ -425,7 +435,8 @@ func main() {
 			s := fmt.Sprintf("%f", duration[ind])
 
 			if filterByPodName {
-				filter = "^" + podName + "$"
+				// '{"exported_pod":"'"$FILTER"'"}'
+				filter = "{'exported_pod': '^" + podName + "$'}"
 			}
 			cmd := exec.Command(
 				"../prom_metrics_cli/dcgm_metrics_range_query.sh",

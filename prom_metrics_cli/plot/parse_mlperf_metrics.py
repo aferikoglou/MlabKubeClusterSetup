@@ -55,7 +55,7 @@ try:
     try:
         with open(duration_filepath, "r") as f:
             line = f.readline()
-            d["system_latency"] = float(line)
+            d["system_latency"] = round(float(line), 4)
     except:
         logging.warning("Could't parse duration.txt")
     write_tsv(
