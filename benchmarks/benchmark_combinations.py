@@ -37,7 +37,6 @@ def run_combinations(
     restart, 
     notify, 
     logs_file,
-    yaml, 
     logger
 ):
     global succeeded
@@ -112,9 +111,7 @@ def run_combinations(
         out_path = os.path.join(dirname, base_out_path, str(utils.find_max_id("/".join(base_out_path.split("/")[:-1]), "")))
         if not os.path.exists(out_path):
             os.makedirs(out_path)
-        args = [script, "-url", url, "-c", config, "-a", "-s", str(sleep), "-b", str(size), "--benchmark", benchmark, "--tsv-out", tsv_out, "-o", out_path, "--tsv"]
-        if yaml is not None:
-            args.extend(["--yaml", yaml])
+        args = [script, "-url", url, "-c", config, "-a", "-s", str(sleep), "-b", str(size), "--benchmark", benchmark, "--tsv-out", tsv_out, "-o", out_path, "--tsv", "--yaml", pods_dir]
         subprocess.run(args)
         if notify:
             beep(4)
@@ -132,7 +129,7 @@ if __name__ == '__main__':
     parser.add_argument('--notify', action='store_true', default=False, help="Get notified with a beep sound in the end of each benchmark")
     parser.add_argument('--restart', action='store_true', default=False, help="Restart benchmarks from last saved combination. Overrides --size and --checkpoint")
     parser.add_argument('--restore', action='store_true', default=False, help="Restore pods to pods' dir")
-    parser.add_argument('--yaml', action='store', type=str, help="Path to yaml files. Default = ./mlperf_gpu_pods")
+    parser.add_argument('--yaml', action='store', type=str, help="Path to yaml files. Default = ./mlperf_gpu_pods/A30/1")
     args = parser.parse_args()
 
     logger = logging.getLogger('logger')
@@ -142,11 +139,8 @@ if __name__ == '__main__':
     home = os.getenv("HOME")
     save_dir = os.path.join(home, ".benchmarks", "save")
     dirname, _ = os.path.split(os.path.abspath(__file__))
-    pods_dir = args.yaml if args.yaml is not None else os.path.join(dirname, "mlperf_gpu_pods")
+    pods_dir = args.yaml if args.yaml is not None else os.path.join(dirname, "mlperf_gpu_pods/A30/1")
     logs_file = os.path.join(dirname, "combinations-checkpoint.txt")
-
-    if args.yaml == "":
-        args.yaml = os.path.join(dirname, "mlperf_gpu_pods")
 
     if args.config == "":
         args.config = os.path.join(home, ".kube/config")
@@ -166,7 +160,6 @@ if __name__ == '__main__':
         "tensorflow_mobilenet",
         "tensorflow_resnet50",
         "tensorflow_ssd_mobilenet",
-        "tflite_mobilenet",
     ]
     script = os.path.join(dirname, "benchmark_gpu_pods.sh")
-    run_combinations(pods_list, args.size, pods_dir, save_dir, script, args.url, args.config, args.sleep, args.tsv_out, args.checkpoint, args.restart, args.notify, logs_file, args.yaml, logger)
+    run_combinations(pods_list, args.size, pods_dir, save_dir, script, args.url, args.config, args.sleep, args.tsv_out, args.checkpoint, args.restart, args.notify, logs_file, logger)

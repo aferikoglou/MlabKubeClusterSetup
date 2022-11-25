@@ -87,8 +87,6 @@ if args.filter is not None:
 else:
     filter = None
 
-print(filter)
-
 data = input()
 
 try:
@@ -116,8 +114,8 @@ except:
 with open(os.path.join(dirname, "../log.txt"), "a") as f:
     f.write(str(data) + "\n")
 
-with open(os.path.join(filepath, "data.txt"), "a") as f:
-    f.write(str(data) + "\n")
+# with open(os.path.join(filepath, "data.txt"), "a") as f:
+#     f.write(str(data) + "\n")
 
 lines = 0
 plt.figure().set_figwidth(args.figwidth)
@@ -152,8 +150,9 @@ for i, result in enumerate(data["data"]["result"]):
         for k, v in filter.items():
             pattern = re.compile(v.replace('-', '_'))
             if k not in result["metric"].keys():
-                logging.warning(f'{k} not in result dict, ignoring filter')
-                continue
+                logging.warning(f'{k} not in result dict, skipping result No.{str(i)}')
+                skip = True
+                break
 
             if not re.search(pattern, result["metric"][k].replace('-', '_')):
                 logging.warning(f'{v} doesnt match "{k}" ({result["metric"][k]}), skipping result No.{str(i)}')
