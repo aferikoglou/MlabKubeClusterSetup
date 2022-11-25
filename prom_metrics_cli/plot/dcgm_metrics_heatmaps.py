@@ -103,4 +103,4 @@ for k, v in d.items():
 
     plt.tight_layout()
     plt.savefig(os.path.join(out_path, k + '.png'))
-    plt.figure().clear()
+    plt.clf()

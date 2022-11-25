@@ -97,4 +97,4 @@ for k, v in d.items():
         plt.savefig(out_path + "/" + k + '-percentile.png')
     else:
         plt.savefig(out_path + "/" + k + '.png')
-    plt.figure().clear()
+    plt.clf()
