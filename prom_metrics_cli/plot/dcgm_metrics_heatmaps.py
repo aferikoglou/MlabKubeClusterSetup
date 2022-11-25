@@ -73,7 +73,7 @@ for row in range(len(mlperflogs_df)):
     name = mlperflogs_df.loc[row, 'name']
     benchmark = mlperflogs_df.loc[row, 'benchmark']
     column = mlperflogs_df.loc[row, 'metric_name']
-    if np.isnan(mlperflogs_df.loc[row, 'mean_value']):
+    if pd.isnull(mlperflogs_df.loc[row, 'mean_value']):
         continue
     if column not in d:
         d[column] = {}

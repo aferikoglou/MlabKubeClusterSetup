@@ -71,7 +71,7 @@ for column in mlperflogs_df.columns:
         continue
     d[column] = {}
     for row in range(len(mlperflogs_df)):
-        if np.isnan(mlperflogs_df.loc[row, column]):
+        if pd.isnull(mlperflogs_df.loc[row, column]):
             continue
         name = mlperflogs_df.loc[row, 'name']
         benchmark = mlperflogs_df.loc[row, 'benchmark']
