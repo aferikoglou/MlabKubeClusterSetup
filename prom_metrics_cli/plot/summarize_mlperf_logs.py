@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-from cgi import print_arguments
 import pandas as pd
 from utils.utils import find_max_id
 import os 
@@ -69,7 +68,8 @@ df = pd.DataFrame(
     [], 
     columns=[
         "name", 
-        "benchmark", 
+        "benchmark",
+        "node",
         "scenario", 
         "qps", 
         "mean", 

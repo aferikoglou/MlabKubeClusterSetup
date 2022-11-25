@@ -41,7 +41,7 @@ tsv_path = args.tsv_out if (args.tsv_out is not None) \
 header = False if (os.path.exists(tsv_path)) else True
 
 
-# Count benchmarks with common model/backend according to their names
+# Count benchmarks with common model/backend according to their names and metric_names
 benchmarks = os.listdir(args.i)
 benchmarks_count = {}
 for dir in benchmarks:

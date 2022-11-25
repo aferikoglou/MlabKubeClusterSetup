@@ -37,6 +37,8 @@ def run_combinations(
     restart, 
     notify, 
     logs_file,
+    yaml,
+    benchmark,
     logger
 ):
     global succeeded
@@ -104,14 +106,36 @@ def run_combinations(
             logger.warning(msg)
             continue
 
-        benchmark = ",".join([str(pods_dict[x]) for x in combo])
+        benchmark = benchmark + "_" + ",".join([str(pods_dict[x]) for x in combo])
         base_out_path = os.path.join("../prom_metrics_cli/plot/figures/combinations", f"({benchmark})")
         if not os.path.exists(base_out_path):
             os.makedirs(base_out_path)
         out_path = os.path.join(dirname, base_out_path, str(utils.find_max_id("/".join(base_out_path.split("/")[:-1]), "")))
         if not os.path.exists(out_path):
             os.makedirs(out_path)
-        args = [script, "-url", url, "-c", config, "-a", "-s", str(sleep), "-b", str(size), "--benchmark", benchmark, "--tsv-out", tsv_out, "-o", out_path, "--tsv", "--yaml", pods_dir]
+
+        args = [
+            script, 
+            "-url", 
+            url, 
+            "-c", 
+            config, 
+            "-a", 
+            "-s", 
+            str(sleep), 
+            "-b", 
+            str(size), 
+            "--benchmark", 
+            benchmark, 
+            "--tsv-out", 
+            tsv_out, 
+            "-o", 
+            out_path, 
+            "--tsv"
+        ]
+        if yaml is not None:
+            args.extend(["--yaml", yaml])
+
         subprocess.run(args)
         if notify:
             beep(4)
@@ -129,7 +153,9 @@ if __name__ == '__main__':
     parser.add_argument('--notify', action='store_true', default=False, help="Get notified with a beep sound in the end of each benchmark")
     parser.add_argument('--restart', action='store_true', default=False, help="Restart benchmarks from last saved combination. Overrides --size and --checkpoint")
     parser.add_argument('--restore', action='store_true', default=False, help="Restore pods to pods' dir")
-    parser.add_argument('--yaml', action='store', type=str, help="Path to yaml files. Default = ./mlperf_gpu_pods/A30/1")
+    parser.add_argument('--yaml', action='store', type=str, help="Path to yaml files. Default = ./mlperf_gpu_pods")
+    parser.add_argument('--benchmark', action='store', type=str, required=False, help="Optional benchmark name")
+
     args = parser.parse_args()
 
     logger = logging.getLogger('logger')
@@ -162,4 +188,22 @@ if __name__ == '__main__':
         "tensorflow_ssd_mobilenet",
     ]
     script = os.path.join(dirname, "benchmark_gpu_pods.sh")
-    run_combinations(pods_list, args.size, pods_dir, save_dir, script, args.url, args.config, args.sleep, args.tsv_out, args.checkpoint, args.restart, args.notify, logs_file, logger)
+
+    run_combinations(
+        pods_list, 
+        args.size, 
+        pods_dir, 
+        save_dir, 
+        script, 
+        args.url, 
+        args.config, 
+        args.sleep, 
+        args.tsv_out, 
+        args.checkpoint, 
+        args.restart, 
+        args.notify, 
+        logs_file, 
+        args.yaml, 
+        args.benchmark, 
+        logger
+    )
