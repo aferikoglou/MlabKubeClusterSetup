@@ -225,7 +225,7 @@ for i, result in enumerate(data["data"]["result"]):
         plt.legend()
         plt.tight_layout()
         plt.savefig(os.path.join(filepath, args.o + "_" + str(max_id) + '.png'))
-        plt.figure().clear()    
+        plt.clf()
     
 
 if args.total and lines > 0:
@@ -252,4 +252,4 @@ if args.total and lines > 0:
     plt.legend()
     plt.tight_layout()
     plt.savefig(os.path.join(filepath, args.o + "_" + str(max_id) + '.png',))
-    
+    plt.clf()
