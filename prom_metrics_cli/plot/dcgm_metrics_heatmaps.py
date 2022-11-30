@@ -80,10 +80,13 @@ for row in range(len(mlperflogs_df)):
     if benchmark not in d[column]:
         d[column][benchmark] = {}
 
-    if name not in d[column][benchmark]:
-        d[column][benchmark][name] = round(float(mlperflogs_df.loc[row, 'mean_value']) / float(benchmarks_count[name][benchmark][column]), 4)
-    else:
-        d[column][benchmark][name] += round(float(mlperflogs_df.loc[row, 'mean_value']) / float(benchmarks_count[name][benchmark][column]), 4)
+    try:
+        if name not in d[column][benchmark]:
+            d[column][benchmark][name] = round(float(mlperflogs_df.loc[row, 'mean_value']) / float(benchmarks_count[name][benchmark][column]), 4)
+        else:
+            d[column][benchmark][name] += round(float(mlperflogs_df.loc[row, 'mean_value']) / float(benchmarks_count[name][benchmark][column]), 4)
+    except:
+        pass
 
 for k, v in d.items():
     for k1, v1 in v.items():
