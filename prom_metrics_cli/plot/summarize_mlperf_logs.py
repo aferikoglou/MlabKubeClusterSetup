@@ -69,7 +69,6 @@ df = pd.DataFrame(
     columns=[
         "name", 
         "benchmark",
-        "node",
         "scenario", 
         "qps", 
         "mean", 
