@@ -27,6 +27,9 @@ def validate_filename(filename):
 
 def find_max_id(dirname: str, outfile: str)-> int:
     max_id = 0
+    if not os.path.exists(dirname) or not os.path.isfile:
+        return 1
+
     for filename in os.listdir(dirname):
         tmp = filename.split(".")
         if not "_".join(tmp[0].split("_")[:-1]).startswith(outfile):

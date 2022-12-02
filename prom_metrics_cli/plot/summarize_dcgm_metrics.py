@@ -88,13 +88,11 @@ for dir in benchmarks:
 
                 if not df.loc[(df["name"] == name) & (df["metric_name"] == metric_name)].empty:
                     for column in metrics_tmp.columns:
+                        if column in ["name", "gpu", "model_name", "metric_name"]:
+                            continue
                         try:
-                            if column == "mean_value":
-                                df.loc[(df["name"] == name) & (df["metric_name"] == metric_name), "mean_value"] += \
-                                    float(metrics_tmp.loc[row, "mean_value"]) / benchmarks_count[name][metric_name]
-                            elif column == "variance":
-                                df.loc[(df["name"] == name) & (df["metric_name"] == metric_name), "variance"] += \
-                                    float(metrics_tmp.loc[row, "variance"]) / benchmarks_count[name][metric_name]
+                            df.loc[(df["name"] == name) & (df["metric_name"] == metric_name), column] += \
+                                float(metrics_tmp.loc[row, column]) / benchmarks_count[name][metric_name]
                         except:
                             pass
                 else:

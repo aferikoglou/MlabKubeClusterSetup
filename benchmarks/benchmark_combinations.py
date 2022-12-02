@@ -106,7 +106,10 @@ def run_combinations(
             logger.warning(msg)
             continue
 
-        benchmark = benchmark + "_" + ",".join([str(pods_dict[x]) for x in combo])
+        benchmark = ",".join([str(pods_dict[x]) for x in combo]) \
+            if benchmark is None else \
+            benchmark + "_" + ",".join([str(pods_dict[x]) for x in combo])
+            
         base_out_path = os.path.join("../prom_metrics_cli/plot/figures/combinations", f"({benchmark})")
         if not os.path.exists(base_out_path):
             os.makedirs(base_out_path)
