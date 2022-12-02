@@ -41,7 +41,7 @@ def run_combinations(
     benchmark,
     logger
 ):
-    global succeeded
+    global succeeded, save
     counter = 1
     pods_dict = {}
     dirname, _ = os.path.split(os.path.abspath(__file__))
@@ -83,7 +83,6 @@ def run_combinations(
     
     first = True
     for combo in combos:
-        global save
         save = combo
         print(combo)
         

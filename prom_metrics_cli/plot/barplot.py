@@ -40,7 +40,13 @@ for column in mlperflogs_df.columns:
     for row in range(len(mlperflogs_df)):
         name = mlperflogs_df.loc[row, 'name']
         benchmark = mlperflogs_df.loc[row, 'benchmark']
-        metric_name = mlperflogs_df.loc[row, 'metric_name'] if "dcgm" in args.i else column
+        if "dcgm" in args.i:
+            if column != "mean_value":
+                continue
+            metric_name = mlperflogs_df.loc[row, 'metric_name']
+        else:
+            metric_name = column  
+
         if name not in benchmarks_count:
             benchmarks_count[name] = {}
         if benchmark not in benchmarks_count[name]:
@@ -49,7 +55,6 @@ for column in mlperflogs_df.columns:
             benchmarks_count[name][benchmark][metric_name] = 1
         else:
             benchmarks_count[name][benchmark][metric_name] += 1
-
 
 d = {}
 for column in mlperflogs_df.columns:
