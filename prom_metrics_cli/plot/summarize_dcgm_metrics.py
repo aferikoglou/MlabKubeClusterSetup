@@ -67,7 +67,7 @@ for dir in benchmarks:
                     benchmarks_count[name][metric_name] += 1
             break
 
-df = pd.DataFrame([], columns=["name", "benchmark", "gpu", "model_name", "metric_name", "mean_value", "variance"])
+df = pd.DataFrame([], columns=["name", "benchmark", "gpu", "model_name", "metric_name", "mean_value", "variance", "max_value", "min_value"])
 metrics = {}
 for dir in benchmarks:
     benchmark_dir = os.path.join(args.i, dir)

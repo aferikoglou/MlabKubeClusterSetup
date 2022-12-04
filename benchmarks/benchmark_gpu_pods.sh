@@ -3,6 +3,8 @@
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd $parent_path
 
+ARGS=$@
+
 while [[ $# -gt 0 ]]; do
   case $1 in
     -url)
@@ -91,9 +93,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
       echo "Unknown argument $1"
-      shift
-      shift
-      ;;
+      exit 0
     esac
 done
 
@@ -145,6 +145,8 @@ if [ -z "$YAML" ]
 then
   YAML="$PWD/mlperf_gpu_pods"
 fi
+
+echo $ARGS | tee -a "$OUT/arguments.txt"
 
 ./bin/main -c "$CONFIG" -b "$BATCH" -yaml "$YAML" -s "$SLEEP" -url "$PROM_URL" -o "$OUT" $NO $YES $APPEND $FILTER
 if [ ! -z "$TSV" ]
