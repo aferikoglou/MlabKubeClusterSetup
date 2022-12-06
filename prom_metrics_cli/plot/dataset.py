@@ -81,7 +81,6 @@ else:
         [],
         columns=columns)
 metrics_tmp = pd.read_csv(args.i, sep="\t")
-print(metrics_tmp.columns)
 for row in range(len(metrics_tmp)):
     name = metrics_tmp.loc[row, "name"]
     if "total" in name:

@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import argparse
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 from utils.utils import find_max_id
 
 import matplotlib.pyplot as plt
@@ -9,17 +9,18 @@ import pandas as pd
 import os
 
 
-parser = argparse.ArgumentParser(description='Create barplots from summarized metrics')
+parser = argparse.ArgumentParser(
+    description='Create barplots from summarized metrics')
 parser.add_argument(
-    '-i', 
-    action='store', 
-    required=True ,  
+    '-i',
+    action='store',
+    required=True,
     help="Path to summary file"
 )
 parser.add_argument(
-    '-o', 
-    action='store', 
-    required=False ,  
+    '-o',
+    action='store',
+    required=False,
     help="Path to save output figures"
 )
 
@@ -45,7 +46,7 @@ for column in mlperflogs_df.columns:
                 continue
             metric_name = mlperflogs_df.loc[row, 'metric_name']
         else:
-            metric_name = column  
+            metric_name = column
 
         if name not in benchmarks_count:
             benchmarks_count[name] = {}
@@ -63,7 +64,8 @@ for column in mlperflogs_df.columns:
     for row in range(len(mlperflogs_df)):
         name = mlperflogs_df.loc[row, 'name']
         benchmark = mlperflogs_df.loc[row, 'benchmark']
-        metric_name = mlperflogs_df.loc[row, 'metric_name'] if "dcgm" in args.i else column
+        metric_name = mlperflogs_df.loc[row,
+                                        'metric_name'] if "dcgm" in args.i else column
         if name not in d:
             d[name] = {}
         if metric_name not in d[name]:
@@ -72,13 +74,15 @@ for column in mlperflogs_df.columns:
         if benchmark not in d[name][metric_name]['x']:
             d[name][metric_name]['x'].append(benchmark)
             try:
-                d[name][metric_name]['y'].append(round(float(mlperflogs_df.loc[row, column]) / float(benchmarks_count[name][benchmark][metric_name]), 4))
+                d[name][metric_name]['y'].append(round(float(
+                    mlperflogs_df.loc[row, column]) / float(benchmarks_count[name][benchmark][metric_name]), 4))
             except:
                 d[name][metric_name]['y'].append(float(0))
         else:
             i = d[name][metric_name]['x'].index(benchmark)
             try:
-                d[name][metric_name]['y'][i] += round(float(mlperflogs_df.loc[row, column]) / float(benchmarks_count[name][benchmark][metric_name]), 4)
+                d[name][metric_name]['y'][i] += round(float(mlperflogs_df.loc[row, column]) / float(
+                    benchmarks_count[name][benchmark][metric_name]), 4)
             except:
                 pass
 
@@ -96,4 +100,3 @@ for k, v in d.items():
         plt.tight_layout()
         plt.savefig(os.path.join(outfile, k1 + '.png'))
         plt.clf()
-        
