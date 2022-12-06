@@ -67,6 +67,10 @@ while [[ $# -gt 0 ]]; do
       HEATMAPS="TRUE"
       shift
       ;;
+    --barplots)
+      BARPLOTS="TRUE"
+      shift
+      ;;
     --filter)
       FILTER="-f \"$2\""
       shift
@@ -159,3 +163,11 @@ then
   ../prom_metrics_cli/plot/dcgm_metrics_heatmaps.py -i "$parent_path/../prom_metrics_cli/plot/summary/dcgm_metrics_summary_$TSV_OUT"
   ../prom_metrics_cli/plot/mlperf_logs_heatmaps.py -i "$parent_path/../prom_metrics_cli/plot/summary/mlperf_logs_summary_$TSV_OUT"
 fi
+if [ ! -z "$BARPLOTS" ]
+then
+  ../prom_metrics_cli/plot/barplot.py -i "$parent_path/../prom_metrics_cli/plot/summary/dcgm_metrics_summary_$TSV_OUT"
+  ../prom_metrics_cli/plot/barplot.py -i "$parent_path/../prom_metrics_cli/plot/summary/mlperf_logs_summary_$TSV_OUT"
+fi
+
+../prom_metrics_cli/plot/dataset.py -i "$parent_path/../prom_metrics_cli/plot/summary/dcgm_metrics_summary_$TSV_OUT"
+../prom_metrics_cli/plot/dataset.py -i "$parent_path/../prom_metrics_cli/plot/summary/mlperf_logs_summary_$TSV_OUT"
