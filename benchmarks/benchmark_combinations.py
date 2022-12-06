@@ -39,9 +39,10 @@ def run_combinations(
     logs_file,
     yaml,
     benchmark,
+    filter,
     logger
 ):
-    global succeeded
+    global succeeded, save
     counter = 1
     pods_dict = {}
     dirname, _ = os.path.split(os.path.abspath(__file__))
@@ -83,7 +84,6 @@ def run_combinations(
     
     first = True
     for combo in combos:
-        global save
         save = combo
         print(combo)
         
@@ -106,11 +106,11 @@ def run_combinations(
             logger.warning(msg)
             continue
 
-        benchmark = ",".join([str(pods_dict[x]) for x in combo]) \
+        name = ",".join([str(pods_dict[x]) for x in combo]) \
             if benchmark is None else \
             benchmark + "_" + ",".join([str(pods_dict[x]) for x in combo])
             
-        base_out_path = os.path.join("../prom_metrics_cli/plot/figures/combinations", f"({benchmark})")
+        base_out_path = os.path.join("../prom_metrics_cli/plot/figures/combinations", f"({name})")
         if not os.path.exists(base_out_path):
             os.makedirs(base_out_path)
         out_path = os.path.join(dirname, base_out_path, str(utils.find_max_id("/".join(base_out_path.split("/")[:-1]), "")))
@@ -129,13 +129,15 @@ def run_combinations(
             "-b", 
             str(size), 
             "--benchmark", 
-            benchmark, 
+            name, 
             "--tsv-out", 
-            tsv_out, 
+            tsv_out,
             "-o", 
             out_path, 
             "--tsv"
         ]
+        if filter is not None:
+            args.extend(["--filter", filter])
         if yaml is not None:
             args.extend(["--yaml", yaml])
 
@@ -158,6 +160,7 @@ if __name__ == '__main__':
     parser.add_argument('--restore', action='store_true', default=False, help="Restore pods to pods' dir")
     parser.add_argument('--yaml', action='store', type=str, help="Path to yaml files. Default = ./mlperf_gpu_pods")
     parser.add_argument('--benchmark', action='store', type=str, required=False, help="Optional benchmark name")
+    parser.add_argument('--filter', action='store', type=str, required=False, help="Json object used to filter out prometheus results")
 
     args = parser.parse_args()
 
@@ -207,6 +210,7 @@ if __name__ == '__main__':
         args.notify, 
         logs_file, 
         args.yaml, 
-        args.benchmark, 
+        args.benchmark,
+        args.filter,
         logger
     )

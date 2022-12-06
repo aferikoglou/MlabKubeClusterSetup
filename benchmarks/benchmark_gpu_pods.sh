@@ -3,6 +3,8 @@
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd $parent_path
 
+ARGS=$@
+
 while [[ $# -gt 0 ]]; do
   case $1 in
     -url)
@@ -65,6 +67,10 @@ while [[ $# -gt 0 ]]; do
       HEATMAPS="TRUE"
       shift
       ;;
+    --barplots)
+      BARPLOTS="TRUE"
+      shift
+      ;;
     --filter)
       FILTER="-f \"$2\""
       shift
@@ -91,9 +97,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
       echo "Unknown argument $1"
-      shift
-      shift
-      ;;
+      exit 0
     esac
 done
 
@@ -146,6 +150,8 @@ then
   YAML="$PWD/mlperf_gpu_pods"
 fi
 
+echo $ARGS | tee -a "$OUT/arguments.txt"
+
 ./bin/main -c "$CONFIG" -b "$BATCH" -yaml "$YAML" -s "$SLEEP" -url "$PROM_URL" -o "$OUT" $NO $YES $APPEND $FILTER
 if [ ! -z "$TSV" ]
 then
@@ -157,3 +163,11 @@ then
   ../prom_metrics_cli/plot/dcgm_metrics_heatmaps.py -i "$parent_path/../prom_metrics_cli/plot/summary/dcgm_metrics_summary_$TSV_OUT"
   ../prom_metrics_cli/plot/mlperf_logs_heatmaps.py -i "$parent_path/../prom_metrics_cli/plot/summary/mlperf_logs_summary_$TSV_OUT"
 fi
+if [ ! -z "$BARPLOTS" ]
+then
+  ../prom_metrics_cli/plot/barplot.py -i "$parent_path/../prom_metrics_cli/plot/summary/dcgm_metrics_summary_$TSV_OUT"
+  ../prom_metrics_cli/plot/barplot.py -i "$parent_path/../prom_metrics_cli/plot/summary/mlperf_logs_summary_$TSV_OUT"
+fi
+
+../prom_metrics_cli/plot/dataset.py -i "$parent_path/../prom_metrics_cli/plot/summary/dcgm_metrics_summary_$TSV_OUT"
+../prom_metrics_cli/plot/dataset.py -i "$parent_path/../prom_metrics_cli/plot/summary/mlperf_logs_summary_$TSV_OUT"
