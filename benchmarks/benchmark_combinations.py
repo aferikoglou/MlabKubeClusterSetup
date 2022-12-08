@@ -110,10 +110,10 @@ def run_combinations(
             if benchmark is None else \
             benchmark + "_" + ",".join([str(pods_dict[x]) for x in combo])
             
-        base_out_path = os.path.join("../prom_metrics_cli/plot/figures/combinations", f"({name})")
+        base_out_path = os.path.join(dirname, "../prom_metrics_cli/plot/figures/combinations", f"({name})")
         if not os.path.exists(base_out_path):
             os.makedirs(base_out_path)
-        out_path = os.path.join(dirname, base_out_path, str(utils.find_max_id("/".join(base_out_path.split("/")[:-1]), "")))
+        out_path = os.path.join(base_out_path, str(utils.find_max_id(base_out_path, '')))
         if not os.path.exists(out_path):
             os.makedirs(out_path)
 
