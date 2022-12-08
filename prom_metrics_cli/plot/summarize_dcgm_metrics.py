@@ -46,6 +46,8 @@ benchmarks = os.listdir(args.i)
 benchmarks_count = {}
 for dir in benchmarks:
     benchmark_dir = os.path.join(args.i, dir)
+    if os.path.isfile(benchmark_dir):
+        continue
     files = os.listdir(benchmark_dir)
     for file in files:
         if file.endswith(".tsv") and not file.endswith("logs.tsv"):
@@ -71,6 +73,8 @@ df = pd.DataFrame([], columns=["name", "benchmark", "gpu", "model_name", "metric
 metrics = {}
 for dir in benchmarks:
     benchmark_dir = os.path.join(args.i, dir)
+    if os.path.isfile(benchmark_dir):
+        continue
     files = os.listdir(benchmark_dir)
     for file in files:
         if file.endswith(".tsv") and not file.endswith("logs.tsv"):

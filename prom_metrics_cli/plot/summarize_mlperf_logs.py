@@ -84,6 +84,8 @@ df = pd.DataFrame(
 )
 for dir in benchmarks:
     benchmark_dir = os.path.join(args.i, dir)
+    if os.path.isfile(benchmark_dir):
+        continue
     files = os.listdir(benchmark_dir)
     for file in files:
         if file.endswith("logs.tsv"):
