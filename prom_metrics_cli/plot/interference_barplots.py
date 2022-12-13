@@ -45,7 +45,7 @@ pods = {
     '7': "tflite_mobilenet",
 }
 
-regex = re.compile(r'^(\w_)*\d,\d$')
+regex = re.compile(r'^(\w*_)*\d,\d$')
 metrics = pd.read_csv(args.i, sep="\t")
 
 dirname, _ = os.path.split(os.path.abspath(__file__))
@@ -54,7 +54,6 @@ out_path = args.out if args.out is not None else os.path.join(
 if not os.path.exists(out_path):
     os.makedirs(out_path)
 
-# karta -> pod -> metrikh -> suntopo8ethmena pods -> {x: [], y: []}
 d = {'A30': {}, 'V100': {}}
 for row in range(len(metrics)):
     if not regex.match(metrics.loc[row, "benchmark"]):
