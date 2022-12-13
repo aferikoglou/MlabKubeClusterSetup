@@ -42,9 +42,11 @@ except:
 type = "dcgm" if "dcgm" in args.i else "mlperf"
 columns = [
     "name",
+    "timestamp",
     "benchmark",
     "experiment",
     "model_name",
+    "gpu_profile",
     "gpu",
     "scenario",
     "qps",
@@ -106,7 +108,7 @@ for row in range(len(metrics_tmp)):
             (df["experiment"] == experiment),
             column
         ] = metrics_tmp.loc[row, "mean_value"]
-        for metric in ["model_name", "gpu"]:
+        for metric in ["model_name", "gpu", "timestamp", "gpu_profile"]:
             df.loc[
                 (df["name"] == name) &
                 (df["benchmark"] == benchmark) &

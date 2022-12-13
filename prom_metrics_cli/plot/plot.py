@@ -111,11 +111,11 @@ except:
                     logging.error("Input data not json serializable")
                     sys.exit(1)
 
-with open(os.path.join(dirname, "../log.txt"), "a") as f:
-    f.write(str(data) + "\n")
-
-# with open(os.path.join(filepath, "data.txt"), "a") as f:
+# with open(os.path.join(dirname, "../log.txt"), "a") as f:
 #     f.write(str(data) + "\n")
+
+with open(os.path.join(filepath, "data.txt"), "a") as f:
+    f.write(str(data) + "\n")
 
 lines = 0
 plt.figure().set_figwidth(args.figwidth)
@@ -134,6 +134,10 @@ for i, result in enumerate(data["data"]["result"]):
         model_name = result["metric"]["modelName"]
     except:
         model_name = ""
+    try:
+        gpu_profile = result["metric"]["GPU_I_PROFILE"]
+    except:
+        gpu_profile = ""
     try:
         pod = result["metric"]["exported_pod"]
     except:
@@ -202,7 +206,8 @@ for i, result in enumerate(data["data"]["result"]):
         d = {}
         for var_name in [
             "gpu", 
-            "model_name", 
+            "model_name",
+            "gpu_profile",
             "metric_name", 
             "mean_value", 
             "variance",
@@ -214,9 +219,12 @@ for i, result in enumerate(data["data"]["result"]):
             except:
                 d[var_name] = eval(var_name)
                 
+        name = args.tsv_out if (args.tsv_out is not None) else args.o
+        timestamp = '_'.join(name.split('_')[-3:])
         write_tsv(
             path=os.path.join(filepath, tsv_name + ".tsv"),
-            name=args.tsv_out if (args.tsv_out is not None) else args.o,
+            name=name,
+            timestamp = timestamp,
             **d,
         )
 
@@ -241,9 +249,12 @@ if args.total and lines > 0:
         except:
             d[var_name] = eval(var_name)
     
+    name=args.o
+    timestamp = name.split('_')[-1]
     write_tsv(
         path=os.path.join(filepath, tsv_name + ".tsv",),
-        name=args.o,
+        name=name,
+        timestamp = timestamp,
         **d,
     )
 

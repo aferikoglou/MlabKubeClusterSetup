@@ -77,6 +77,10 @@ EOF
 
 # verify that extra args environment variable has been added in the third line of your conf file:
 sudo cat /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+# And restart docker service:
+sudo systemctl daemon-reload
+sudo systemctl restart docker
 ```
 cgroupfs is the appropriate cgroup-driver for docker which we will be using as our container runtime for the sake of simplicity. If you want to use a more sophisticated container runtime for further sandboxing you might have to change this configuration (e.g. for containerd you should use systemd).
 

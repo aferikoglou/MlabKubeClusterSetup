@@ -59,7 +59,7 @@ for column in mlperflogs_df.columns:
 
 d = {}
 for column in mlperflogs_df.columns:
-    if column in ['name', 'benchmark', 'gpu', 'model_name', 'metric_name', 'variance', 'scenario', "mAP", ]:
+    if column in ['name', 'benchmark', 'gpu', 'model_name', 'metric_name', 'variance', 'scenario', 'mAP', 'timestamp', 'gpu_profile']:
         continue
     for row in range(len(mlperflogs_df)):
         name = mlperflogs_df.loc[row, 'name']

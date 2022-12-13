@@ -65,7 +65,7 @@ for row in range(len(metrics)):
         print('No valid backend in name')
         continue
     for column in metrics.columns:
-        if column in ["name", "benchmark", "experiment", "model_name", "gpu", "scenario", "mAP"]:
+        if column in ["name", "timestamp", "benchmark", "experiment", "model_name", "gpu_profile", "gpu", "scenario", "mAP"]:
             continue
         # Models
         if column not in models[model]:

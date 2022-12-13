@@ -67,7 +67,7 @@ for row in range(len(mlperflogs_df)):
 
 d = {}
 for column in mlperflogs_df.columns:
-    if column in ['name', 'benchmark', 'scenario', ]:
+    if column in ['name', 'timestamp', 'benchmark', 'scenario', 'gpu_profile']:
         continue
     d[column] = {}
     for row in range(len(mlperflogs_df)):

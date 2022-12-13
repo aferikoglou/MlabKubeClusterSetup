@@ -69,7 +69,19 @@ for dir in benchmarks:
                     benchmarks_count[name][metric_name] += 1
             break
 
-df = pd.DataFrame([], columns=["name", "benchmark", "gpu", "model_name", "metric_name", "mean_value", "variance", "max_value", "min_value"])
+df = pd.DataFrame([], columns=[
+    "name", 
+    "timestamp", 
+    "benchmark", 
+    "gpu", 
+    "model_name", 
+    "gpu_profile", 
+    "metric_name", 
+    "mean_value", 
+    "variance", 
+    "max_value", 
+    "min_value"
+])
 metrics = {}
 for dir in benchmarks:
     benchmark_dir = os.path.join(args.i, dir)
@@ -92,7 +104,7 @@ for dir in benchmarks:
 
                 if not df.loc[(df["name"] == name) & (df["metric_name"] == metric_name)].empty:
                     for column in metrics_tmp.columns:
-                        if column in ["name", "gpu", "model_name", "metric_name"]:
+                        if column in ["name", "gpu", "model_name", "metric_name", "gpu_profile", "timestamp"]:
                             continue
                         try:
                             df.loc[(df["name"] == name) & (df["metric_name"] == metric_name), column] += \

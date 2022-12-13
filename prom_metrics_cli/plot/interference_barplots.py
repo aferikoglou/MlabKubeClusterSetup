@@ -60,7 +60,7 @@ for row in range(len(metrics)):
         continue
     key = 'V100' if 'V100' in metrics.loc[row, "benchmark"] else 'A30'
     for column in metrics.columns:
-        if column in ["name", "benchmark", "experiment", "model_name", "gpu", "scenario", "mAP"]:
+        if column in ["name", "benchmark", "experiment", "model_name", "gpu", "scenario", "mAP", "gpu_profile", "timestamp"]:
             continue
 
         benchmark = re.findall(r'\d,\d$', metrics.loc[row, 'benchmark'])[0]
