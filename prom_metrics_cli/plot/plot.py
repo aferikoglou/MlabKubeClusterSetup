@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import ast
+import time
 from curses import noecho
 import numpy as np
 import matplotlib.pyplot as plt
@@ -125,10 +125,12 @@ model_names = []
 pods = []
 time_x = []
 position_y = []
+
 if "data" not in data or "result" not in data["data"]:
     print('Invalid data')
     sys.exit(0)
 
+print(filter)
 for i, result in enumerate(data["data"]["result"]):
     if "metric" not in result:
         continue

@@ -435,8 +435,21 @@ func main() {
 			s := fmt.Sprintf("%f", duration[ind])
 
 			if filterByPodName {
-				filter = "{'exported_pod': '^" + podName + "$'}"
+				filter = "{\"exported_pod\": \"^" + podName + "$\"}"
 			}
+
+			args := []string{
+				"-s", start[ind],
+				"-e", end[ind],
+				"-f", filter,
+				"-o", outfile,
+				"--out-dir", outDir,
+				"-url", promURL,
+				"-step", step,
+				"--duration", s,
+			}
+
+			fmt.Printf("%+v\n", args)
 
 			cmd := exec.Command(
 				"../prom_metrics_cli/dcgm_metrics_range_query.sh",
