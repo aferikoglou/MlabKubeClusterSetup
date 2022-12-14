@@ -125,7 +125,14 @@ model_names = []
 pods = []
 time_x = []
 position_y = []
+if "data" not in data or "result" not in data["data"]:
+    print('Invalid data')
+    sys.exit(0)
+
 for i, result in enumerate(data["data"]["result"]):
+    if "metric" not in result:
+        continue
+    
     try:
         gpu = result["metric"]["gpu"]
     except:
@@ -243,6 +250,8 @@ if args.total and lines > 0:
         "metric_name", 
         "mean_value", 
         "variance", 
+        "max_value",
+        "min_value",
     ]:
         try:
             d[var_name] = round(int(eval(var_name)), 4)

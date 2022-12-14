@@ -147,9 +147,10 @@ fi
 
 if [ -z "$YAML" ]
 then
-  YAML="$PWD/mlperf_gpu_pods"
+  YAML="$PWD/mlperf_gpu_pods/A30/1"
 fi
 
+[ ! -d $OUT ] && mkdir -p $OUT
 echo $ARGS | tee -a "$OUT/arguments.txt"
 
 ./bin/main -c "$CONFIG" -b "$BATCH" -yaml "$YAML" -s "$SLEEP" -url "$PROM_URL" -o "$OUT" $NO $YES $APPEND $FILTER
