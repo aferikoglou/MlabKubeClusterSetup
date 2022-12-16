@@ -38,7 +38,7 @@ parser.add_argument(
 )
 parser.add_argument(
     '-filter', 
-    action='store', 
+    type=str, 
     required=False,  
     help="Json string where keys correspond to json fields \
     and values correspond to the values you want to keep. Values can also be regex."
@@ -78,6 +78,7 @@ filepath = os.path.join(args.out_dir, args.o) if (args.out_dir is not None and l
 logs_filepath = os.path.join(filepath, "logs.txt")
 tsv_name = args.tsv_out if (args.tsv_out is not None) else args.o
 
+# print('plot.py filter:', args.filter)
 if args.filter is not None:
     try:
         filter = json.loads(args.filter)
@@ -130,7 +131,6 @@ if "data" not in data or "result" not in data["data"]:
     print('Invalid data')
     sys.exit(0)
 
-print(filter)
 for i, result in enumerate(data["data"]["result"]):
     if "metric" not in result:
         continue
