@@ -50,6 +50,7 @@ columns = [
     "model_name",
     "gpu_profile",
     "gpu",
+    "gpu_id",
     "scenario",
     "qps",
     "mean",
@@ -114,7 +115,7 @@ for row in range(len(metrics_tmp)):
             (df["experiment"] == experiment),
             column
         ] = metrics_tmp.loc[row, "mean_value"]
-        for metric in ["model_name", "gpu", "timestamp", "gpu_profile"]:
+        for metric in ["model_name", "gpu", "gpu_id", "timestamp", "gpu_profile"]:
             df.loc[
                 (df["name"] == name) &
                 (df["benchmark"] == benchmark) &

@@ -104,7 +104,7 @@ for dir in benchmarks:
 
                 if not df.loc[(df["name"] == name) & (df["metric_name"] == metric_name)].empty:
                     for column in metrics_tmp.columns:
-                        if column in ["name", "gpu", "model_name", "metric_name", "gpu_profile", "timestamp"]:
+                        if column in ["name", "gpu", "gpu_id", "model_name", "metric_name", "gpu_profile", "timestamp"]:
                             continue
                         try:
                             df.loc[(df["name"] == name) & (df["metric_name"] == metric_name), column] += \

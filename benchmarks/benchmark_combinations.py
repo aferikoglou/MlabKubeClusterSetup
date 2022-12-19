@@ -170,6 +170,12 @@ if __name__ == '__main__':
     save = None
     home = os.getenv("HOME")
     save_dir = os.path.join(home, ".benchmarks", "save")
+    save_dir = os.path.join(save_dir, utils.find_max_id(save_dir, ''))
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    if os.path.isfile(save_dir):
+        print("Save path is a file")
+        sys.exit(0)
     dirname, _ = os.path.split(os.path.abspath(__file__))
     pods_dir = args.yaml if args.yaml is not None else os.path.join(dirname, "mlperf_gpu_pods/A30/1")
     logs_file = os.path.join(dirname, "combinations-checkpoint.txt")

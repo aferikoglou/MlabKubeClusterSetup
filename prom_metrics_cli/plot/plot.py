@@ -144,6 +144,10 @@ for i, result in enumerate(data["data"]["result"]):
     except:
         gpu = ""
     try:
+        gpu_id = result["metric"]["GPU_I_ID"]
+    except:
+        gpu_id = ""
+    try:
         model_name = result["metric"]["modelName"]
     except:
         model_name = ""
@@ -218,6 +222,7 @@ for i, result in enumerate(data["data"]["result"]):
         d = {}
         for var_name in [
             "gpu", 
+            "gpu_id",
             "model_name",
             "gpu_profile",
             "metric_name", 
