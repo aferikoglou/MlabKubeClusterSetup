@@ -5,6 +5,7 @@ import os
 import pandas as pd
 import sys
 import re
+import json
 
 parser = argparse.ArgumentParser(
     description='Create dataset from summarized metrics')
@@ -25,6 +26,7 @@ args = parser.parse_args()
 
 dirname, _ = os.path.split(os.path.abspath(__file__))
 filepath = os.path.join(dirname, "dataset")
+units_file = os.path.join(dirname, "data/units.json")
 if not os.path.exists(filepath):
     os.makedirs(filepath)
 tsv_path = args.out if (args.out is not None) \
@@ -63,18 +65,22 @@ columns = [
     "95",
     "99",
     "99.9",
-    'DCGM_FI_DEV_FB_FREE',
-    'DCGM_FI_DEV_FB_USED',
-    'DCGM_FI_DEV_GPU_TEMP',
-    'DCGM_FI_DEV_MEMORY_TEMP',
-    'DCGM_FI_DEV_MEM_COPY_UTIL',
-    'DCGM_FI_DEV_POWER_USAGE',
-    'DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION',
-    'DCGM_FI_PROF_DRAM_ACTIVE',
-    'DCGM_FI_PROF_GR_ENGINE_ACTIVE',
-    'DCGM_FI_PROF_PCIE_RX_BYTES',
-    'DCGM_FI_PROF_PCIE_TX_BYTES',
+    # 'DCGM_FI_DEV_FB_FREE',
+    # 'DCGM_FI_DEV_FB_USED',
+    # 'DCGM_FI_DEV_GPU_TEMP',
+    # 'DCGM_FI_DEV_MEMORY_TEMP',
+    # 'DCGM_FI_DEV_MEM_COPY_UTIL',
+    # 'DCGM_FI_DEV_POWER_USAGE',
+    # 'DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION',
+    # 'DCGM_FI_PROF_DRAM_ACTIVE',
+    # 'DCGM_FI_PROF_GR_ENGINE_ACTIVE',
+    # 'DCGM_FI_PROF_PCIE_RX_BYTES',
+    # 'DCGM_FI_PROF_PCIE_TX_BYTES',
 ]
+
+with open(units_file, "r") as f:
+    units = json.loads(f.read())
+columns.extend(list([f'{k} {v}' for k, v in units.items()]))
 
 if os.path.exists(tsv_path):
     df = pd.read_csv(tsv_path, sep="\t")

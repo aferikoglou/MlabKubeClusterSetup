@@ -78,7 +78,7 @@ cd "$parent_path"
 
 if [ ! -z "$FILTER" ]
 then
-  FILTER=$(echo $FILTER | tr _ -)
+  # FILTER=$(echo $FILTER | tr _ -)
   FILTER=$(echo $FILTER | sed 's/ //g')
   # FILTER=$(printf "%q" "$FILTER")
   FILTER="-filter "$FILTER""

@@ -77,6 +77,10 @@ dirname, _ = os.path.split(os.path.abspath(__file__))
 filepath = os.path.join(args.out_dir, args.o) if (args.out_dir is not None and len(args.out_dir) > 0) else os.path.join(dirname, "figures", args.o)
 logs_filepath = os.path.join(filepath, "logs.txt")
 tsv_name = args.tsv_out if (args.tsv_out is not None) else args.o
+units_file = os.path.join(dirname, 'data/units.json')
+
+with open(units_file, 'r') as f:
+    units = json.loads(f.read())
 
 # print('plot.py filter:', args.filter)
 if args.filter is not None:
@@ -205,11 +209,10 @@ for i, result in enumerate(data["data"]["result"]):
     if not os.path.exists(filepath):
         os.makedirs(filepath)
 
-
     plt.plot(time_x, position_y, linewidth=args.linewidth, label=legend)
     if not args.total:
-        mean_value = round(np.mean(position_y), 3)
-        variance = round(np.var(position_y), 3)
+        mean_value = np.mean(position_y)
+        variance = np.var(position_y)
         max_value = max(position_y)
         min_value = min(position_y)
         d = {}
@@ -224,16 +227,22 @@ for i, result in enumerate(data["data"]["result"]):
             "min_value",
         ]:
             try:
-                d[var_name] = round(float(eval(var_name)), 4)
+                d[var_name] = round(float(eval(var_name)), 3)
             except:
-                d[var_name] = eval(var_name)
-                
+                if var_name == 'metric_name' and eval(var_name).strip() in units:
+                    d[var_name] = f'{eval(var_name)} {units[eval(var_name)]}'
+                else:
+                    d[var_name] = eval(var_name)
+
         name = args.tsv_out if (args.tsv_out is not None) else args.o
-        timestamp = '_'.join(name.split('_')[-3:])
+        try:
+            timestamp = '_'.join(name.split('_')[-3:])
+        except:
+            timestamp = None
+        d['timestamp'] = timestamp
         write_tsv(
             path=os.path.join(filepath, tsv_name + ".tsv"),
             name=name,
-            timestamp = timestamp,
             **d,
         )
 
@@ -258,14 +267,20 @@ if args.total and lines > 0:
         try:
             d[var_name] = round(int(eval(var_name)), 4)
         except:
-            d[var_name] = eval(var_name)
+            if var_name == 'metric_name' and eval(var_name).strip() in units:
+                d[var_name] = f'{eval(var_name)} {units[eval(var_name)]}'
+            else:
+                d[var_name] = eval(var_name)
     
     name=args.o
-    timestamp = name.split('_')[-1]
+    try:
+        timestamp = name.split('_')[-1]
+    except: 
+        timestamp = None
+    d['timestamp'] = timestamp
     write_tsv(
         path=os.path.join(filepath, tsv_name + ".tsv",),
         name=name,
-        timestamp = timestamp,
         **d,
     )
 
