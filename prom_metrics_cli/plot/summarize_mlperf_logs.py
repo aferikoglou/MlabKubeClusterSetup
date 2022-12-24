@@ -75,8 +75,6 @@ df = pd.DataFrame(
         "qps", 
         "mean", 
         "time", 
-        "acc", 
-        "mAP", 
         "queries", 
         "system_latency", 
         "execution_speed",

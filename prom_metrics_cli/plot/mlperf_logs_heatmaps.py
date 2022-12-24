@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 from collections import OrderedDict
-import numpy as np
 from utils.utils import find_max_id
 import sys
 import seaborn as sns
@@ -67,7 +66,7 @@ for row in range(len(mlperflogs_df)):
 
 d = {}
 for column in mlperflogs_df.columns:
-    if column in ['name', 'timestamp', 'benchmark', 'scenario', 'gpu_profile']:
+    if column in ['name', 'timestamp', 'benchmark', 'scenario', "mAP"]:
         continue
     d[column] = {}
     for row in range(len(mlperflogs_df)):
@@ -82,19 +81,23 @@ for column in mlperflogs_df.columns:
         else:
             d[column][benchmark][name] += round(float(mlperflogs_df.loc[row, column]) / float(benchmarks_count[name][benchmark]), 4)
 
+
 for k, v in d.items():
-    if k == "mAP":
-        continue
     d[k] = pd.DataFrame(OrderedDict(sorted(d[k].items())))
 
-    ax = sns.heatmap(
-        d[k],
-        annot=True
-    )
+    try:
+        ax = sns.heatmap(
+            d[k],
+            annot=True
+        )
 
-    plt.tight_layout()
-    if k in ['50.0', '80.0', '90.0', '95.0', '99.0', '99.9']:
-        plt.savefig(out_path + "/" + k + '-percentile.png')
-    else:
-        plt.savefig(out_path + "/" + k + '.png')
-    plt.clf()
+        plt.tight_layout()
+        if k in ['50.0', '80.0', '90.0', '95.0', '99.0', '99.9']:
+            plt.savefig(out_path + "/" + k + '-percentile.png')
+        else:
+            plt.savefig(out_path + "/" + k + '.png')
+        plt.clf()
+    except Exception as e:
+        print(k, f'\n{d[k]}')
+        print(e)
+        

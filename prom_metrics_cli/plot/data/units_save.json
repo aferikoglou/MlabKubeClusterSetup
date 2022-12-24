@@ -1,10 +1,16 @@
 {
+    "DCGM_FI_DEV_SM_CLOCK": "(in MHz)", 
+    "DCGM_FI_DEV_MEM_CLOCK": "(in MHz)", 
     "DCGM_FI_DEV_MEMORY_TEMP": "(in C)", 
     "DCGM_FI_DEV_GPU_TEMP": "(in C)", 
     "DCGM_FI_DEV_POWER_USAGE": "(in W)", 
     "DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION": "(in mJ)", 
+    "DCGM_FI_DEV_MEM_COPY_UTIL": "(in %)", 
+    "DCGM_FI_DEV_ENC_UTIL": "(in %)", 
+    "DCGM_FI_DEV_DEC_UTIL": "(in %)", 
     "DCGM_FI_DEV_FB_FREE": "(in MiB)", 
     "DCGM_FI_DEV_FB_USED": "(in MiB)", 
     "DCGM_FI_PROF_GR_ENGINE_ACTIVE": "(in %)", 
+    "DCGM_FI_PROF_PIPE_TENSOR_ACTIVE": "(in %)", 
     "DCGM_FI_PROF_DRAM_ACTIVE": "(in %)"
 }

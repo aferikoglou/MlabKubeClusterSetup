@@ -76,6 +76,7 @@ df = pd.DataFrame([], columns=[
     "gpu", 
     "model_name", 
     "gpu_profile", 
+    "gpu_id", 
     "metric_name", 
     "mean_value", 
     "variance", 
