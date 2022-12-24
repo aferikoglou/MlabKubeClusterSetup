@@ -56,9 +56,9 @@ for dir in benchmarks:
             name_list = metrics_tmp.loc[0, "name"].replace('-', '_').split('_')
             if name_list[0] == "total":
                 continue
-            name = "_".join(name_list[2:5]) \
+            name = "_".join(name_list[2:-7]) \
                 if "ssd" in metrics_tmp.loc[0, "name"] \
-                else "_".join(name_list[2:4])
+                else "_".join(name_list[2:-7])
             total_benchmark_count += 1
             if name not in benchmarks_count:
                 benchmarks_count[name] = 1
@@ -94,9 +94,9 @@ for dir in benchmarks:
                 metrics_tmp.loc[0, "name"] = name
                 df.loc[len(df.index)] = metrics_tmp.loc[0]
                 continue
-            name = "_".join(name_list[2:5]) \
+            name = "_".join(name_list[2:-7]) \
                 if "ssd" in metrics_tmp.loc[0, "name"] \
-                else "_".join(name_list[2:4])
+                else "_".join(name_list[2:-7])
             
             if name in df["name"].values:
                 for column in metrics_tmp.columns:

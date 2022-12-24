@@ -57,9 +57,9 @@ for dir in benchmarks:
                 if name_list[0] == "total":
                     name = "total"
                 else:
-                    name = "_".join(name_list[2:5]) \
+                    name = "_".join(name_list[2:-7]) \
                     if "ssd" in metrics_tmp.loc[row, "name"] \
-                    else "_".join(name_list[2:4])
+                    else "_".join(name_list[2:-7])
                 metric_name = metrics_tmp.loc[row, "metric_name"]
                 if name not in benchmarks_count:
                     benchmarks_count[name] = {}
@@ -98,9 +98,9 @@ for dir in benchmarks:
                 name_list = metrics_tmp.loc[row, "name"].replace('-', '_').split('_')
                 if name_list[0] == "total": name = "total"
                 else:
-                    name = "_".join(name_list[2:5]) \
+                    name = "_".join(name_list[2:-7]) \
                     if "ssd" in metrics_tmp.loc[row, "name"] \
-                    else "_".join(name_list[2:4])
+                    else "_".join(name_list[2:-7])
                 metric_name = metrics_tmp.loc[row, "metric_name"]
 
                 if not df.loc[(df["name"] == name) & (df["metric_name"] == metric_name)].empty:
