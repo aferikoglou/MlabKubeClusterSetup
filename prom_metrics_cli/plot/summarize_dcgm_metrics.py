@@ -123,4 +123,5 @@ for dir in benchmarks:
 
 df['benchmark'] = [args.benchmark] * len(df)
 
+df.sort_values(by=['name'], inplace=True)
 df.to_csv(tsv_path, mode='a', index=False, header=header, sep="\t")

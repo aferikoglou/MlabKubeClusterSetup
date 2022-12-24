@@ -172,4 +172,5 @@ for row in range(len(df)):
         continue
     df.loc[row, 'execution_speed'] = round(benchmarks_count[name] / df.loc[row, 'system_latency'], 4)
 
+df.sort_values(by=['name'], inplace=True)
 df.to_csv(tsv_path, mode='a', index=False, header=header, sep="\t")
