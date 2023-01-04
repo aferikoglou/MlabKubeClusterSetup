@@ -1,0 +1,8 @@
+{
+    "1": "onnx_mobilenet",
+    "2": "onnx_resnet50",
+    "3": "onnx_ssd_mobilenet",
+    "4": "tensorflow_mobilenet",
+    "5": "tensorflow_resnet50",
+    "6": "tensorflow_ssd_mobilenet"
+}

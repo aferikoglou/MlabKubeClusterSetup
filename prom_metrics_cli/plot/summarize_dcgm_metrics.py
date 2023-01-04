@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from utils.utils import strip_datetimes
 import pandas as pd
 from utils.utils import find_max_id
 import os 
@@ -53,13 +54,16 @@ for dir in benchmarks:
         if file.endswith(".tsv") and not file.endswith("logs.tsv"):
             metrics_tmp = pd.read_csv(os.path.join(benchmark_dir, file), sep="\t")
             for row in range(len(metrics_tmp)):
-                name_list = metrics_tmp.loc[row, "name"].replace('-', '_').split('_')
-                if name_list[0] == "total":
-                    name = "total"
+                name = metrics_tmp.loc[row, "name"].replace('-', '_')
+                name = name.lower()
+                if name == "total": name = "total"
                 else:
-                    name = "_".join(name_list[2:-7]) \
-                    if "ssd" in metrics_tmp.loc[row, "name"] \
-                    else "_".join(name_list[2:-7])
+                    name = name.replace('mlperf_gpu_', '') \
+                        .replace('a30', '') \
+                        .replace('v100', '') \
+                        .replace('k8s_aferik_gpu', '') \
+                        .replace('k8s_aferik_gpu_a30', '')
+                name = strip_datetimes(name).strip().strip('_')
                 metric_name = metrics_tmp.loc[row, "metric_name"]
                 if name not in benchmarks_count:
                     benchmarks_count[name] = {}
@@ -95,12 +99,16 @@ for dir in benchmarks:
             for row in range(len(metrics_tmp)):
                 if metrics_tmp.loc[row, "name"] is None or metrics_tmp.loc[row, "name"] == "":
                     continue
-                name_list = metrics_tmp.loc[row, "name"].replace('-', '_').split('_')
-                if name_list[0] == "total": name = "total"
+                name = metrics_tmp.loc[row, "name"].replace('-', '_')
+                name = name.lower()
+                if name == "total": name = "total"
                 else:
-                    name = "_".join(name_list[2:-7]) \
-                    if "ssd" in metrics_tmp.loc[row, "name"] \
-                    else "_".join(name_list[2:-7])
+                    name = name.replace('mlperf_gpu_', '') \
+                        .replace('a30', '') \
+                        .replace('v100', '') \
+                        .replace('k8s_aferik_gpu', '') \
+                        .replace('k8s_aferik_gpu_a30', '')
+                name = strip_datetimes(name).strip().strip('_')
                 metric_name = metrics_tmp.loc[row, "metric_name"]
 
                 if not df.loc[(df["name"] == name) & (df["metric_name"] == metric_name)].empty:

@@ -5,6 +5,7 @@ import os
 import re
 import argparse
 import pandas as pd
+import json
 
 parser = argparse.ArgumentParser(
     description='Plot metrics of each pod when colocated with every other pod')
@@ -35,17 +36,7 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-pods = {
-    '1': "onnx_mobilenet",
-    '2': "onnx_resnet50",
-    '3': "onnx_ssd_mobilenet",
-    '4': "tensorflow_mobilenet",
-    '5': "tensorflow_resnet50",
-    '6': "tensorflow_ssd_mobilenet",
-    '7': "tflite_mobilenet",
-}
-
-regex = re.compile(r'^(\w*_)*\d,\d$')
+regex = re.compile(r'^(\w+_)*\d+,\d+$')
 metrics = pd.read_csv(args.i, sep="\t")
 
 dirname, _ = os.path.split(os.path.abspath(__file__))
@@ -53,20 +44,41 @@ out_path = args.out if args.out is not None else os.path.join(
     dirname, 'interference')
 if not os.path.exists(out_path):
     os.makedirs(out_path)
+pods_file = os.path.join(dirname, 'data', 'pods.json')
+with open(pods_file, "r") as f:
+    pods = json.loads(f.read())
 
 d = {'A30': {}, 'V100': {}}
 for row in range(len(metrics)):
+    
     if not regex.match(metrics.loc[row, "benchmark"]):
         continue
     key = 'V100' if 'V100' in metrics.loc[row, "benchmark"] else 'A30'
     for column in metrics.columns:
-        if column in ["name", "benchmark", "experiment", "model_name", "gpu", "scenario", "mAP", "gpu_profile", "timestamp"]:
+        if column in [
+            "name", 
+            "benchmark", 
+            "experiment", 
+            "model_name", 
+            "gpu", 
+            "scenario", 
+            "mAP", 
+            "gpu_profile", 
+            "gpu_id", 
+            "timestamp"
+        ]:
             continue
 
-        benchmark = re.findall(r'\d,\d$', metrics.loc[row, 'benchmark'])[0]
-        name = metrics.loc[row, 'name']
-        pod = pods[benchmark.split(',')[0]] if pods[benchmark.split(
-            ',')[0]] != metrics.loc[row, 'name'] else pods[benchmark.split(',')[1]]
+        benchmark = re.findall(r'\d+,\d+$', metrics.loc[row, 'benchmark'])[0]
+        
+        first = str((int(benchmark.split(',')[0]) - 1) // 3 + 1)
+        second = str((int(benchmark.split(',')[1]) - 1) // 3 + 1)
+        pod = pods[first] \
+            if pods[first] not in metrics.loc[row, 'name'] \
+                else pods[second]
+        name = pods[first] \
+            if pods[first] in metrics.loc[row, 'name'] \
+                else pods[second]
         if name not in d[key].keys():
             d[key][name] = {}
         if column not in d[key][name]:
@@ -84,9 +96,25 @@ for device in d.keys():
         for column in d[device][pod].keys():
             print(device, pod, column)
             fig, ax = plt.subplots(figsize=(args.width, args.height))
-            ax.bar(d[device][pod][column]['x'],
-                   d[device][pod][column]['y'])
+            
+            count = {}
+            X = d[device][pod][column]['x']
+            Y = d[device][pod][column]['y']
+            for i in range(len(X)):
+                if X[i] not in count:
+                    count[X[i]] = 1
+                else:
+                     count[X[i]] += 1
+            data = {}
+            for i in range(len(X)):
+                if X[i] not in data:
+                    data[X[i]] = Y[i] / count[X[i]]
+                else:
+                     data[X[i]] += Y[i] / count[X[i]]
+
+            ax.bar(data.keys(), data.values())
             plt.ylabel(column)
+            # ax.xaxis.set_tick_params(labelsize=4)
             fig.tight_layout()
             fig.savefig(os.path.join(tmp_outpath, column + '.png'))
             fig.clf()

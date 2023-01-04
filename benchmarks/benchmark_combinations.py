@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import json
 import atexit
 import argparse
 import logging
@@ -170,6 +171,7 @@ if __name__ == '__main__':
     save = None
     home = os.getenv("HOME")
     dirname, _ = os.path.split(os.path.abspath(__file__))
+    pods_file = os.path.join(dirname, 'data/pods_list.json')
     pods_dir = args.yaml if args.yaml is not None else os.path.join(dirname, "mlperf_gpu_pods/A30/1")
     save_dir = os.path.join(home, ".benchmarks", "save", args.yaml.strip('/'))
     if not os.path.exists(save_dir):
@@ -190,14 +192,9 @@ if __name__ == '__main__':
             os.replace(os.path.join(save_dir, file), os.path.join(pods_dir, file))
         sys.exit(0)
 
-    pods_list = [
-        "onnx_mobilenet",
-        "onnx_resnet50",
-        "onnx_ssd_mobilenet",
-        "tensorflow_mobilenet",
-        "tensorflow_resnet50",
-        "tensorflow_ssd_mobilenet",
-    ]
+    with open(pods_file, 'r') as f:
+        pods_list = json.loads(f.read())
+
     script = os.path.join(dirname, "benchmark_gpu_pods.sh")
 
     run_combinations(

@@ -72,7 +72,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --filter)
-      FILTER="-f \"$2\""
+      FILTER="\"$2\""
       shift
       shift
       ;;
@@ -101,6 +101,8 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+echo "filter: $FILTER"
+
 if [ -z "$CONFIG" ]
 then
     echo "-c|--config argument not set, default: CONFIG=$HOME/.kube/config"
@@ -122,7 +124,7 @@ fi
 
 if [ -z "$OUT" ]
 then
-    OUT="$parent_path/../prom_metrics_cli/plot/figures/$BENCHMARK_$(date +'%Y_%m_%dT%H:%MZ')"
+    OUT="$parent_path/../prom_metrics_cli/plot/figures/$BENCHMARK_$(date +'%Y_%m_%dT%H:%M:%SZ')"
 fi
 
 if [ -z "$PROM_URL" ]
@@ -153,7 +155,7 @@ fi
 [ ! -d $OUT ] && mkdir -p $OUT
 echo $ARGS | tee -a "$OUT/arguments.txt"
 
-./bin/main -c "$CONFIG" -b "$BATCH" -yaml "$YAML" -s "$SLEEP" -url "$PROM_URL" -o "$OUT" $NO $YES $APPEND $FILTER
+./bin/main -c "$CONFIG" -b "$BATCH" -yaml "$YAML" -s "$SLEEP" -url "$PROM_URL" -o "$OUT" -f "$FILTER" $NO $YES $APPEND 
 if [ ! -z "$TSV" ]
 then
   ../prom_metrics_cli/plot/summarize_dcgm_metrics.py -i "$OUT" --benchmark "$BENCHMARK" --tsv-out "$parent_path/../prom_metrics_cli/plot/summary/dcgm_metrics_summary_$TSV_OUT"
@@ -173,4 +175,4 @@ fi
 ../prom_metrics_cli/plot/dataset.py -i "$parent_path/../prom_metrics_cli/plot/summary/dcgm_metrics_summary_$TSV_OUT"
 ../prom_metrics_cli/plot/dataset.py -i "$parent_path/../prom_metrics_cli/plot/summary/mlperf_logs_summary_$TSV_OUT"
 
-../prom_metrics_cli/plot/interference_barplots.py -i "$parent_path/../prom_metrics_cli/plot/dataset/dataset.ods"
+# ../prom_metrics_cli/plot/interference_barplots.py -i "$parent_path/../prom_metrics_cli/plot/dataset/dataset.ods"

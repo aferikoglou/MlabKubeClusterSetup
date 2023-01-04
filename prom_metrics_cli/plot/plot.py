@@ -261,6 +261,8 @@ for i, result in enumerate(data["data"]["result"]):
 if args.total and lines > 0:
     mean_value = round(np.mean(position_y), 3)
     variance = round(np.var(position_y), 3)
+    max_value = max(position_y)
+    min_value = min(position_y)
     d = {}
     for var_name in [
         "metric_name", 

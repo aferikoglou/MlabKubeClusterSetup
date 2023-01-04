@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from utils.utils import strip_datetimes
 import pandas as pd
 from utils.utils import find_max_id
 import os 
@@ -53,12 +54,16 @@ for dir in benchmarks:
     for file in files:
         if file.endswith("logs.tsv"):
             metrics_tmp = pd.read_csv(os.path.join(benchmark_dir, file), sep="\t")
-            name_list = metrics_tmp.loc[0, "name"].replace('-', '_').split('_')
-            if name_list[0] == "total":
+            name = metrics_tmp.loc[0, "name"].replace('-', '_')
+            name = name.lower()
+            if name == 'total':
                 continue
-            name = "_".join(name_list[2:-7]) \
-                if "ssd" in metrics_tmp.loc[0, "name"] \
-                else "_".join(name_list[2:-7])
+            name = name.replace('mlperf_gpu_', '') \
+                    .replace('a30', '') \
+                    .replace('v100', '') \
+                    .replace('k8s_aferik_gpu', '') \
+                    .replace('k8s_aferik_gpu_a30', '')
+            name = strip_datetimes(name).strip(' ').strip('_')
             total_benchmark_count += 1
             if name not in benchmarks_count:
                 benchmarks_count[name] = 1
@@ -88,16 +93,20 @@ for dir in benchmarks:
     for file in files:
         if file.endswith("logs.tsv"):
             metrics_tmp = pd.read_csv(os.path.join(benchmark_dir, file), sep="\t")
-            name_list = metrics_tmp.loc[0, "name"].replace('-', '_').split('_')
-            if name_list[0] == 'total':
+            name = metrics_tmp.loc[0, "name"].replace('-', '_')
+            name = name.lower()
+            if name == 'total':
                 name = 'total'
                 metrics_tmp.loc[0, "name"] = name
                 df.loc[len(df.index)] = metrics_tmp.loc[0]
                 continue
-            name = "_".join(name_list[2:-7]) \
-                if "ssd" in metrics_tmp.loc[0, "name"] \
-                else "_".join(name_list[2:-7])
-            
+            name = name.replace('mlperf_gpu_', '') \
+                    .replace('a30', '') \
+                    .replace('v100', '') \
+                    .replace('k8s_aferik_gpu', '') \
+                    .replace('k8s_aferik_gpu_a30', '')
+            name = strip_datetimes(name).strip(' ').strip('_')
+
             if name in df["name"].values:
                 for column in metrics_tmp.columns:
                     try:

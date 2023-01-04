@@ -81,7 +81,7 @@ then
   # FILTER=$(echo $FILTER | tr _ -)
   FILTER=$(echo $FILTER | sed 's/ //g')
   # FILTER=$(printf "%q" "$FILTER")
-  FILTER="-filter "$FILTER""
+  FILTER="\'$FILTER\'"
   # echo "Filter: $FILTER"
 fi
 
@@ -164,12 +164,12 @@ if [ ! -z "$START" ] && [ ! -z "$END" ]
 then
   for METRIC in "${METRICS[@]}"
   do
-    ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': '$METRIC'}" 2>&1 | python plot/plot.py -yf '__name__' -x 'Time(s)' -o "$OUT" -f "exported_pod" $FILTER $OUT_DIR $TOTAL 
+    ./bin/main -url $PROM_URL -p "api/v1/query_range" -params "{'start': '$START', 'end': '$END', 'step': '$STEP', 'query': '$METRIC'}" 2>&1 | python plot/plot.py -yf '__name__' -x 'Time(s)' -o "$OUT" -f "exported_pod" -filter "$FILTER" $OUT_DIR $TOTAL 
   done
 
 else
   for METRIC in "${METRICS[@]}"
   do
-    ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': '$METRIC'}" 2>&1 | python plot/plot.py -yf '__name__' -x 'Time(s)' "$OUT_DIR" -o $OUT -f "exported_pod" $FILTER $TOTAL
+    ./bin/main -url $PROM_URL -p "api/v1/query_range" -i $INTERVAL -params "{'step': '$STEP', 'query': '$METRIC'}" 2>&1 | python plot/plot.py -yf '__name__' -x 'Time(s)' "$OUT_DIR" -o $OUT -f "exported_pod" -f "$FILTER" $TOTAL
   done
 fi

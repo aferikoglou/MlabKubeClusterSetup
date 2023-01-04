@@ -1,3 +1,4 @@
+from datetime_matcher import DatetimeMatcher
 import re
 import csv
 import os
@@ -62,3 +63,10 @@ def parse_mlperf_metrics(path: str) -> dict:
         else:
             d['scenario'] = x
     return d
+
+
+def strip_datetimes(x: str):
+    dtm = DatetimeMatcher()
+    pattern = r'%Y[-_]%m[-_]%d[Tt]%H:%M:%S[Zz]'
+
+    return dtm.sub(pattern, '', x)

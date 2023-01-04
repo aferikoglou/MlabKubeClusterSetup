@@ -1,0 +1,20 @@
+[
+    "onnx_mobilenet_1024",
+    "onnx_mobilenet_2048",
+    "onnx_mobilenet_4096",
+    "onnx_resnet50_1024",
+    "onnx_resnet50_2048",
+    "onnx_resnet50_4096",
+    "onnx_ssd_mobilenet_1024",
+    "onnx_ssd_mobilenet_2048",
+    "onnx_ssd_mobilenet_4096",
+    "tensorflow_mobilenet_1024",
+    "tensorflow_mobilenet_2048",
+    "tensorflow_mobilenet_4096",
+    "tensorflow_resnet50_1024",
+    "tensorflow_resnet50_2048",
+    "tensorflow_resnet50_4096",
+    "tensorflow_ssd_mobilenet_1024",
+    "tensorflow_ssd_mobilenet_2048",
+    "tensorflow_ssd_mobilenet_4096"
+]

@@ -199,7 +199,7 @@ func isFlagPassed(name string) bool {
 func main() {
 	var configPath, promURL, yamlPath, logsFile, totalFiles, timezone, outDir, filter string
 	var autoskip, autodelete, appendTime bool
-	var batch, sleep int
+	var batch, sleep, repeat int
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
@@ -210,14 +210,17 @@ func main() {
 	flag.StringVar(&totalFiles, "t", "total", "Name for the figures for the total duration")
 	flag.StringVar(&promURL, "url", "http://localhost:30090/", "URL of prometheus service")
 	flag.StringVar(&timezone, "tz", "UTC", "Location related to the timezone")
-	flag.StringVar(&filter, "f", "", "Regex string used to match the exported pod field from prometheus results. Defaults to the running pod's name")
+	flag.StringVar(&filter, "f", "", "Json string used to match prometheus results. Values can also be regex. Defaults to the running pod's name")
 	flag.BoolVar(&autoskip, "n", false, "If this flag is set then if files exist then the program will exit")
 	flag.BoolVar(&autodelete, "y", false, "If this flag is set then if the benchmarks that are about to be ran already exist, files will be deleted")
 	flag.BoolVar(&appendTime, "a", false, "If this flag is set then starting time of the benchmarks will be appended on the folders' names")
 	flag.IntVar(&batch, "b", 1, "Number of pods to be ran concurrently")
+	flag.IntVar(&repeat, "r", 1, "Number of times you want each pod to be ran")
 	flag.IntVar(&sleep, "s", 60, "Number of seconds to sleep between consecutive batch executions")
 
 	flag.Parse()
+
+	fmt.Printf("filter: %s\n\n\n", filter)
 
 	layout := "2006-01-02T15:04:05Z"
 
@@ -242,7 +245,7 @@ func main() {
 	}
 
 	var filterByPodName bool
-	if !isFlagPassed("f") {
+	if filter == "" {
 		filterByPodName = true
 	}
 
@@ -255,7 +258,9 @@ func main() {
 	tmp := strings.Split(yamlPath, ".")
 	// If yamlPath is path to a file then add this file to the files to be ran
 	if tmp[len(tmp)-1] == "yaml" || tmp[len(tmp)-1] == "yml" {
-		files = append(files, yamlPath)
+		for i := 0; i < repeat; i++ {
+			files = append(files, yamlPath)
+		}
 	} else {
 		// Else add all the yaml files from this directory
 		yamlFiles, err := ioutil.ReadDir(yamlPath)
@@ -265,7 +270,9 @@ func main() {
 		for _, file := range yamlFiles {
 			tmp = strings.Split(file.Name(), ".")
 			if tmp[len(tmp)-1] == "yaml" {
-				files = append(files, fmt.Sprintf("%s/%s", yamlPath, file.Name()))
+				for i := 0; i < repeat; i++ {
+					files = append(files, fmt.Sprintf("%s/%s", yamlPath, file.Name()))
+				}
 			}
 		}
 	}
