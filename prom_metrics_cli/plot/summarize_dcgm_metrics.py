@@ -5,6 +5,7 @@ import pandas as pd
 from utils.utils import find_max_id
 import os 
 import argparse
+import re
 
 parser = argparse.ArgumentParser(description='Parse metrics for all benchmarks into a single tsv file.')
 parser.add_argument(
@@ -41,6 +42,7 @@ tsv_path = args.tsv_out if (args.tsv_out is not None) \
     )
 header = False if (os.path.exists(tsv_path)) else True
 
+regex = re.compile(r'_\d$')
 
 # Count benchmarks with common model/backend according to their names and metric_names
 benchmarks = os.listdir(args.i)
@@ -63,7 +65,8 @@ for dir in benchmarks:
                         .replace('v100', '') \
                         .replace('k8s_aferik_gpu', '') \
                         .replace('k8s_aferik_gpu_a30', '')
-                name = strip_datetimes(name).strip().strip('_')
+                    name = strip_datetimes(name).strip().strip('_')
+                    name = re.sub(regex, '', name)
                 metric_name = metrics_tmp.loc[row, "metric_name"]
                 if name not in benchmarks_count:
                     benchmarks_count[name] = {}
@@ -108,7 +111,8 @@ for dir in benchmarks:
                         .replace('v100', '') \
                         .replace('k8s_aferik_gpu', '') \
                         .replace('k8s_aferik_gpu_a30', '')
-                name = strip_datetimes(name).strip().strip('_')
+                    name = strip_datetimes(name).strip().strip('_')
+                    name = re.sub(regex, '', name)
                 metric_name = metrics_tmp.loc[row, "metric_name"]
 
                 if not df.loc[(df["name"] == name) & (df["metric_name"] == metric_name)].empty:

@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import re
 from utils.utils import strip_datetimes
 import pandas as pd
 from utils.utils import find_max_id
@@ -41,6 +42,7 @@ tsv_path = args.tsv_out if (args.tsv_out is not None) \
     )
 header = False if (os.path.exists(tsv_path)) else True
 
+regex = re.compile(r'_\d$')
 
 # Count benchmarks with common model/backend according to their names
 benchmarks = os.listdir(args.i)
@@ -64,6 +66,7 @@ for dir in benchmarks:
                     .replace('k8s_aferik_gpu', '') \
                     .replace('k8s_aferik_gpu_a30', '')
             name = strip_datetimes(name).strip(' ').strip('_')
+            name = re.sub(regex, '', name)
             total_benchmark_count += 1
             if name not in benchmarks_count:
                 benchmarks_count[name] = 1
@@ -106,6 +109,7 @@ for dir in benchmarks:
                     .replace('k8s_aferik_gpu', '') \
                     .replace('k8s_aferik_gpu_a30', '')
             name = strip_datetimes(name).strip(' ').strip('_')
+            name = re.sub(regex, '', name)
 
             if name in df["name"].values:
                 for column in metrics_tmp.columns:
