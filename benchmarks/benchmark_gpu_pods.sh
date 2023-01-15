@@ -72,7 +72,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --filter)
-      FILTER="\"$2\""
+      FILTER="$2"
       shift
       shift
       ;;
@@ -100,8 +100,6 @@ while [[ $# -gt 0 ]]; do
       exit 0
     esac
 done
-
-echo "filter: $FILTER"
 
 if [ -z "$CONFIG" ]
 then
@@ -155,7 +153,7 @@ fi
 [ ! -d $OUT ] && mkdir -p $OUT
 echo $ARGS | tee -a "$OUT/arguments.txt"
 
-./bin/main -c "$CONFIG" -b "$BATCH" -yaml "$YAML" -s "$SLEEP" -url "$PROM_URL" -o "$OUT" -f "$FILTER" $NO $YES $APPEND 
+./bin/main -c "$CONFIG" -b "$BATCH" -yaml "$YAML" -s "$SLEEP" -url "$PROM_URL" -o "$OUT" -f "$FILTER" $NO $YES $APPEND
 if [ ! -z "$TSV" ]
 then
   ../prom_metrics_cli/plot/summarize_dcgm_metrics.py -i "$OUT" --benchmark "$BENCHMARK" --tsv-out "$parent_path/../prom_metrics_cli/plot/summary/dcgm_metrics_summary_$TSV_OUT"

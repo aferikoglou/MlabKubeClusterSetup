@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import json 
 from collections import OrderedDict
 import numpy as np
 from utils.utils import find_max_id
@@ -9,6 +10,15 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
+
+
+def itemgetter(x: tuple):
+    if '_' in x[0]:
+        a = x[0].split('_')[0]
+        b = x[0].split('_')[1]
+        return (b, a)
+    return x[0]
+
 
 parser = argparse.ArgumentParser(description='Parse metrics of all benchmarks into a single tsv file.')
 parser.add_argument(
@@ -25,6 +35,25 @@ parser.add_argument(
         If not provided heatmaps will be saved at \
             /mlab-k8s-cluster-setup/prom_metrics_cli/plot/heatmaps/dcgm_metrics"
 )
+parser.add_argument(
+    '-a', 
+    action='store_true', 
+    default=False,
+    help="If defined annotations will be included in heatmaps"
+)
+parser.add_argument(
+    '-height', 
+    type=int, 
+    default=6,
+    help="Figures' height"
+)
+parser.add_argument(
+    '-width', 
+    type=int, 
+    default=10,
+    help="Figures' width"
+)
+
 
 args = parser.parse_args()
 
@@ -34,6 +63,9 @@ if args.out is not None and os.path.isfile(args.out):
 
 mlperflogs_df = pd.read_csv(args.i, sep="\t")
 dirname, _ = os.path.split(os.path.abspath(__file__))
+pods_file = os.path.join(dirname, 'data/pods_with_queries.json')
+with open(pods_file, 'r') as f:
+    pods_dict = json.loads(f.read())
 
 if args.out is not None:
     filepath = args.out
@@ -71,6 +103,8 @@ for row in range(len(mlperflogs_df)):
 d = {}
 for row in range(len(mlperflogs_df)):
     name = mlperflogs_df.loc[row, 'name']
+    if 'total' in name:
+        continue
     benchmark = mlperflogs_df.loc[row, 'benchmark']
     column = mlperflogs_df.loc[row, 'metric_name']
     if pd.isnull(mlperflogs_df.loc[row, 'mean_value']):
@@ -97,13 +131,20 @@ for k, v in d.items():
                 d[k][k1][k2] = float(0)
 
 for k, v in d.items():
-    d[k] = pd.DataFrame(OrderedDict(sorted(d[k].items())))
+    stripped_names_dict = {}
+    for k1 in d[k].keys():
+        stripped_names_dict[k1] = {}
+        for k2, v2 in d[k][k1].items():
+            stripped_names_dict[k1][str(pods_dict[k2])] = v2
     
+    d[k] = pd.DataFrame(OrderedDict(sorted(stripped_names_dict.items(), key=itemgetter)))
+    
+    sns.set(rc={'figure.figsize': (args.width, args.height)})
     ax = sns.heatmap(
         d[k],
-        annot=True
+        annot=args.a,
     )
-
+    plt.title(k)
     plt.tight_layout()
     plt.savefig(os.path.join(out_path, k + '.png'))
     plt.clf()

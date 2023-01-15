@@ -6,7 +6,7 @@ from utils.utils import find_max_id
 import os 
 import argparse
 
-parser = argparse.ArgumentParser(description='Parse metrics of all benchmarks into a single tsv file.')
+parser = argparse.ArgumentParser(description='Parse metrics for all benchmarks into a single tsv file.')
 parser.add_argument(
     '-i', 
     action='store', 
@@ -113,20 +113,45 @@ for dir in benchmarks:
 
                 if not df.loc[(df["name"] == name) & (df["metric_name"] == metric_name)].empty:
                     for column in metrics_tmp.columns:
-                        if column in ["name", "gpu", "gpu_id", "model_name", "metric_name", "gpu_profile", "timestamp"]:
+                        if column in [
+                            "name", 
+                            "gpu", 
+                            "gpu_id", 
+                            "model_name", 
+                            "metric_name", 
+                            "gpu_profile", 
+                            "timestamp"
+                        ]:
                             continue
                         try:
-                            df.loc[(df["name"] == name) & (df["metric_name"] == metric_name), column] += \
-                                float(metrics_tmp.loc[row, column]) / benchmarks_count[name][metric_name]
+                            if 'FB_FREE' in metric_name or 'FB_USED' in metric_name:
+                                df.loc[(df["name"] == name) & (df["metric_name"] == metric_name), column] += \
+                                    float(metrics_tmp.loc[row, column])
+                            else:
+                                df.loc[(df["name"] == name) & (df["metric_name"] == metric_name), column] += \
+                                    float(metrics_tmp.loc[row, column]) / benchmarks_count[name][metric_name]
                         except:
                             pass
                 else:
                     metrics_tmp.loc[row, "name"] = name
                     df.loc[len(df.index)] = metrics_tmp.loc[row]
-                    try:
-                        df.loc[len(df.index) - 1, "mean_value"] = df.loc[len(df.index) - 1, "mean_value"] / benchmarks_count[name][metric_name]
-                    except:
-                        pass
+                    for column in metrics_tmp.columns:
+                        if column in [
+                            "name", 
+                            "gpu", 
+                            "gpu_id", 
+                            "model_name", 
+                            "metric_name", 
+                            "gpu_profile", 
+                            "timestamp"
+                        ]:
+                            continue
+                        try:
+                            if not ('FB_FREE' in metric_name or 'FB_USED' in metric_name):
+                                df.loc[len(df.index) - 1, column] = \
+                                    df.loc[len(df.index) - 1, column] / benchmarks_count[name][metric_name]
+                        except:
+                            pass
             break
 
 df['benchmark'] = [args.benchmark] * len(df)

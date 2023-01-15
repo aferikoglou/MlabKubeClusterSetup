@@ -198,7 +198,7 @@ func isFlagPassed(name string) bool {
 
 func main() {
 	var configPath, promURL, yamlPath, logsFile, totalFiles, timezone, outDir, filter string
-	var autoskip, autodelete, appendTime bool
+	var autoskip, autodelete, appendTime, total bool
 	var batch, sleep, repeat int
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -214,6 +214,7 @@ func main() {
 	flag.BoolVar(&autoskip, "n", false, "If this flag is set then if files exist then the program will exit")
 	flag.BoolVar(&autodelete, "y", false, "If this flag is set then if the benchmarks that are about to be ran already exist, files will be deleted")
 	flag.BoolVar(&appendTime, "a", false, "If this flag is set then starting time of the benchmarks will be appended on the folders' names")
+	flag.BoolVar(&total, "total", false, "If this flag is set then figures for the total duration will also created")
 	flag.IntVar(&batch, "b", 1, "Number of pods to be ran concurrently")
 	flag.IntVar(&repeat, "r", 1, "Number of times you want each pod to be ran")
 	flag.IntVar(&sleep, "s", 60, "Number of seconds to sleep between consecutive batch executions")
@@ -488,69 +489,71 @@ func main() {
 
 	wg.Wait()
 
-	// Find the min and max indices for start and end arrays respectively
-	// and then run the metrics' queries again for the total duration
-	var tmpStart []int
-	var tmpEnd []int
-	for i := 0; i < len(start); i++ {
-		if start[i] == "" || end[i] == "" {
-			continue
+	if total {
+		// Find the min and max indices for start and end arrays respectively
+		// and then run the metrics' queries again for the total duration
+		var tmpStart []int
+		var tmpEnd []int
+		for i := 0; i < len(start); i++ {
+			if start[i] == "" || end[i] == "" {
+				continue
+			}
+			tmpStart = append(tmpStart, convertDateStringToInt(start[i]))
+			tmpEnd = append(tmpEnd, convertDateStringToInt(end[i]))
 		}
-		tmpStart = append(tmpStart, convertDateStringToInt(start[i]))
-		tmpEnd = append(tmpEnd, convertDateStringToInt(end[i]))
-	}
 
-	minInd := findMin(tmpStart)
-	maxInd := findMax(tmpEnd)
-	if minInd == -1 || maxInd == -1 || tmpStart[minInd] == -1 || tmpEnd[maxInd] == -1 {
-		log.Fatal("Couldn't save total benchmarks")
-	}
+		minInd := findMin(tmpStart)
+		maxInd := findMax(tmpEnd)
+		if minInd == -1 || maxInd == -1 || tmpStart[minInd] == -1 || tmpEnd[maxInd] == -1 {
+			log.Fatal("Couldn't save total benchmarks")
+		}
 
-	totalEndTime, err := time.Parse(layout, end[maxInd])
-	if err != nil {
-		log.Fatal("Unable to convert total ending time")
-	}
-	totalStartTime, err := time.Parse(layout, start[minInd])
-	if err != nil {
-		log.Fatal("Unable to convert total starting time")
-	}
-	expadedDuration := totalEndTime.Sub(totalStartTime).Seconds()
-	step := strconv.Itoa(int(expadedDuration / 100))
-	if step == "0" {
-		step = "1"
-	}
-	totalOut := fmt.Sprintf("%s_%s", totalFiles, start[minInd])
-	outPath := fmt.Sprintf("%s/%s", outDir, totalOut)
-	if _, err := os.Stat(outPath); os.IsNotExist(err) {
-		err = os.MkdirAll(outPath, os.ModePerm)
+		totalEndTime, err := time.Parse(layout, end[maxInd])
 		if err != nil {
-			log.Println(err)
+			log.Fatal("Unable to convert total ending time")
 		}
-	}
-
-	s := fmt.Sprintf("%f", totalDuration)
-	log.Println(fmt.Sprintf("Total starting time: %s\nTotal ending time: %s\nTotal duration: %s", start[minInd], end[maxInd], s))
-	cmd := exec.Command(
-		"../prom_metrics_cli/dcgm_metrics_range_query.sh",
-		[]string{
-			"-s", start[minInd],
-			"-e", end[maxInd],
-			"-o", totalOut,
-			"--out-dir", outDir,
-			"--total",
-			"-url", promURL,
-			"-step", step,
-			"--duration", s,
-		}...,
-	)
-
-	cmdOut, newErr := cmd.CombinedOutput()
-	if newErr != nil {
-		output := string(cmdOut[:])
-		if output != "" {
-			log.Printf("Output: %s\n", output)
+		totalStartTime, err := time.Parse(layout, start[minInd])
+		if err != nil {
+			log.Fatal("Unable to convert total starting time")
 		}
-		log.Fatal(newErr)
+		expadedDuration := totalEndTime.Sub(totalStartTime).Seconds()
+		step := strconv.Itoa(int(expadedDuration / 100))
+		if step == "0" {
+			step = "1"
+		}
+		totalOut := fmt.Sprintf("%s_%s", totalFiles, start[minInd])
+		outPath := fmt.Sprintf("%s/%s", outDir, totalOut)
+		if _, err := os.Stat(outPath); os.IsNotExist(err) {
+			err = os.MkdirAll(outPath, os.ModePerm)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+
+		s := fmt.Sprintf("%f", totalDuration)
+		log.Println(fmt.Sprintf("Total starting time: %s\nTotal ending time: %s\nTotal duration: %s", start[minInd], end[maxInd], s))
+		cmd := exec.Command(
+			"../prom_metrics_cli/dcgm_metrics_range_query.sh",
+			[]string{
+				"-s", start[minInd],
+				"-e", end[maxInd],
+				"-o", totalOut,
+				"--out-dir", outDir,
+				"--total",
+				"-url", promURL,
+				"-step", step,
+				"--duration", s,
+			}...,
+		)
+
+		cmdOut, newErr := cmd.CombinedOutput()
+		if newErr != nil {
+			output := string(cmdOut[:])
+			if output != "" {
+				log.Printf("Output: %s\n", output)
+			}
+			log.Fatal(newErr)
+		}
+		log.Printf("Total figures saved at %s\n", outDir)
 	}
-	log.Printf("Total figures saved at %s\n", outDir)
 }

@@ -1,0 +1,20 @@
+{
+    "onnx_mobilenet_1024": "o_m1",
+    "onnx_mobilenet_2048": "o_m2",
+    "onnx_mobilenet_4096": "o_m3",
+    "onnx_resnet50_1024": "o_r1",
+    "onnx_resnet50_2048": "o_r2",
+    "onnx_resnet50_4096": "o_r3",
+    "onnx_ssd_mobilenet_1024": "o_s1",
+    "onnx_ssd_mobilenet_2048": "o_s2",
+    "onnx_ssd_mobilenet_4096": "o_s3",
+    "tensorflow_mobilenet_1024": "t_m1",
+    "tensorflow_mobilenet_2048": "t_m2",
+    "tensorflow_mobilenet_4096": "t_m3",
+    "tensorflow_resnet50_1024": "t_r1",
+    "tensorflow_resnet50_2048": "t_r2",
+    "tensorflow_resnet50_4096": "t_r3",
+    "tensorflow_ssd_mobilenet_1024": "t_s1",
+    "tensorflow_ssd_mobilenet_2048": "t_s2",
+    "tensorflow_ssd_mobilenet_4096": "t_s3"
+}
