@@ -61,7 +61,7 @@ if args.out is not None and os.path.isfile(args.out):
 
 mlperflogs_df = pd.read_csv(args.i, sep="\t")
 dirname, _ = os.path.split(os.path.abspath(__file__))
-pods_file = os.path.join(dirname, 'data/pods_with_queries.json')
+pods_file = os.path.join(dirname, 'data/abbreviated_pod_names.json')
 with open(pods_file, 'r') as f:
     pods_dict = json.loads(f.read())
 
