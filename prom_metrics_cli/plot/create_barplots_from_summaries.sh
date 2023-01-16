@@ -1,6 +1,10 @@
 #!/bin/bash
 
-for x in ./summary/*
+for file in ./summary/*
 do
-    ./barplot.py -i $x
+    if [[ ! $file == *".ods"* ]]; then
+        continue
+    fi
+    echo $file
+    ./barplot.py -i $file
 done

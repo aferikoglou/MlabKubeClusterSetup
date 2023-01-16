@@ -1,7 +1,10 @@
 #!/bin/bash
 
-for summary in ./summary/*
+for file in ./summary/*
 do
-    echo $summary
-    ./dataset.py -i $summary
+    if [[ ! $file == *".ods"* ]]; then
+        continue
+    fi
+    echo $file
+    ./dataset.py -i $file
 done

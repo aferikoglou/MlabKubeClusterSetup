@@ -33,7 +33,7 @@ tsv_path = args.out if (args.out is not None) \
     else os.path.join(
         filepath,
         "dataset.ods"
-)
+    )
 if os.path.isdir(tsv_path):
     "-out is a directory"
     sys.exit(-1)
