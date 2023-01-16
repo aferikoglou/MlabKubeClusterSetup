@@ -124,11 +124,13 @@ for dir in benchmarks:
                             "model_name", 
                             "metric_name", 
                             "gpu_profile", 
-                            "timestamp"
                         ]:
                             continue
                         try:
-                            if 'FB_FREE' in metric_name or 'FB_USED' in metric_name:
+                            if column == 'timestamp' :
+                                df.loc[(df["name"] == name) & (df["metric_name"] == metric_name), column] = \
+                                    metrics_tmp.loc[row, column]
+                            elif 'FB_FREE' in metric_name or 'FB_USED' in metric_name:
                                 df.loc[(df["name"] == name) & (df["metric_name"] == metric_name), column] += \
                                     float(metrics_tmp.loc[row, column])
                             else:

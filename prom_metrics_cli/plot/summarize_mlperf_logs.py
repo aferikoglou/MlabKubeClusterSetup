@@ -78,6 +78,7 @@ df = pd.DataFrame(
     [], 
     columns=[
         "name", 
+        "timestamp", 
         "benchmark",
         "scenario", 
         "qps", 
@@ -94,15 +95,31 @@ for dir in benchmarks:
         continue
     files = os.listdir(benchmark_dir)
     for file in files:
-        if file.endswith("logs.tsv"):
+        if file.endswith(".tsv") and not file.endswith("logs.tsv"):
             metrics_tmp = pd.read_csv(os.path.join(benchmark_dir, file), sep="\t")
             name = metrics_tmp.loc[0, "name"].replace('-', '_')
             name = name.lower()
+            name = name.replace('mlperf_gpu_', '') \
+                    .replace('a30', '') \
+                    .replace('v100', '') \
+                    .replace('k8s_aferik_gpu', '')
+            name = strip_datetimes(name).strip(' ').strip('_')
+            name = re.sub(regex, '', name)
             if name == 'total':
-                name = 'total'
-                metrics_tmp.loc[0, "name"] = name
-                df.loc[len(df.index)] = metrics_tmp.loc[0]
                 continue
+
+            if name in df["name"].values:
+                df.loc[(df['name'] == name), 'timestamp'] = metrics_tmp.loc[0, 'timestamp']
+                    
+            else:
+                df.loc[len(df.index)] = [0] * len(df.columns)
+                df.loc[len(df.index) - 1, 'name'] = name
+                df.loc[len(df.index) - 1, 'timestamp'] = metrics_tmp.loc[0, 'timestamp']
+                
+        elif file.endswith("logs.tsv"):
+            metrics_tmp = pd.read_csv(os.path.join(benchmark_dir, file), sep="\t")
+            name = metrics_tmp.loc[0, "name"].replace('-', '_')
+            name = name.lower()
             name = name.replace('mlperf_gpu_', '') \
                     .replace('a30', '') \
                     .replace('v100', '') \
@@ -110,7 +127,9 @@ for dir in benchmarks:
                     .replace('k8s_aferik_gpu_a30', '')
             name = strip_datetimes(name).strip(' ').strip('_')
             name = re.sub(regex, '', name)
-
+            if name == 'total':
+                continue
+            
             if name in df["name"].values:
                 for column in metrics_tmp.columns:
                     try:
@@ -141,6 +160,8 @@ for dir in benchmarks:
                         elif column == "mAP":
                             df.loc[df['name'] == name, "mAP"] += \
                                 (float(metrics_tmp.loc[0, "mAP"].strip('%')) / 100) / benchmarks_count[name]
+                        elif column != "name":
+                            df.loc[df['name'] == name, column] = metrics_tmp.loc[0, column]
                     except:
                         pass
             else:
@@ -175,7 +196,6 @@ for dir in benchmarks:
                             df.loc[df['name'] == name, x1] += round(float(x2) / benchmarks_count[name], 4)
                 except:
                     pass    
-            break
 
 df['benchmark'] = [args.benchmark] * len(df)
 for row in range(len(df)):
