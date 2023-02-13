@@ -81,7 +81,7 @@ then
   # FILTER=$(echo $FILTER | tr _ -)
   FILTER=$(echo $FILTER | sed 's/ //g')
   # FILTER=$(printf "%q" "$FILTER")
-  FILTER="\'$FILTER\'"
+  FILTER="$FILTER"
   # echo "Filter: $FILTER"
 fi
 
