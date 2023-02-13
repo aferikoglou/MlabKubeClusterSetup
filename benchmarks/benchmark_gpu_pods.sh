@@ -170,7 +170,7 @@ then
   ../prom_metrics_cli/plot/barplot.py -i "$parent_path/../prom_metrics_cli/plot/summary/mlperf_logs_summary_$TSV_OUT"
 fi
 
-../prom_metrics_cli/plot/dataset.py -i "$parent_path/../prom_metrics_cli/plot/summary/dcgm_metrics_summary_$TSV_OUT"
-../prom_metrics_cli/plot/dataset.py -i "$parent_path/../prom_metrics_cli/plot/summary/mlperf_logs_summary_$TSV_OUT"
+# ../prom_metrics_cli/plot/dataset.py -i "$parent_path/../prom_metrics_cli/plot/summary/dcgm_metrics_summary_$TSV_OUT"
+# ../prom_metrics_cli/plot/dataset.py -i "$parent_path/../prom_metrics_cli/plot/summary/mlperf_logs_summary_$TSV_OUT"
 
 # ../prom_metrics_cli/plot/interference_barplots.py -i "$parent_path/../prom_metrics_cli/plot/dataset/dataset.ods"

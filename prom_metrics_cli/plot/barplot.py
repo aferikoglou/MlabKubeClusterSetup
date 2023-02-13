@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import json
 import argparse
 import matplotlib.pyplot as plt
 from utils.utils import find_max_id
@@ -29,7 +30,25 @@ parser.add_argument(
     required=False,
     help="Path to save output figures"
 )
-
+parser.add_argument(
+    '-x-axis',
+    action='store',
+    choices=["configuration", "engine"],
+    required=True,
+    help="Defines what should be depicted in x axis"
+)
+parser.add_argument(
+    '-height',
+    action='store',
+    default=8,
+    help="Barplot's height"
+)
+parser.add_argument(
+    '-width',
+    action='store',
+    default=12,
+    help="Barplot's width"
+)
 args = parser.parse_args()
 
 mlperflogs_df = pd.read_csv(args.i, sep="\t")
@@ -42,10 +61,16 @@ out_path = os.path.join(out_path, str(find_max_id(out_path, "")))
 if not os.path.exists(out_path):
     os.makedirs(out_path)
 
+if args.x_axis == "engine":
+    with open(os.path.join(dirname, "data/abbreviated_pod_names.json")) as f:
+        abbreviated_pod_names = json.loads(f.read())
+
 benchmarks_count = {}
 for column in mlperflogs_df.columns:
     for row in range(len(mlperflogs_df)):
         name = mlperflogs_df.loc[row, 'name']
+        if name == "total":
+            continue
         benchmark = mlperflogs_df.loc[row, 'benchmark']
         if "dcgm" in args.i:
             if column != "mean_value":
@@ -69,25 +94,32 @@ for column in mlperflogs_df.columns:
         continue
     for row in range(len(mlperflogs_df)):
         name = mlperflogs_df.loc[row, 'name']
+        if name == "total":
+            continue
         benchmark = mlperflogs_df.loc[row, 'benchmark']
         metric_name = mlperflogs_df.loc[row,
                                         'metric_name'] if "dcgm" in args.i else column
-        if name not in d:
-            d[name] = {}
-        if metric_name not in d[name]:
-            d[name][metric_name] = {'x': [], 'y': []}
+        
+        key, x_axis = (benchmark, name) if args.x_axis == "engine" else (name, benchmark)
+        if args.x_axis == "engine":
+            x_axis = abbreviated_pod_names[x_axis]
 
-        if benchmark not in d[name][metric_name]['x']:
-            d[name][metric_name]['x'].append(benchmark)
+        if key not in d:
+            d[key] = {}
+        if metric_name not in d[key]:
+            d[key][metric_name] = {'x': [], 'y': []}
+
+        if x_axis not in d[key][metric_name]['x']:
+            d[key][metric_name]['x'].append(x_axis)
             try:
-                d[name][metric_name]['y'].append(round(float(
+                d[key][metric_name]['y'].append(round(float(
                     mlperflogs_df.loc[row, column]) / float(benchmarks_count[name][benchmark][metric_name]), 4))
             except:
-                d[name][metric_name]['y'].append(float(0))
+                d[key][metric_name]['y'].append(float(0))
         else:
-            i = d[name][metric_name]['x'].index(benchmark)
+            i = d[key][metric_name]['x'].index(x_axis)
             try:
-                d[name][metric_name]['y'][i] += round(float(mlperflogs_df.loc[row, column]) / float(
+                d[key][metric_name]['y'][i] += round(float(mlperflogs_df.loc[row, column]) / float(
                     benchmarks_count[name][benchmark][metric_name]), 4)
             except:
                 pass
@@ -102,12 +134,14 @@ for k, v in d.items():
     for k1, v1 in v.items():
         print(k1)
         data = list([(a, b) for a, b in zip(v1['x'], v1['y'])])
-        data = sorted(data, key=itemgetter)
+        data = sorted(data, key=itemgetter) if args.x_axis == "configuration" else sorted(data)
         X = [x[0] for x in data]
         Y = [x[1] for x in data]
         
+        plt.figure(figsize=(args.width, args.height))
         plt.bar(X, Y)
         plt.ylabel(k1)
+        plt.title(k)
         plt.tight_layout()
         plt.savefig(os.path.join(outfile, k1 + '.png'))
         plt.clf()

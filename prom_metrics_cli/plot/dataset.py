@@ -7,20 +7,9 @@ import sys
 import re
 import json
 
-parser = argparse.ArgumentParser(
-    description='Create dataset from summarized metrics')
-parser.add_argument(
-    '-i',
-    action='store',
-    required=True,
-    help="Path to input summary"
-)
-parser.add_argument(
-    '--out',
-    type=str,
-    required=False,
-    help="Path to output dataset"
-)
+parser = argparse.ArgumentParser(description="Create dataset from summarized metrics")
+parser.add_argument("-i", action="store", required=True, help="Path to input summary")
+parser.add_argument("--out", type=str, required=False, help="Path to output dataset")
 
 args = parser.parse_args()
 
@@ -29,11 +18,7 @@ filepath = os.path.join(dirname, "dataset")
 units_file = os.path.join(dirname, "data/units.json")
 if not os.path.exists(filepath):
     os.makedirs(filepath)
-tsv_path = args.out if (args.out is not None) \
-    else os.path.join(
-        filepath,
-        "dataset.ods"
-    )
+tsv_path = args.out if (args.out is not None) else os.path.join(filepath, "dataset.ods")
 if os.path.isdir(tsv_path):
     "-out is a directory"
     sys.exit(-1)
@@ -42,6 +27,7 @@ try:
 except:
     experiment = ""
 type = "dcgm" if "dcgm" in args.i else "mlperf"
+
 columns = [
     "name",
     "timestamp",
@@ -79,24 +65,24 @@ columns = [
 
 with open(units_file, "r") as f:
     units = json.loads(f.read())
-columns.extend(list([f'{k} {v}' for k, v in units.items()]))
+columns.extend(list([f"{k} {v}" for k, v in units.items()]))
 
 if os.path.exists(tsv_path):
     df = pd.read_csv(tsv_path, sep="\t")
 else:
-    df = pd.DataFrame(
-        [],
-        columns=columns)
+    df = pd.DataFrame([], columns=columns)
 metrics_tmp = pd.read_csv(args.i, sep="\t")
 for row in range(len(metrics_tmp)):
     name = metrics_tmp.loc[row, "name"]
+
     if "total" in name:
         continue
     benchmark = metrics_tmp.loc[row, "benchmark"]
+
     if df.loc[
-        (df["name"] == name) &
-        (df["benchmark"] == benchmark) &
-        (df["experiment"] == experiment)
+        (df["name"] == name)
+        & (df["benchmark"] == benchmark)
+        & (df["experiment"] == experiment)
     ].empty:
         s = pd.Series([None] * len(df.columns), index=df.columns)
         df.loc[len(df.index)] = s
@@ -108,17 +94,17 @@ for row in range(len(metrics_tmp)):
         if not column in columns:
             continue
         df.loc[
-            (df["name"] == name) &
-            (df["benchmark"] == benchmark) &
-            (df["experiment"] == experiment),
-            column
+            (df["name"] == name)
+            & (df["benchmark"] == benchmark)
+            & (df["experiment"] == experiment),
+            column,
         ] = metrics_tmp.loc[row, "mean_value"]
         for metric in ["model_name", "gpu", "gpu_id", "timestamp", "gpu_profile"]:
             df.loc[
-                (df["name"] == name) &
-                (df["benchmark"] == benchmark) &
-                (df["experiment"] == experiment),
-                metric
+                (df["name"] == name)
+                & (df["benchmark"] == benchmark)
+                & (df["experiment"] == experiment),
+                metric,
             ] = metrics_tmp.loc[row, metric]
     else:
         for column in metrics_tmp.columns:
@@ -126,13 +112,13 @@ for row in range(len(metrics_tmp)):
                 df_column = column.split(".")[0]
             else:
                 df_column = column
-            if column in ["name", "benchmark"] or not df_column in columns:
+            if df_column in ["name", "benchmark"] or not df_column in columns:
                 continue
             df.loc[
-                (df["name"] == name) &
-                (df["benchmark"] == benchmark) &
-                (df["experiment"] == experiment),
-                df_column
+                (df["name"] == name)
+                & (df["benchmark"] == benchmark)
+                & (df["experiment"] == experiment),
+                df_column,
             ] = metrics_tmp.loc[row, column]
 
-df.to_csv(tsv_path, mode='w', index=False, sep="\t")
+df.to_csv(tsv_path, mode="w", index=False, sep="\t")

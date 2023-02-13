@@ -446,6 +446,7 @@ func main() {
 				filter = "{\"exported_pod\": \"^" + podName + "$\"}"
 			}
 
+			fmt.Println("filter: ", filter)
 			args := []string{
 				"-s", start[ind],
 				"-e", end[ind],

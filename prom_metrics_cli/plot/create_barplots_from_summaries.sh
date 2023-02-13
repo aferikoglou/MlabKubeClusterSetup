@@ -6,5 +6,5 @@ do
         continue
     fi
     echo $file
-    ./barplot.py -i $file
+    ./barplot.py -i $file # -x-axis
 done
