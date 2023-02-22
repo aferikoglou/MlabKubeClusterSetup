@@ -1,0 +1,20 @@
+{
+    "1": "onnx_mobilenet_1024",
+    "2": "onnx_mobilenet_2048",
+    "3": "onnx_mobilenet_4096",
+    "4": "onnx_resnet50_1024",
+    "5": "onnx_resnet50_2048",
+    "6": "onnx_resnet50_4096",
+    "7": "onnx_ssd_mobilenet_1024",
+    "8": "onnx_ssd_mobilenet_2048",
+    "9": "onnx_ssd_mobilenet_4096",
+    "10": "tensorflow_mobilenet_1024",
+    "11": "tensorflow_mobilenet_2048",
+    "12": "tensorflow_mobilenet_4096",
+    "13": "tensorflow_resnet50_1024",
+    "14": "tensorflow_resnet50_2048",
+    "15": "tensorflow_resnet50_4096",
+    "16": "tensorflow_ssd_mobilenet_1024",
+    "17": "tensorflow_ssd_mobilenet_2048",
+    "18": "tensorflow_ssd_mobilenet_4096"
+}

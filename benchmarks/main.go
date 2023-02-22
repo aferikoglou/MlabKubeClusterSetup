@@ -199,7 +199,7 @@ func isFlagPassed(name string) bool {
 func main() {
 	var configPath, promURL, yamlPath, logsFile, totalFiles, timezone, outDir, filter string
 	var autoskip, autodelete, appendTime, total bool
-	var batch, sleep, repeat int
+	var batch, sleep, repeat, interval int
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
@@ -217,6 +217,7 @@ func main() {
 	flag.BoolVar(&total, "total", false, "If this flag is set then figures for the total duration will also created")
 	flag.IntVar(&batch, "b", 1, "Number of pods to be ran concurrently")
 	flag.IntVar(&repeat, "r", 1, "Number of times you want each pod to be ran")
+	flag.IntVar(&interval, "i", 0, "Number of seconds to sleep between pod execution")
 	flag.IntVar(&sleep, "s", 60, "Number of seconds to sleep between consecutive batch executions")
 
 	flag.Parse()
@@ -351,6 +352,8 @@ func main() {
 	count := 0
 	finishedCounter := 0
 	for i, file := range files {
+		time.Sleep(time.Duration(interval) * time.Second)
+
 		if inArray(i, skip) {
 			continue
 		}
